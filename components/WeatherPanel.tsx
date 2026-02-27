@@ -32,32 +32,32 @@ export function WeatherPanel() {
 
   return (
     <motion.div
-      className="rounded-3xl bg-slate-900/75 border border-white/15 shadow-[0_18px_45px_rgba(0,0,0,0.65)] backdrop-blur-2xl px-8 py-6 flex flex-col gap-5 min-w-[24rem]"
+      className="rounded-3xl denboard-card px-8 py-6 flex flex-col gap-5 min-w-[24rem]"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
     >
       <div className="flex items-baseline justify-between gap-4">
         <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-[0.28em] text-slate-300/80">
+          <span className="text-[11px] uppercase tracking-[0.28em] denboard-text-secondary">
             Weather
           </span>
           {current ? (
             <div className="flex items-end gap-3 mt-1">
-              <span className="text-6xl lg:text-7xl font-bold text-[#F5F5F3] drop-shadow-[0_0_16px_rgba(0,0,0,0.9)]">
+              <span className="text-6xl lg:text-7xl font-bold denboard-text-primary drop-shadow-[0_0_16px_rgba(0,0,0,0.9)]">
                 {Math.round(current.temperature)}°
               </span>
-              <span className="text-2xl font-semibold text-slate-100">
+              <span className="text-2xl font-semibold denboard-text-primary">
                 {current.condition}
               </span>
             </div>
           ) : (
-            <span className="text-slate-300 text-lg">
+            <span className="denboard-text-secondary text-lg">
               {loading ? "Loading..." : "Weather unavailable"}
             </span>
           )}
         </div>
-        <div className="flex flex-col items-end text-right text-[11px] text-slate-300/90">
+        <div className="flex flex-col items-end text-right text-[11px] denboard-text-secondary">
           {current?.sunrise && (
             <span>Sunrise {formatClock(current.sunrise)}</span>
           )}
@@ -67,7 +67,7 @@ export function WeatherPanel() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-sm text-slate-100/90">
+      <div className="flex items-center gap-3 text-sm denboard-text-secondary">
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/80 border border-white/15 text-xl">
           {iconFor(current?.icon)}
         </span>
@@ -81,7 +81,7 @@ export function WeatherPanel() {
       </div>
 
       {data?.forecast && data.forecast.length > 0 && (
-        <div className="mt-3 grid grid-cols-5 gap-3 text-center text-xs text-slate-200">
+        <div className="mt-3 grid grid-cols-5 gap-3 text-center text-xs denboard-text-secondary">
           {data.forecast.slice(0, 5).map((day) => (
             <div
               key={day.date}
@@ -105,7 +105,7 @@ export function WeatherPanel() {
       )}
 
       {data?.overlay && (
-        <p className="text-[11px] text-slate-300/90 mt-2">
+        <p className="text-[11px] denboard-text-secondary mt-2">
           {overlayLabel[data.overlay] ?? "Mountain conditions"}
         </p>
       )}

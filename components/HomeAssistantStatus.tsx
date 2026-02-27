@@ -36,8 +36,8 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-xs text-slate-300/90">
-        <span className="uppercase tracking-[0.25em] text-slate-400">
+      <div className="flex items-center gap-2 text-xs denboard-text-secondary">
+        <span className="uppercase tracking-[0.25em] text-slate-300">
           Home Status
         </span>
         <span className="h-1 w-1 rounded-full bg-slate-600" />
@@ -70,12 +70,12 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
             {payload.entities.map((entity) => (
               <div
                 key={entity.id}
-                className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 flex flex-col gap-1"
+                className="rounded-2xl denboard-card px-3 py-2 flex flex-col gap-1"
               >
-                <div className="text-[11px] text-slate-300 uppercase tracking-wide">
+                <div className="text-[11px] denboard-text-secondary uppercase tracking-wide">
                   {entity.label}
                 </div>
-                <div className="text-lg font-semibold text-slate-50">
+                <div className="text-lg font-semibold denboard-text-primary">
                   {formatState(entity.state)}
                 </div>
               </div>
