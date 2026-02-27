@@ -12,6 +12,7 @@ export async function GET() {
         mapped: null,
         rawProvider: null,
         units: null,
+        tz: null,
         fetchedAt: new Date().toISOString()
       },
       { status: 200 }

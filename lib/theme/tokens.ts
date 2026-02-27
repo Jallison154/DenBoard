@@ -30,14 +30,16 @@ export const themeTokens = {
   /** Footer bar overlay */
   footerScrim: "rgba(0, 0, 0, 0.32)",
 
-  /** Forecast tile: icon size (Tailwind text-*) */
-  forecastIconSize: "text-3xl",
-  /** Forecast tile: high/low font size */
-  forecastTempSize: "text-base",
-  /** Forecast tile: gap between items */
-  forecastGap: "gap-3",
-  /** Forecast tile: padding */
-  forecastPadding: "px-4 py-3",
+  /** Forecast tile: icon size (rem) – legible from 10ft */
+  forecastIconSizeRem: 2.5,
+  /** Forecast tile: high/low font size (rem) */
+  forecastTempSizeRem: 1.5,
+  /** Forecast tile: gap between items (rem) */
+  forecastGapRem: 1.25,
+  /** Forecast tile: padding block (rem) */
+  forecastPaddingBlockRem: 1.25,
+  /** Forecast tile: padding inline (rem) */
+  forecastPaddingInlineRem: 1.5,
 } as const;
 
 /** Generate :root CSS custom properties for injection into document */
@@ -54,6 +56,11 @@ export function toCssVars(): string {
     `--denboard-text-secondary: ${themeTokens.textSecondary}`,
     `--denboard-text-muted: ${themeTokens.textMuted}`,
     `--denboard-footer-scrim: ${themeTokens.footerScrim}`,
+    `--denboard-forecast-icon-size: ${themeTokens.forecastIconSizeRem}rem`,
+    `--denboard-forecast-temp-size: ${themeTokens.forecastTempSizeRem}rem`,
+    `--denboard-forecast-gap: ${themeTokens.forecastGapRem}rem`,
+    `--denboard-forecast-padding-block: ${themeTokens.forecastPaddingBlockRem}rem`,
+    `--denboard-forecast-padding-inline: ${themeTokens.forecastPaddingInlineRem}rem`,
   ];
   return `:root{${vars.join(";")}}`;
 }

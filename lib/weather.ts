@@ -44,6 +44,7 @@ export type WeatherDebugPayload = {
   mapped: WeatherPayload;
   rawProvider: unknown;
   units: WeatherUnits;
+  tz: string;
   fetchedAt: string;
 };
 
@@ -74,16 +75,9 @@ function mapWeatherCodeToCondition(
   return { label: "Cloudy", icon: "cloudy", overlay: "cloudy" };
 }
 
-async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
+async function fetchFromExternal(units?: WeatherUnits): Promise<WeatherDebugPayload> {
   const config = getConfig();
-  const settings = await loadSettings();
-  const units: WeatherUnits = settings.weather.units || config.weatherUnits;
-  const source: "external" | "homeassistant" =
-    settings.weather.weatherSource || "external";
-
-  if (source === "homeassistant") {
-    return fetchFromHomeAssistant(settings, units);
-  }
+  const u: WeatherUnits = units ?? config.weatherUnits;
 
   try {
     const url = new URL("https://api.open-meteo.com/v1/forecast");
@@ -99,14 +93,14 @@ async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
     url.searchParams.set("warnings", "true");
     url.searchParams.set(
       "temperature_unit",
-      units === "imperial" ? "fahrenheit" : "celsius"
+      u === "imperial" ? "fahrenheit" : "celsius"
     );
 
     logger.info("Weather request", {
       provider: "open-meteo",
       lat: config.lat,
       lon: config.lon,
-      units,
+      units: u,
       url: url.toString()
     });
 
@@ -168,7 +162,7 @@ async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
       dailyForecast,
       alerts,
       overlay: mapping.overlay,
-      units,
+      units: u,
       isFallback: false,
       fetchedAt
     };
@@ -177,7 +171,8 @@ async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
       source: "external",
       mapped,
       rawProvider: raw,
-      units,
+      units: u,
+      tz: config.timezone,
       fetchedAt
     };
   } catch (error) {
@@ -202,9 +197,23 @@ async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
       mapped: fallback,
       rawProvider: null,
       units: fallback.units,
+      tz: getConfig().timezone,
       fetchedAt: fallback.fetchedAt
     };
   }
+}
+
+async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
+  const config = getConfig();
+  const settings = await loadSettings();
+  const units: WeatherUnits = settings.weather.units || config.weatherUnits;
+  const source: "external" | "homeassistant" =
+    settings.weather.weatherSource || "external";
+
+  if (source === "homeassistant") {
+    return fetchFromHomeAssistant(settings, units);
+  }
+  return fetchFromExternal(units);
 }
 
 function mapHomeAssistantCondition(
@@ -256,8 +265,7 @@ async function fetchFromHomeAssistant(
     logger.warn(
       "Home Assistant weather selected but HOME_ASSISTANT_URL or HOME_ASSISTANT_TOKEN not configured; falling back to external"
     );
-    // Fall back to external
-    return fetchAndMapWeather();
+    return fetchFromExternal(fallbackUnits);
   }
 
   const units: WeatherUnits =
@@ -438,14 +446,14 @@ async function fetchFromHomeAssistant(
         alerts: rawAlerts
       },
       units: mappedUnits,
+      tz: config.timezone,
       fetchedAt
     };
   } catch (error) {
     logger.error("Failed to load Home Assistant weather", {
       error: String(error)
     });
-    // Fall back to external provider
-    return fetchAndMapWeather();
+    return fetchFromExternal(fallbackUnits);
   }
 }
 

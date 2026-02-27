@@ -75,23 +75,20 @@ export function WeatherPanel() {
       </div>
 
       {data?.dailyForecast && data.dailyForecast.length > 0 && (
-        <div className="mt-4 grid grid-cols-5 gap-4 text-center text-xs denboard-text-secondary">
+        <div className="mt-4 grid grid-cols-5 denboard-forecast-grid text-center text-xs denboard-text-secondary">
           {data.dailyForecast.slice(0, 5).map((day) => (
             <div
               key={day.dateISO}
-              className="flex flex-col items-center gap-2 rounded-2xl denboard-card-nested px-3 py-3"
+              className="flex flex-col items-center rounded-2xl denboard-card-nested denboard-forecast-tile"
             >
-              <span className="text-[12px] uppercase tracking-wide denboard-text-secondary">
+              <span className="text-[13px] uppercase tracking-wide denboard-text-secondary">
                 {day.dayName}
               </span>
-              <span className="text-2xl leading-none">
+              <span className="denboard-forecast-icon leading-none">
                 {iconFor(day.iconCode)}
               </span>
-              <span className="text-sm denboard-text-secondary">
-                {Math.round(day.highTemp)}° /{" "}
-                <span className="denboard-text-secondary">
-                  {Math.round(day.lowTemp)}°
-                </span>
+              <span className="denboard-forecast-temp denboard-text-secondary">
+                {Math.round(day.highTemp)}° / {Math.round(day.lowTemp)}°
               </span>
             </div>
           ))}

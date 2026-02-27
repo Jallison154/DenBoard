@@ -73,6 +73,22 @@ body {
   background: var(--denboard-footer-scrim);
 }
 
+/* Forecast tiles – uses --denboard-forecast-* tokens */
+.denboard-forecast-grid {
+  gap: var(--denboard-forecast-gap);
+}
+.denboard-forecast-tile {
+  padding: var(--denboard-forecast-padding-block) var(--denboard-forecast-padding-inline);
+  gap: var(--denboard-forecast-gap);
+}
+.denboard-forecast-icon {
+  font-size: var(--denboard-forecast-icon-size);
+  line-height: 1;
+}
+.denboard-forecast-temp {
+  font-size: var(--denboard-forecast-temp-size);
+}
+
 /* Subtle rain and snow particle effects */
 .denboard-rain::before,
 .denboard-rain::after {

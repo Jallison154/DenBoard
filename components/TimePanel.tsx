@@ -9,7 +9,7 @@ import { nowInDashboardTz } from "@/lib/time";
 const PLACEHOLDER = {
   time: "–:––",
   ampm: "––",
-  dateLine: "––––––––, ––––– –"
+  dateLine: "–––––––– • ––––– –"
 };
 
 export function TimePanel() {
@@ -33,7 +33,7 @@ export function TimePanel() {
     ? {
         time: now.toFormat("h:mm"),
         ampm: now.toFormat("a"),
-        dateLine: now.toFormat("cccc, MMMM d")
+        dateLine: `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}`
       }
     : PLACEHOLDER;
 
@@ -58,14 +58,12 @@ export function TimePanel() {
           {display.ampm}
         </span>
       </div>
-      <div className="flex flex-col">
-        <span
-          className="denboard-time-subtitle text-2xl md:text-3xl font-semibold"
-          suppressHydrationWarning
-        >
-          {display.dateLine}
-        </span>
-      </div>
+      <span
+        className="denboard-time-subtitle text-2xl md:text-3xl font-semibold whitespace-nowrap"
+        suppressHydrationWarning
+      >
+        {display.dateLine}
+      </span>
     </motion.div>
   );
 }
