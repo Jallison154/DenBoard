@@ -12,8 +12,8 @@ body {
 }
 
 .denboard-gradient {
-  background: radial-gradient(circle at top, rgba(209, 163, 124, 0.18), transparent 55%),
-    radial-gradient(circle at bottom, rgba(15, 23, 42, 0.95), #020617);
+  background: radial-gradient(circle at top, rgba(209, 163, 124, 0.22), transparent 55%),
+    radial-gradient(circle at bottom, rgba(15, 23, 42, 0.88), #020617);
 }
 
 .denboard-content {
@@ -27,8 +27,8 @@ body {
   pointer-events: none;
   z-index: 10;
   background:
-    radial-gradient(circle at left, rgba(15, 23, 42, 0.7), transparent 55%),
-    linear-gradient(to right, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.96));
+    radial-gradient(circle at left, rgba(15, 23, 42, 0.45), transparent 55%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.62), rgba(15, 23, 42, 0.86));
 }
 
 .denboard-time-primary {
