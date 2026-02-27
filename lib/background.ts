@@ -43,13 +43,27 @@ export async function getBackground(weather: WeatherPayload | null): Promise<Bac
 
     const res = await fetchWithRetry(url.toString(), {
       headers: {
-        Authorization: `Client-ID ${config.unsplashAccessKey}`
-      },
-      next: { revalidate: 0 }
+        Authorization: `Client-ID ${config.unsplashAccessKey}`,
+        "Accept-Version": "v1"
+      }
     });
 
+    if (!res.ok) {
+      const body = await res.text();
+      logger.error("Unsplash API error", {
+        status: res.status,
+        statusText: res.statusText,
+        body: body.slice(0, 300)
+      });
+      if (res.status === 401) {
+        logger.warn("Check UNSPLASH_ACCESS_KEY: use the Access Key from https://unsplash.com/oauth/applications");
+      }
+      throw new Error(`Unsplash API ${res.status}: ${res.statusText}`);
+    }
+
     const data: any = await res.json();
-    const imageUrl: string | null = data?.urls?.regular ?? null;
+    const imageUrl: string | null =
+      data?.urls?.regular ?? data?.urls?.full ?? data?.urls?.raw ?? null;
     const attribution =
       data?.user?.name && data?.links?.html
         ? `Photo by ${data.user.name} on Unsplash`

@@ -48,11 +48,19 @@ export function BackgroundLayer({ children }: Props) {
         <motion.div
           key={imageUrl}
           className="pointer-events-none fixed inset-0 -z-10 bg-cover bg-center"
-          style={{ backgroundImage: `url(${imageUrl})`, filter: "blur(6px)" }}
           initial={{ opacity: 0.15 }}
           animate={{ opacity: 0.45 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-        />
+        >
+          <img
+            src={imageUrl}
+            alt=""
+            role="presentation"
+            className="h-full w-full object-cover"
+            style={{ filter: "blur(6px)" }}
+            referrerPolicy="no-referrer"
+          />
+        </motion.div>
       )}
 
       <WeatherOverlayLayer kind={overlay} />

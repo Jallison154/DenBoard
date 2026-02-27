@@ -56,6 +56,8 @@ Environment variables:
 - **HOME_ASSISTANT_TOKEN**: Long‑lived access token for the curated entity list.
 - **PORT**: Port for Next.js to listen on (default `3000`). The reverse proxy should point here.
 
+**If Unsplash backgrounds don’t load:** Get an Access Key from [Unsplash Developers](https://unsplash.com/oauth/applications) (create an app, then use the “Access Key” from the Keys section). Set `UNSPLASH_ACCESS_KEY=` in `.env` and restart the app. Check server logs for `Unsplash API error` if it still fails (e.g. 401 = wrong or missing key).
+
 #### 3. Install dependencies
 
 For production‑like reproducibility:
