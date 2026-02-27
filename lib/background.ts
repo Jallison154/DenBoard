@@ -22,7 +22,7 @@ export async function getBackground(weather: WeatherPayload | null): Promise<Bac
   const now = DateTime.now().setZone(config.timezone);
   const timeOfDay = describeTimeOfDay(now);
 
-  const condition = weather?.current?.condition?.toLowerCase() ?? "mountain";
+  const condition = weather?.conditionText?.toLowerCase() ?? "mountain";
   const terms = [`${timeOfDay}`, condition, "mountain landscape", "calm", "minimal"].join(" ");
 
   if (!config.unsplashAccessKey) {

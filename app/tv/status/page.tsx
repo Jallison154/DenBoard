@@ -27,7 +27,7 @@ export default function TvStatusPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <SevereAlertBanner alerts={weather?.severeAlerts} />
+      <SevereAlertBanner alerts={weather?.alerts} />
 
       <div className="flex-1 grid grid-cols-12 gap-8 items-stretch pt-6 pb-6">
         <section className="col-span-5 flex flex-col justify-between gap-8">

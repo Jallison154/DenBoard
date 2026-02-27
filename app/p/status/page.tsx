@@ -27,7 +27,7 @@ export default function PortraitStatusPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <SevereAlertBanner alerts={weather?.severeAlerts} />
+      <SevereAlertBanner alerts={weather?.alerts} />
 
       <div className="flex-1 flex flex-col gap-5 pt-4 pb-6">
         <TimePanel />

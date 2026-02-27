@@ -28,7 +28,7 @@ export default function TvHomePage() {
   return (
     <div className="flex-1 flex flex-col pt-6 pb-6">
       <div className="px-10 lg:px-14">
-        <SevereAlertBanner alerts={weather?.severeAlerts} />
+        <SevereAlertBanner alerts={weather?.alerts} />
       </div>
       <div className="flex-1 grid grid-cols-12 gap-10 items-stretch px-10 lg:px-14">
         {/* Left column: time + date + dad joke */}

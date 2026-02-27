@@ -105,7 +105,8 @@ async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
     const raw: any = await res.json();
 
     const now = DateTime.now().setZone(config.timezone);
-    const fetchedAt = now.toISO();
+    const fetchedAt: string =
+      now.toISO() ?? new Date().toISOString();
 
     const currentCode: number | null =
       typeof raw.current?.weather_code === "number"
@@ -184,7 +185,7 @@ async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
       overlay: null,
       units: getConfig().weatherUnits,
       isFallback: true,
-      fetchedAt: now.toISO()
+      fetchedAt: now.toISO() ?? new Date().toISOString()
     };
     return {
       mapped: fallback,
