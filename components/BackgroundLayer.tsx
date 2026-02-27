@@ -57,7 +57,7 @@ export function BackgroundLayer({ children }: Props) {
             alt=""
             role="presentation"
             className="h-full w-full object-cover"
-            style={{ filter: "blur(10px)" }}
+            style={{ filter: "blur(10px) brightness(1.05) contrast(1.05)" }}
             referrerPolicy="no-referrer"
           />
         </motion.div>
@@ -91,7 +91,7 @@ function WeatherOverlayLayer({ kind }: { kind: OverlayKind }) {
         </div>
       )}
       {kind === "cloudy" && (
-        <div className="absolute inset-0 bg-gradient-to-b from-haze/14 via-transparent to-haze/22" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/18" />
       )}
       {kind === "storm" && (
         <motion.div
