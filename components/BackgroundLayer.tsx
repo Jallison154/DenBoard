@@ -77,26 +77,27 @@ type OverlayKind = WeatherPayload["overlay"];
 function WeatherOverlayLayer({ kind }: { kind: OverlayKind }) {
   if (!kind || kind === "clear") return null;
 
+  // Atmospheric overlays only change mood, not brightness.
   return (
-    <div className="pointer-events-none fixed inset-0 -z-0">
+    <div className="pointer-events-none fixed inset-0 z-15">
       {kind === "rain" && (
         <div className="absolute inset-0 opacity-40 mix-blend-screen overflow-hidden">
           <div className="denboard-rain" />
         </div>
       )}
       {kind === "snow" && (
-        <div className="absolute inset-0 opacity-50 mix-blend-screen overflow-hidden">
+        <div className="absolute inset-0 opacity-45 mix-blend-screen overflow-hidden">
           <div className="denboard-snow" />
         </div>
       )}
       {kind === "cloudy" && (
-        <div className="absolute inset-0 bg-gradient-to-b from-haze/20 via-transparent to-haze/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-haze/14 via-transparent to-haze/22" />
       )}
       {kind === "storm" && (
         <motion.div
-          className="absolute inset-0 bg-black/40"
-          initial={{ opacity: 0.2 }}
-          animate={{ opacity: [0.2, 0.35, 0.2] }}
+          className="absolute inset-0 rounded-[4rem] border border-amberSoft/40 shadow-[0_0_55px_rgba(251,191,36,0.45)]"
+          initial={{ opacity: 0.4 }}
+          animate={{ opacity: [0.4, 0.75, 0.4] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
       )}
