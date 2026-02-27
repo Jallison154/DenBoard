@@ -36,7 +36,7 @@ export default function TvGuestPage() {
           </div>
         </section>
         <section className="col-span-7 flex justify-end">
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-3xl">
             <WeatherPanel />
           </div>
         </section>

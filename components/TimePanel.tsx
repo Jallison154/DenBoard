@@ -6,7 +6,11 @@ import { motion } from "framer-motion";
 import { nowInDashboardTz } from "@/lib/time";
 
 // Placeholder so server and client render the same HTML (avoids hydration error #418)
-const PLACEHOLDER = { time: "–:––", ampm: "––", dayName: "–––––", date: "––––– –" };
+const PLACEHOLDER = {
+  time: "–:––",
+  ampm: "––",
+  dateLine: "––––––––, ––––– –"
+};
 
 export function TimePanel() {
   const [mounted, setMounted] = useState(false);
@@ -29,8 +33,7 @@ export function TimePanel() {
     ? {
         time: now.toFormat("h:mm"),
         ampm: now.toFormat("a"),
-        dayName: now.toFormat("cccc"),
-        date: now.toFormat("MMMM d"),
+        dateLine: now.toFormat("cccc, MMMM d")
       }
     : PLACEHOLDER;
 
@@ -55,12 +58,12 @@ export function TimePanel() {
           {display.ampm}
         </span>
       </div>
-      <div className="flex flex-col text-2xl md:text-3xl">
-        <span className="denboard-time-subtitle font-semibold" suppressHydrationWarning>
-          {display.dayName}
-        </span>
-        <span className="denboard-time-subtitle text-opacity-80" suppressHydrationWarning>
-          {display.date}
+      <div className="flex flex-col">
+        <span
+          className="denboard-time-subtitle text-2xl md:text-3xl font-semibold"
+          suppressHydrationWarning
+        >
+          {display.dateLine}
         </span>
       </div>
     </motion.div>

@@ -32,7 +32,7 @@ export function WeatherPanel() {
 
   return (
     <motion.div
-      className="rounded-3xl denboard-card px-8 py-6 flex flex-col gap-5 min-w-[24rem]"
+      className="rounded-3xl denboard-card px-9 py-7 flex flex-col gap-6 min-w-[26rem]"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
@@ -75,20 +75,23 @@ export function WeatherPanel() {
       </div>
 
       {data?.dailyForecast && data.dailyForecast.length > 0 && (
-        <div className="mt-3 grid grid-cols-5 gap-3 text-center text-xs denboard-text-secondary">
+        <div className="mt-4 grid grid-cols-5 gap-4 text-center text-xs denboard-text-secondary">
           {data.dailyForecast.slice(0, 5).map((day) => (
             <div
               key={day.dateISO}
-              className="flex flex-col items-center gap-1.5 rounded-2xl bg-slate-900/70 border border-white/10 px-2.5 py-2"
+              className="flex flex-col items-center gap-2 rounded-2xl bg-slate-900/75 border border-white/10 px-3 py-3"
             >
-              <span className="text-[11px] uppercase tracking-wide denboard-text-secondary">
+              <span className="text-[12px] uppercase tracking-wide denboard-text-secondary">
                 {day.dayName}
               </span>
-              <span className="text-lg leading-none">
+              <span className="text-2xl leading-none">
                 {iconFor(day.iconCode)}
               </span>
-              <span className="text-[11px] denboard-text-secondary">
-                {Math.round(day.highTemp)}° / {Math.round(day.lowTemp)}°
+              <span className="text-sm denboard-text-secondary">
+                {Math.round(day.highTemp)}° /{" "}
+                <span className="denboard-text-secondary">
+                  {Math.round(day.lowTemp)}°
+                </span>
               </span>
             </div>
           ))}
