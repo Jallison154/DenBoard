@@ -9,8 +9,8 @@ import {
 
 const ADMIN_COOKIE_NAME = "denboard_admin";
 
-function isAdmin() {
-  const cookieStore = cookies();
+async function isAdmin() {
+  const cookieStore = await cookies();
   const flag = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
   return flag === "1";
 }
@@ -21,7 +21,7 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  if (!isAdmin()) {
+  if (!(await isAdmin())) {
     return NextResponse.json(
       { ok: false, error: "Not authorized. Please enter the admin PIN." },
       { status: 401 }
