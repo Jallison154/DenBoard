@@ -8,6 +8,7 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       {
+        source: null,
         mapped: null,
         rawProvider: null,
         units: null,

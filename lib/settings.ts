@@ -27,6 +27,10 @@ export type WeatherSettings = {
   provider: "open-meteo";
   refreshMinutes: number;
   units: WeatherUnits;
+  weatherSource: "external" | "homeassistant";
+  haWeatherEntityId: string;
+  haSunEntityId: string;
+  haAlertEntityIds: string[];
 };
 
 export type CalendarSource = {
@@ -146,7 +150,11 @@ export function getDefaultSettings(): DenBoardSettings {
     weather: {
       provider: "open-meteo",
       refreshMinutes: 6,
-      units: location.units
+      units: location.units,
+      weatherSource: "external",
+      haWeatherEntityId: "weather.home",
+      haSunEntityId: "sun.sun",
+      haAlertEntityIds: []
     },
     calendar: {
       refreshMinutes: 5,
@@ -257,6 +265,13 @@ export function validateSettings(settings: DenBoardSettings): SettingsValidation
   }
   if (!["imperial", "metric"].includes(settings.weather.units)) {
     errors.push("Weather units must be 'imperial' or 'metric'.");
+  }
+
+  if (
+    settings.weather.weatherSource !== "external" &&
+    settings.weather.weatherSource !== "homeassistant"
+  ) {
+    errors.push("Weather source must be 'external' or 'homeassistant'.");
   }
 
   const ids = new Set<string>();

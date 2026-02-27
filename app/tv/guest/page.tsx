@@ -16,7 +16,7 @@ async function fetchWeather(): Promise<WeatherPayload> {
   return res.json();
 }
 
-export default function TvHomePage() {
+export default function TvGuestPage() {
   const fetcher = useCallback(fetchWeather, []);
   const { data: weather } = usePolling<WeatherPayload>(fetcher, {
     intervalMs: 6 * 60 * 1000,
@@ -29,15 +29,12 @@ export default function TvHomePage() {
         <SevereAlertBanner alerts={weather?.alerts} />
       </div>
       <div className="flex-1 grid grid-cols-12 gap-10 items-center px-16">
-        {/* Left column: time + date + dad joke */}
         <section className="col-span-5 flex flex-col justify-center gap-6">
           <TimePanel />
           <div className="max-w-2xl">
             <DadJokePanel />
           </div>
         </section>
-
-        {/* Right column: weather card */}
         <section className="col-span-7 flex justify-end">
           <div className="w-full max-w-2xl">
             <WeatherPanel />

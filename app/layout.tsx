@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { FooterBar } from "@/components/FooterBar";
 
 export const metadata: Metadata = {
   title: "DenBoard",
@@ -15,8 +16,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-charcoal text-slate-100 font-body antialiased">
         {children}
-        <footer className="fixed bottom-0 inset-x-0 h-6 text-[10px] tracking-wide text-slate-400/80 bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          <span>DenBoard © OkamiDesigns</span>
+        <footer className="fixed bottom-0 inset-x-0 bg-black/40 backdrop-blur-sm">
+          <FooterBar />
         </footer>
       </body>
     </html>
