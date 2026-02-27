@@ -11,7 +11,7 @@ export function FooterBar() {
   const isGuest = forcedGuest || guestMode;
 
   return (
-    <div className="w-full h-6 flex items-center justify-center gap-4 text-[10px] tracking-wide text-slate-300/85">
+    <div className="w-full h-6 flex items-center justify-center gap-4 text-[10px] tracking-wide denboard-text-secondary">
       <span>DenBoard © OkamiDesigns</span>
       {isGuest && (
         <span className="text-sandstone/85 uppercase tracking-[0.2em]">

@@ -38,8 +38,8 @@ export default function PortraitCalendarPage() {
             <FourWeekGrid />
           </>
         ) : (
-          <div className="rounded-3xl bg-slate-950/70 border border-white/10 px-6 py-6 text-sm text-slate-200">
-            <p className="text-[11px] uppercase tracking-[0.3em] text-slate-500 mb-2">
+          <div className="rounded-3xl denboard-card px-6 py-6 text-sm denboard-text-primary">
+            <p className="text-[11px] uppercase tracking-[0.3em] denboard-text-secondary mb-2">
               Guest Mode
             </p>
             <p className="leading-relaxed">

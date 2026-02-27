@@ -68,7 +68,7 @@ export function WeatherPanel() {
       </div>
 
       <div className="flex items-center gap-3 text-sm denboard-text-secondary">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/80 border border-white/15 text-xl">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full denboard-card-nested text-xl">
           {iconFor(data?.conditionCode)}
         </span>
         <span>{data?.conditionText ?? "Local conditions"}</span>
@@ -79,7 +79,7 @@ export function WeatherPanel() {
           {data.dailyForecast.slice(0, 5).map((day) => (
             <div
               key={day.dateISO}
-              className="flex flex-col items-center gap-2 rounded-2xl bg-slate-900/75 border border-white/10 px-3 py-3"
+              className="flex flex-col items-center gap-2 rounded-2xl denboard-card-nested px-3 py-3"
             >
               <span className="text-[12px] uppercase tracking-wide denboard-text-secondary">
                 {day.dayName}

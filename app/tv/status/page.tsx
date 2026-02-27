@@ -39,7 +39,7 @@ export default function TvStatusPage() {
           <div className="max-w-xl">
             <DadJokePanel />
             {guestMode && (
-              <p className="mt-2 text-xs text-slate-400">
+              <p className="mt-2 text-xs denboard-text-secondary">
                 Guest Mode hides detailed home tiles while keeping time, weather,
                 forecasts, jokes, and alerts visible.
               </p>

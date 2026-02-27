@@ -43,7 +43,7 @@ export function BackgroundLayer({ children }: Props) {
   const overlay = data?.weather?.overlay ?? null;
 
   return (
-    <div className="relative min-h-screen denboard-gradient text-slate-50">
+    <div className="relative min-h-screen denboard-gradient denboard-content-area">
       {imageUrl && (
         <motion.div
           key={imageUrl}

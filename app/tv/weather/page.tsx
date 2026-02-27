@@ -36,8 +36,8 @@ export default function TvWeatherPage() {
         </section>
         <section className="col-span-7 flex flex-col gap-6">
           <WeatherPanel />
-          <div className="rounded-3xl bg-slate-950/60 border border-white/10 px-6 py-4 text-sm text-slate-200 max-w-xl">
-            <p className="text-[11px] uppercase tracking-[0.25em] text-slate-500 mb-1">
+          <div className="rounded-3xl denboard-card px-6 py-4 text-sm denboard-text-primary max-w-xl">
+            <p className="text-[11px] uppercase tracking-[0.25em] denboard-text-secondary mb-1">
               Outlook
             </p>
             <p className="leading-relaxed">

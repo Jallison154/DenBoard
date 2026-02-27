@@ -91,7 +91,7 @@ export function HomeModeBadge() {
   const { guestMode } = useGuestMode();
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full bg-slate-950/80 border border-white/20 px-3 py-2 text-xs text-slate-100 shadow-[0_12px_30px_rgba(0,0,0,0.7)]">
+    <div className="inline-flex items-center gap-2 rounded-full denboard-card-nested px-3 py-2 text-xs denboard-text-primary shadow-[0_12px_30px_rgba(0,0,0,0.7)]">
       <span
         className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${
           guestMode ? "bg-slate-700 text-slate-100" : "bg-emerald-600 text-emerald-50"

@@ -36,7 +36,7 @@ export default function PortraitStatusPage() {
         <div className="pt-1">
           <DadJokePanel />
           {guestMode && (
-            <p className="mt-2 text-xs text-slate-400">
+            <p className="mt-2 text-xs denboard-text-secondary">
               Guest Mode keeps the home dashboard welcoming while hiding personal
               details.
             </p>
