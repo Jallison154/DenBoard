@@ -36,16 +36,16 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-xs text-slate-400">
-        <span className="uppercase tracking-[0.25em] text-slate-500">
+      <div className="flex items-center gap-2 text-xs text-slate-300/90">
+        <span className="uppercase tracking-[0.25em] text-slate-400">
           Home Status
         </span>
         <span className="h-1 w-1 rounded-full bg-slate-600" />
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-[2px] text-[10px] ${
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[10px] ${
             guestMode
-              ? "bg-slate-800/80 text-slate-200"
-              : "bg-emerald-800/60 text-emerald-100"
+              ? "bg-slate-800/90 text-slate-100"
+              : "bg-emerald-700/80 text-emerald-50"
           }`}
         >
           <span
@@ -70,9 +70,9 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
             {payload.entities.map((entity) => (
               <div
                 key={entity.id}
-                className="rounded-2xl border border-white/10 bg-slate-950/50 px-3 py-2 flex flex-col gap-1"
+                className="rounded-2xl border border-white/10 bg-slate-950/70 px-3 py-2 flex flex-col gap-1"
               >
-                <div className="text-[11px] text-slate-400 uppercase tracking-wide">
+                <div className="text-[11px] text-slate-300 uppercase tracking-wide">
                   {entity.label}
                 </div>
                 <div className="text-lg font-semibold text-slate-50">
@@ -83,6 +83,25 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+export function HomeModeBadge() {
+  const { guestMode } = useGuestMode();
+
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full bg-slate-950/80 border border-white/20 px-3 py-2 text-xs text-slate-100 shadow-[0_12px_30px_rgba(0,0,0,0.7)]">
+      <span
+        className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${
+          guestMode ? "bg-slate-700 text-slate-100" : "bg-emerald-600 text-emerald-50"
+        }`}
+      >
+        {guestMode ? "G" : "F"}
+      </span>
+      <span className="uppercase tracking-[0.2em]">
+        {guestMode ? "Guest Mode" : "Family Mode"}
+      </span>
     </div>
   );
 }

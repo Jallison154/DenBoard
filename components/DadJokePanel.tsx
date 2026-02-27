@@ -22,15 +22,18 @@ export function DadJokePanel() {
 
   return (
     <motion.div
-      className="rounded-3xl bg-slate-950/50 border border-sandstone/25 px-6 py-4 text-sm text-slate-100 max-w-xl"
+      className="rounded-3xl bg-slate-900/70 border border-sandstone/35 shadow-[0_14px_40px_rgba(0,0,0,0.6)] backdrop-blur-2xl px-6 py-5 text-sm text-slate-100 max-w-2xl"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
     >
-      <div className="text-[10px] uppercase tracking-[0.3em] text-sandstone/80 mb-1">
-        Dad Joke
+      <div className="flex items-center gap-2 mb-2">
+        <div className="h-5 w-1 rounded-full bg-sandstone/80" />
+        <div className="text-[11px] uppercase tracking-[0.32em] text-sandstone/90">
+          Dad Joke
+        </div>
       </div>
-      <div className="text-base leading-relaxed">
+      <div className="text-base leading-relaxed max-h-24 overflow-hidden">
         {data?.joke ?? "Loading a mountain-grade dad joke..."}
       </div>
     </motion.div>

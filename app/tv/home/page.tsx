@@ -3,7 +3,7 @@
 import { TimePanel } from "@/components/TimePanel";
 import { WeatherPanel } from "@/components/WeatherPanel";
 import { DadJokePanel } from "@/components/DadJokePanel";
-import { HomeAssistantStatus, useGuestMode } from "@/components/HomeAssistantStatus";
+import { HomeAssistantStatus, HomeModeBadge, useGuestMode } from "@/components/HomeAssistantStatus";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "@/components/hooks";
@@ -26,21 +26,33 @@ export default function TvHomePage() {
   const { guestMode } = useGuestMode();
 
   return (
-    <div className="flex-1 flex flex-col">
-      <SevereAlertBanner alerts={weather?.severeAlerts} />
-
-      <div className="flex-1 grid grid-cols-12 gap-8 items-stretch pt-6 pb-6">
-        <section className="col-span-7 flex flex-col justify-center gap-10">
+    <div className="flex-1 flex flex-col pt-6 pb-6">
+      <div className="px-10 lg:px-14">
+        <SevereAlertBanner alerts={weather?.severeAlerts} />
+      </div>
+      <div className="flex-1 grid grid-cols-12 gap-10 items-stretch px-10 lg:px-14">
+        {/* Left column: time + date + dad joke */}
+        <section className="col-span-5 flex flex-col justify-center gap-8">
           <TimePanel />
-          <div className="max-w-xl">
+          <div className="max-w-2xl">
             <DadJokePanel />
           </div>
         </section>
 
-        <section className="col-span-5 flex flex-col justify-center gap-6 items-stretch">
-          <WeatherPanel />
-          {/* Hide detailed status tiles in Guest Mode */}
-          <HomeAssistantStatus hideWhenGuest />
+        {/* Right column: weather + status */}
+        <section className="col-span-7 flex flex-col justify-between gap-6 items-stretch">
+          <div className="flex flex-col gap-4 items-end">
+            <WeatherPanel />
+          </div>
+          <div className="flex items-end justify-between gap-4">
+            {/* Hide detailed status tiles in Guest Mode */}
+            <div className="max-w-xl">
+              <HomeAssistantStatus hideWhenGuest />
+            </div>
+            <div className="hidden md:flex">
+              <HomeModeBadge />
+            </div>
+          </div>
         </section>
       </div>
     </div>

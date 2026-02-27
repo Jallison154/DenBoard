@@ -43,23 +43,23 @@ export function TimePanel() {
     >
       <div className="flex items-baseline gap-4">
         <span
-          className="text-7xl md:text-8xl lg:text-9xl font-semibold tracking-tight"
+          className="denboard-time-primary text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight"
           suppressHydrationWarning
         >
           {display.time}
         </span>
         <span
-          className="text-3xl md:text-4xl text-slate-300 mt-3"
+          className="denboard-time-subtitle text-3xl md:text-4xl mt-3 font-semibold"
           suppressHydrationWarning
         >
           {display.ampm}
         </span>
       </div>
-      <div className="flex flex-col text-slate-300 text-2xl md:text-3xl">
-        <span className="font-medium" suppressHydrationWarning>
+      <div className="flex flex-col text-2xl md:text-3xl">
+        <span className="denboard-time-subtitle font-semibold" suppressHydrationWarning>
           {display.dayName}
         </span>
-        <span className="text-slate-400" suppressHydrationWarning>
+        <span className="denboard-time-subtitle text-opacity-80" suppressHydrationWarning>
           {display.date}
         </span>
       </div>

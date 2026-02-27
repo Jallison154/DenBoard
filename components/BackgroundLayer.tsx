@@ -48,8 +48,8 @@ export function BackgroundLayer({ children }: Props) {
         <motion.div
           key={imageUrl}
           className="pointer-events-none fixed inset-0 z-0"
-          initial={{ opacity: 0.15 }}
-          animate={{ opacity: 0.45 }}
+          initial={{ opacity: 0.12 }}
+          animate={{ opacity: 0.4 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
         >
           <img
@@ -57,15 +57,17 @@ export function BackgroundLayer({ children }: Props) {
             alt=""
             role="presentation"
             className="h-full w-full object-cover"
-            style={{ filter: "blur(6px)" }}
+            style={{ filter: "blur(10px)" }}
             referrerPolicy="no-referrer"
           />
         </motion.div>
       )}
 
+      <div className="denboard-overlay-strong" />
+
       <WeatherOverlayLayer kind={overlay} />
 
-      <div className="relative min-h-screen denboard-content">{children}</div>
+      <div className="relative min-h-screen denboard-content z-20">{children}</div>
     </div>
   );
 }

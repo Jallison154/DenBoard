@@ -32,37 +32,43 @@ export function WeatherPanel() {
 
   return (
     <motion.div
-      className="rounded-3xl bg-white/3 border border-white/10 backdrop-blur-xl px-8 py-6 flex flex-col gap-4 min-w-[22rem]"
+      className="rounded-3xl bg-slate-900/75 border border-white/15 shadow-[0_18px_45px_rgba(0,0,0,0.65)] backdrop-blur-2xl px-8 py-6 flex flex-col gap-5 min-w-[24rem]"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
     >
       <div className="flex items-baseline justify-between gap-4">
         <div className="flex flex-col">
-          <span className="text-sm uppercase tracking-[0.2em] text-slate-400">
+          <span className="text-[11px] uppercase tracking-[0.28em] text-slate-300/80">
             Weather
           </span>
           {current ? (
-            <div className="flex items-end gap-3">
-              <span className="text-6xl font-semibold">
+            <div className="flex items-end gap-3 mt-1">
+              <span className="text-6xl lg:text-7xl font-bold text-[#F5F5F3] drop-shadow-[0_0_16px_rgba(0,0,0,0.9)]">
                 {Math.round(current.temperature)}°
               </span>
-              <span className="text-xl text-slate-200">{current.condition}</span>
+              <span className="text-2xl font-semibold text-slate-100">
+                {current.condition}
+              </span>
             </div>
           ) : (
-            <span className="text-slate-400 text-lg">
+            <span className="text-slate-300 text-lg">
               {loading ? "Loading..." : "Weather unavailable"}
             </span>
           )}
         </div>
-        <div className="flex flex-col items-end text-right text-xs text-slate-400">
-          {current?.sunrise && <span>Sunrise {formatClock(current.sunrise)}</span>}
-          {current?.sunset && <span>Sunset {formatClock(current.sunset)}</span>}
+        <div className="flex flex-col items-end text-right text-[11px] text-slate-300/90">
+          {current?.sunrise && (
+            <span>Sunrise {formatClock(current.sunrise)}</span>
+          )}
+          {current?.sunset && (
+            <span>Sunset {formatClock(current.sunset)}</span>
+          )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-slate-300">
-        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-900/70 border border-white/10 text-lg">
+      <div className="flex items-center gap-3 text-sm text-slate-100/90">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/80 border border-white/15 text-xl">
           {iconFor(current?.icon)}
         </span>
         <span>
@@ -75,19 +81,23 @@ export function WeatherPanel() {
       </div>
 
       {data?.forecast && data.forecast.length > 0 && (
-        <div className="mt-2 grid grid-cols-5 gap-3 text-center text-xs text-slate-300">
+        <div className="mt-3 grid grid-cols-5 gap-3 text-center text-xs text-slate-200">
           {data.forecast.slice(0, 5).map((day) => (
             <div
               key={day.date}
-              className="flex flex-col items-center gap-1 rounded-2xl bg-slate-900/40 px-2 py-2"
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-slate-900/70 border border-white/10 px-2.5 py-2"
             >
-              <span className="text-[11px] uppercase tracking-wide text-slate-400">
+              <span className="text-[11px] uppercase tracking-wide text-slate-300/90">
                 {weekdayShort(day.date)}
               </span>
-              <span className="text-lg">{iconFor(day.icon)}</span>
+              <span className="text-lg leading-none">
+                {iconFor(day.icon)}
+              </span>
               <span className="text-[11px]">
                 {Math.round(day.max)}° /{" "}
-                <span className="text-slate-500">{Math.round(day.min)}°</span>
+                <span className="text-slate-400">
+                  {Math.round(day.min)}°
+                </span>
               </span>
             </div>
           ))}
@@ -95,7 +105,7 @@ export function WeatherPanel() {
       )}
 
       {data?.overlay && (
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-[11px] text-slate-300/90 mt-2">
           {overlayLabel[data.overlay] ?? "Mountain conditions"}
         </p>
       )}
