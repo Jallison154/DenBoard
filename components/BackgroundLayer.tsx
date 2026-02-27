@@ -47,7 +47,7 @@ export function BackgroundLayer({ children }: Props) {
       {imageUrl && (
         <motion.div
           key={imageUrl}
-          className="pointer-events-none fixed inset-0 -z-10 bg-cover bg-center"
+          className="pointer-events-none fixed inset-0 z-0"
           initial={{ opacity: 0.15 }}
           animate={{ opacity: 0.45 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
