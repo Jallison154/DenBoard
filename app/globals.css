@@ -26,11 +26,13 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 10;
-  background:
-    /* Left-to-right scrim */
-    linear-gradient(to right, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.15)),
-    /* Right-to-left scrim */
-    linear-gradient(to left, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.1));
+  /* Neutral readability scrim: constant day/night */
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.35) 50%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
 }
 
 .denboard-time-primary {
@@ -52,7 +54,7 @@ body {
 }
 
 .denboard-card {
-  background: rgba(20, 25, 30, 0.68);
+  background: rgba(15, 18, 22, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(22px);
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.68);

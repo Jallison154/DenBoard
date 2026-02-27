@@ -43,7 +43,7 @@ export function TimePanel() {
     >
       <div className="flex items-baseline gap-4">
         <span
-          className="denboard-time-primary text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight"
+          className="denboard-time-primary text-7xl md:text-8xl lg:text-9xl font-extrabold tracking-tight"
           suppressHydrationWarning
         >
           {display.time}

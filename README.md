@@ -51,6 +51,7 @@ Environment variables:
 - **UNSPLASH_ACCESS_KEY**: Unsplash API access key for rotating mountain backgrounds.
 - **DASHBOARD_LAT / DASHBOARD_LON**: Latitude/longitude for your location.
 - **DASHBOARD_TZ**: Time zone (e.g. `America/Denver`).
+- **WEATHER_UNITS**: `imperial` or `metric` (defaults to `imperial`; use `imperial` for °F in Montana).
 - **GCAL_ICS_URL**: Private Google Calendar ICS URL for family calendar.
 - **HOME_ASSISTANT_URL**: Base URL of your Home Assistant instance (e.g. `https://ha.example.com`).
 - **HOME_ASSISTANT_TOKEN**: Long‑lived access token for the curated entity list.
@@ -232,6 +233,7 @@ UNSPLASH_ACCESS_KEY=
 DASHBOARD_LAT=
 DASHBOARD_LON=
 DASHBOARD_TZ=America/Denver
+WEATHER_UNITS=imperial
 GCAL_ICS_URL=
 HOME_ASSISTANT_URL=
 HOME_ASSISTANT_TOKEN=

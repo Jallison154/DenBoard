@@ -20,6 +20,7 @@ export type DenBoardConfig = {
   lat: number;
   lon: number;
   timezone: string;
+  weatherUnits: "imperial" | "metric";
   unsplashAccessKey?: string;
   gcalIcsUrl?: string;
   homeAssistantUrl?: string;
@@ -37,11 +38,15 @@ const seconds = (n: number) => n * 1000;
 export function getConfig(): DenBoardConfig {
   const lat = Number(process.env.DASHBOARD_LAT ?? "39.7392");
   const lon = Number(process.env.DASHBOARD_LON ?? "-104.9903");
+  const weatherUnitsEnv = (process.env.WEATHER_UNITS || "imperial").toLowerCase();
+  const weatherUnits: "imperial" | "metric" =
+    weatherUnitsEnv === "metric" ? "metric" : "imperial";
 
   return {
     lat,
     lon,
     timezone: process.env.DASHBOARD_TZ || "America/Denver",
+    weatherUnits,
     unsplashAccessKey: process.env.UNSPLASH_ACCESS_KEY,
     gcalIcsUrl: process.env.GCAL_ICS_URL,
     homeAssistantUrl: process.env.HOME_ASSISTANT_URL,

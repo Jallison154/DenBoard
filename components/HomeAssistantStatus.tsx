@@ -37,7 +37,7 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2 text-xs denboard-text-secondary">
-        <span className="uppercase tracking-[0.25em] text-slate-300">
+        <span className="uppercase tracking-[0.25em] denboard-text-secondary">
           Home Status
         </span>
         <span className="h-1 w-1 rounded-full bg-slate-600" />

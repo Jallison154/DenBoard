@@ -28,7 +28,7 @@ export function WeatherPanel() {
     immediate: true
   });
 
-  const current = data?.current ?? null;
+  const currentTemp = data?.temperatureCurrent ?? null;
 
   return (
     <motion.div
@@ -42,13 +42,13 @@ export function WeatherPanel() {
           <span className="text-[11px] uppercase tracking-[0.28em] denboard-text-secondary">
             Weather
           </span>
-          {current ? (
+          {currentTemp !== null ? (
             <div className="flex items-end gap-3 mt-1">
               <span className="text-6xl lg:text-7xl font-bold denboard-text-primary drop-shadow-[0_0_16px_rgba(0,0,0,0.9)]">
-                {Math.round(current.temperature)}°
+                {Math.round(currentTemp)}°
               </span>
               <span className="text-2xl font-semibold denboard-text-primary">
-                {current.condition}
+                {data?.conditionText}
               </span>
             </div>
           ) : (
@@ -58,46 +58,37 @@ export function WeatherPanel() {
           )}
         </div>
         <div className="flex flex-col items-end text-right text-[11px] denboard-text-secondary">
-          {current?.sunrise && (
-            <span>Sunrise {formatClock(current.sunrise)}</span>
+          {data?.sunrise && (
+            <span>Sunrise {formatClock(data.sunrise)}</span>
           )}
-          {current?.sunset && (
-            <span>Sunset {formatClock(current.sunset)}</span>
+          {data?.sunset && (
+            <span>Sunset {formatClock(data.sunset)}</span>
           )}
         </div>
       </div>
 
       <div className="flex items-center gap-3 text-sm denboard-text-secondary">
         <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-900/80 border border-white/15 text-xl">
-          {iconFor(current?.icon)}
+          {iconFor(data?.conditionCode)}
         </span>
-        <span>
-          {current
-            ? current.isDay
-              ? "Daytime in the mountains"
-              : "Night settling over the range"
-            : "Calm mountain conditions"}
-        </span>
+        <span>{data?.conditionText ?? "Local conditions"}</span>
       </div>
 
-      {data?.forecast && data.forecast.length > 0 && (
+      {data?.dailyForecast && data.dailyForecast.length > 0 && (
         <div className="mt-3 grid grid-cols-5 gap-3 text-center text-xs denboard-text-secondary">
-          {data.forecast.slice(0, 5).map((day) => (
+          {data.dailyForecast.slice(0, 5).map((day) => (
             <div
-              key={day.date}
+              key={day.dateISO}
               className="flex flex-col items-center gap-1.5 rounded-2xl bg-slate-900/70 border border-white/10 px-2.5 py-2"
             >
-              <span className="text-[11px] uppercase tracking-wide text-slate-300/90">
-                {weekdayShort(day.date)}
+              <span className="text-[11px] uppercase tracking-wide denboard-text-secondary">
+                {day.dayName}
               </span>
               <span className="text-lg leading-none">
-                {iconFor(day.icon)}
+                {iconFor(day.iconCode)}
               </span>
-              <span className="text-[11px]">
-                {Math.round(day.max)}° /{" "}
-                <span className="text-slate-400">
-                  {Math.round(day.min)}°
-                </span>
+              <span className="text-[11px] denboard-text-secondary">
+                {Math.round(day.highTemp)}° / {Math.round(day.lowTemp)}°
               </span>
             </div>
           ))}
@@ -124,18 +115,10 @@ function formatClock(iso: string) {
   }
 }
 
-function weekdayShort(dateStr: string) {
-  try {
-    return new Date(dateStr).toLocaleDateString(undefined, {
-      weekday: "short"
-    });
-  } catch {
-    return "";
-  }
-}
-
-function iconFor(icon?: string | null) {
-  switch (icon) {
+function iconFor(code?: number | string | null) {
+  if (code === undefined || code === null) return "⛰";
+  const iconKey = typeof code === "string" ? code : "";
+  switch (iconKey) {
     case "rain":
       return "🌧";
     case "snow":

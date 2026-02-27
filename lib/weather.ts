@@ -4,6 +4,8 @@ import { fetchWithRetry } from "./fetchWithRetry";
 import { getFromCache, setInCache } from "./cache";
 import { logger } from "./logging";
 
+export type WeatherUnits = "imperial" | "metric";
+
 export type WeatherOverlay = "rain" | "snow" | "cloudy" | "storm" | "clear" | null;
 
 export type SevereAlert = {
@@ -13,34 +15,41 @@ export type SevereAlert = {
   severity?: string;
 };
 
-export type DailyForecast = {
-  date: string;
-  min: number;
-  max: number;
-  condition: string;
-  icon: string;
-};
-
-export type WeatherSummary = {
-  temperature: number;
-  condition: string;
-  icon: string;
-  isDay: boolean;
-  sunrise?: string;
-  sunset?: string;
+export type DailyForecastEntry = {
+  dateISO: string;
+  dayName: string;
+  iconCode: string;
+  highTemp: number;
+  lowTemp: number;
 };
 
 export type WeatherPayload = {
-  current: WeatherSummary | null;
-  forecast: DailyForecast[];
-  severeAlerts: SevereAlert[];
+  temperatureCurrent: number | null;
+  conditionCode: number | null;
+  conditionText: string | null;
+  isDay: boolean;
+  sunrise: string | null;
+  sunset: string | null;
+  dailyForecast: DailyForecastEntry[];
+  alerts: SevereAlert[];
   overlay: WeatherOverlay;
+  units: WeatherUnits;
   isFallback: boolean;
+  fetchedAt: string;
+};
+
+export type WeatherDebugPayload = {
+  mapped: WeatherPayload;
+  rawProvider: unknown;
+  units: WeatherUnits;
+  fetchedAt: string;
 };
 
 const WEATHER_CACHE_KEY = "weather:current";
 
-function mapWeatherCodeToCondition(code: number): { label: string; icon: string; overlay: WeatherOverlay } {
+function mapWeatherCodeToCondition(
+  code: number
+): { label: string; icon: string; overlay: WeatherOverlay } {
   // Based loosely on WMO weather codes
   if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) {
     return { label: "Rain", icon: "rain", overlay: "rain" };
@@ -63,13 +72,9 @@ function mapWeatherCodeToCondition(code: number): { label: string; icon: string;
   return { label: "Cloudy", icon: "cloudy", overlay: "cloudy" };
 }
 
-export async function getWeather(): Promise<WeatherPayload> {
-  const cached = getFromCache<WeatherPayload>(WEATHER_CACHE_KEY);
-  if (cached) {
-    return cached;
-  }
-
+async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
   const config = getConfig();
+  const units: WeatherUnits = config.weatherUnits;
 
   try {
     const url = new URL("https://api.open-meteo.com/v1/forecast");
@@ -83,71 +88,128 @@ export async function getWeather(): Promise<WeatherPayload> {
     url.searchParams.set("timezone", config.timezone);
     url.searchParams.set("forecast_days", "5");
     url.searchParams.set("warnings", "true");
+    url.searchParams.set(
+      "temperature_unit",
+      units === "imperial" ? "fahrenheit" : "celsius"
+    );
 
-    const res = await fetchWithRetry(url.toString(), {
-      next: { revalidate: 0 }
+    logger.info("Weather request", {
+      provider: "open-meteo",
+      lat: config.lat,
+      lon: config.lon,
+      units,
+      url: url.toString()
     });
-    const data: any = await res.json();
 
-    const currentCode = data.current?.weather_code ?? 0;
-    const mapping = mapWeatherCodeToCondition(currentCode);
+    const res = await fetchWithRetry(url.toString());
+    const raw: any = await res.json();
 
-    const current: WeatherSummary | null = data.current
-      ? {
-          temperature: data.current.temperature_2m,
-          condition: mapping.label,
-          icon: mapping.icon,
-          isDay: Boolean(data.current.is_day),
-          sunrise: data.daily?.sunrise?.[0],
-          sunset: data.daily?.sunset?.[0]
-        }
-      : null;
+    const now = DateTime.now().setZone(config.timezone);
+    const fetchedAt = now.toISO();
 
-    const forecast: DailyForecast[] = [];
-    const days = data.daily?.time ?? [];
-    for (let i = 0; i < days.length; i += 1) {
-      const code = data.daily.weather_code?.[i] ?? currentCode;
-      const m = mapWeatherCodeToCondition(code);
-      forecast.push({
-        date: days[i],
-        min: data.daily.temperature_2m_min?.[i],
-        max: data.daily.temperature_2m_max?.[i],
-        condition: m.label,
-        icon: m.icon
+    const currentCode: number | null =
+      typeof raw.current?.weather_code === "number"
+        ? raw.current.weather_code
+        : null;
+    const mapping = mapWeatherCodeToCondition(currentCode ?? 0);
+
+    const sunrise = raw.daily?.sunrise?.[0] ?? null;
+    const sunset = raw.daily?.sunset?.[0] ?? null;
+
+    const dailyForecast: DailyForecastEntry[] = [];
+    const days: string[] = raw.daily?.time ?? [];
+    for (let i = 0; i < Math.min(days.length, 5); i += 1) {
+      const dateISO = days[i];
+      const codeForDay: number =
+        typeof raw.daily?.weather_code?.[i] === "number"
+          ? raw.daily.weather_code[i]
+          : currentCode ?? 0;
+      const m = mapWeatherCodeToCondition(codeForDay);
+
+      const date = DateTime.fromISO(dateISO, { zone: config.timezone });
+
+      dailyForecast.push({
+        dateISO,
+        dayName: date.isValid ? date.toFormat("ccc") : "",
+        iconCode: m.icon,
+        highTemp: raw.daily?.temperature_2m_max?.[i] ?? NaN,
+        lowTemp: raw.daily?.temperature_2m_min?.[i] ?? NaN
       });
     }
 
     const alerts: SevereAlert[] =
-      data.weather_warnings?.warnings?.map((w: any, idx: number) => ({
+      raw.weather_warnings?.warnings?.map((w: any, idx: number) => ({
         id: w.id ?? String(idx),
         title: w.event ?? "Weather alert",
         description: w.description,
         severity: w.severity
       })) ?? [];
 
-    const payload: WeatherPayload = {
-      current,
-      forecast,
-      severeAlerts: alerts,
+    const mapped: WeatherPayload = {
+      temperatureCurrent:
+        typeof raw.current?.temperature_2m === "number"
+          ? raw.current.temperature_2m
+          : null,
+      conditionCode: currentCode,
+      conditionText: mapping.label,
+      isDay: Boolean(raw.current?.is_day),
+      sunrise,
+      sunset,
+      dailyForecast,
+      alerts,
       overlay: mapping.overlay,
-      isFallback: false
+      units,
+      isFallback: false,
+      fetchedAt
     };
 
-    // Cache for the configured refresh interval
-    setInCache(WEATHER_CACHE_KEY, payload, config.refresh.weatherMs);
-    return payload;
+    return {
+      mapped,
+      rawProvider: raw,
+      units,
+      fetchedAt
+    };
   } catch (error) {
     logger.error("Failed to load weather", { error: String(error) });
+    const now = DateTime.now();
     const fallback: WeatherPayload = {
-      current: null,
-      forecast: [],
-      severeAlerts: [],
+      temperatureCurrent: null,
+      conditionCode: null,
+      conditionText: null,
+      isDay: true,
+      sunrise: null,
+      sunset: null,
+      dailyForecast: [],
+      alerts: [],
       overlay: null,
-      isFallback: true
+      units: getConfig().weatherUnits,
+      isFallback: true,
+      fetchedAt: now.toISO()
     };
-    setInCache(WEATHER_CACHE_KEY, fallback, 60_000);
-    return fallback;
+    return {
+      mapped: fallback,
+      rawProvider: null,
+      units: fallback.units,
+      fetchedAt: fallback.fetchedAt
+    };
   }
+}
+
+export async function getWeather(): Promise<WeatherPayload> {
+  const cached = getFromCache<WeatherPayload>(WEATHER_CACHE_KEY);
+  if (cached) {
+    return cached;
+  }
+
+  const { mapped } = await fetchAndMapWeather();
+  const config = getConfig();
+  setInCache(WEATHER_CACHE_KEY, mapped, config.refresh.weatherMs);
+  return mapped;
+}
+
+export async function getWeatherDebug(): Promise<WeatherDebugPayload> {
+  // Always bypass cache for debugging to see the latest provider response.
+  return fetchAndMapWeather();
 }
 
 export function describeTimeOfDay(dt: DateTime): "morning" | "midday" | "evening" | "night" {
