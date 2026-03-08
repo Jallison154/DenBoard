@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { motion } from "framer-motion";
-import { nowInDashboardTz } from "@/lib/time";
+import { nowInDashboardTz, getGreeting } from "@/lib/time";
 
 // Placeholder so server and client render the same HTML (avoids hydration error #418)
 const PLACEHOLDER = {
+  greeting: "Good morning",
   time: "–:––",
   ampm: "––",
   dateLine: "–––––––– • ––––– –"
@@ -31,6 +32,7 @@ export function TimePanel() {
 
   const display = now
     ? {
+        greeting: getGreeting(now),
         time: now.toFormat("h:mm"),
         ampm: now.toFormat("a"),
         dateLine: `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}`
@@ -44,6 +46,12 @@ export function TimePanel() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
+      <span
+        className="denboard-text-secondary text-xl md:text-2xl font-medium"
+        suppressHydrationWarning
+      >
+        {display.greeting}
+      </span>
       <div className="flex items-baseline gap-4">
         <span
           className="denboard-time-primary text-7xl md:text-8xl lg:text-9xl font-extrabold tracking-tight"

@@ -1,6 +1,14 @@
 import { DateTime } from "luxon";
 import { getConfig } from "./config";
 
+export function getGreeting(dt: DateTime): string {
+  const hour = dt.hour;
+  if (hour >= 5 && hour < 12) return "Good morning";
+  if (hour >= 12 && hour < 17) return "Good afternoon";
+  if (hour >= 17 && hour < 21) return "Good evening";
+  return "Good night";
+}
+
 export function nowInDashboardTz(): DateTime {
   const { timezone } = getConfig();
   return DateTime.now().setZone(timezone);
