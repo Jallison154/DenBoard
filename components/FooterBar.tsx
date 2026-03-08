@@ -5,7 +5,7 @@ import { useGuestMode } from "@/components/HomeAssistantStatus";
 
 export function FooterBar() {
   const pathname = usePathname();
-  const forcedGuest = pathname.startsWith("/tv/guest");
+  const forcedGuest = pathname.startsWith("/landscape/guest");
   const { guestMode } = useGuestMode();
 
   const isGuest = forcedGuest || guestMode;

@@ -126,15 +126,16 @@ If you enable Caddy, it will proxy `HOSTNAME` (e.g. `denboard.local`) to `http:/
 
 Landscape (e.g. 55" bedroom TV):
 
-- `/tv/home` – primary always‑on view (time + date focus, weather secondary, dad joke, home status tiles).
-- `/tv/weather` – expanded weather view with 5‑day outlook and descriptive copy.
-- `/tv/status` – home status and entities, with time and compact weather.
+- `/landscape/home` – primary always‑on view (time + date focus, weather secondary, dad joke, home status tiles).
+- `/landscape/weather` – expanded weather view with 5‑day outlook and descriptive copy.
+- `/landscape/status` – home status and entities, with time and compact weather.
+- `/landscape/guest` – guest view (hides calendar and home tiles).
 
 Portrait (e.g. 43" family display):
 
-- `/p/home` – stacked time, weather, status, and dad joke.
-- `/p/calendar` – 4‑week grid with today’s events; hides in Guest Mode.
-- `/p/status` – portrait status view with time, weather, tiles, and dad joke.
+- `/portrait/home` – stacked time, weather, status, and dad joke.
+- `/portrait/calendar` – 4‑week grid with today’s events; hides in Guest Mode.
+- `/portrait/status` – portrait status view with time, weather, tiles, and dad joke.
 
 ---
 

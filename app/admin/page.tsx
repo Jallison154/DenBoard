@@ -109,25 +109,25 @@ export default function AdminPage() {
           </h2>
           <div className="flex flex-wrap gap-2 text-xs">
             <a
-              href="/tv/home"
+              href="/landscape/home"
               className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
             >
-              TV Home
+              Landscape Home
             </a>
             <a
-              href="/tv/guest"
+              href="/landscape/guest"
               className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
             >
-              TV Guest
+              Landscape Guest
             </a>
             <a
-              href="/p/home"
+              href="/portrait/home"
               className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
             >
               Portrait Home
             </a>
             <a
-              href="/p/calendar"
+              href="/portrait/calendar"
               className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
             >
               Portrait Calendar

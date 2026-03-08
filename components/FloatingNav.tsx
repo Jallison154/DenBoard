@@ -6,13 +6,13 @@ import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
   { href: "/admin", label: "Admin" },
-  { href: "/tv/home", label: "TV Home" },
-  { href: "/tv/guest", label: "TV Guest" },
-  { href: "/tv/weather", label: "TV Weather" },
-  { href: "/tv/status", label: "TV Status" },
-  { href: "/p/home", label: "Portrait Home" },
-  { href: "/p/calendar", label: "Portrait Calendar" },
-  { href: "/p/status", label: "Portrait Status" },
+  { href: "/landscape/home", label: "Landscape Home" },
+  { href: "/landscape/guest", label: "Landscape Guest" },
+  { href: "/landscape/weather", label: "Landscape Weather" },
+  { href: "/landscape/status", label: "Landscape Status" },
+  { href: "/portrait/home", label: "Portrait Home" },
+  { href: "/portrait/calendar", label: "Portrait Calendar" },
+  { href: "/portrait/status", label: "Portrait Status" },
 ];
 
 const IDLE_MS = 5000;
