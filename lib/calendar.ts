@@ -1,5 +1,7 @@
+import { createHash } from "crypto";
 import { DateTime } from "luxon";
 import { getConfig } from "./config";
+import { loadSettings } from "./settings";
 import { fetchWithRetry } from "./fetchWithRetry";
 import { getFromCache, setInCache } from "./cache";
 import { logger } from "./logging";
@@ -29,7 +31,7 @@ export type CalendarPayload = {
   isFallback: boolean;
 };
 
-const CALENDAR_CACHE_KEY = "calendar:ics";
+const CALENDAR_CACHE_KEY_PREFIX = "calendar:ics:";
 
 type RawEvent = {
   uid?: string;
@@ -41,55 +43,80 @@ type RawEvent = {
 };
 
 export async function getCalendar(): Promise<CalendarPayload> {
-  const cached = getFromCache<CalendarPayload>(CALENDAR_CACHE_KEY);
+  const config = getConfig();
+  const settings = await loadSettings();
+  const timezone = settings.location?.timezone ?? config.timezone;
+  const refreshMs = (settings.calendar?.refreshMinutes ?? 5) * 60 * 1000;
+
+  // ICS URLs: from admin settings (enabled calendars with URL) or fallback to env
+  const icsUrls: string[] = [];
+  const fromSettings = (settings.calendar?.calendars ?? [])
+    .filter((c) => c.enabled && c.icsUrl?.trim())
+    .map((c) => c.icsUrl.trim());
+  if (fromSettings.length > 0) {
+    icsUrls.push(...fromSettings);
+  } else if (config.gcalIcsUrl) {
+    icsUrls.push(config.gcalIcsUrl);
+  }
+
+  const cacheKey =
+    icsUrls.length === 0
+      ? CALENDAR_CACHE_KEY_PREFIX + "empty"
+      : CALENDAR_CACHE_KEY_PREFIX +
+        createHash("md5").update([...icsUrls].sort().join("|")).digest("hex").slice(0, 16);
+
+  const cached = getFromCache<CalendarPayload>(cacheKey);
   if (cached) return cached;
 
-  const config = getConfig();
-  if (!config.gcalIcsUrl) {
+  if (icsUrls.length === 0) {
     const empty = emptyCalendarPayload(true);
-    setInCache(CALENDAR_CACHE_KEY, empty, config.refresh.calendarMs);
+    setInCache(cacheKey, empty, refreshMs);
     return empty;
   }
 
   try {
-    const res = await fetchWithRetry(config.gcalIcsUrl, {
-      headers: {
-        Accept: "text/calendar"
-      },
-      next: { revalidate: 0 }
-    });
-    const text = await res.text();
+    const allRawEvents: RawEvent[] = [];
+    for (const url of icsUrls) {
+      try {
+        const res = await fetchWithRetry(url, {
+          headers: { Accept: "text/calendar" },
+          next: { revalidate: 0 }
+        });
+        const text = await res.text();
+        allRawEvents.push(...parseIcsEvents(text, timezone));
+      } catch (err) {
+        logger.error("Failed to fetch calendar ICS", { url, error: String(err) });
+      }
+    }
 
-    const now = DateTime.now().setZone(config.timezone);
+    const now = DateTime.now().setZone(timezone);
     const todayStart = now.startOf("day");
     const todayEnd = now.endOf("day");
 
-    const rawEvents = parseIcsEvents(text, config.timezone);
-
+    const seenUids = new Set<string>();
     const events: CalendarEvent[] = [];
-
-    rawEvents.forEach((item, idx) => {
+    allRawEvents.forEach((item, idx) => {
       if (!item.start) return;
+      const uid = item.uid ?? `evt-${idx}`;
+      if (seenUids.has(uid)) return;
+      seenUids.add(uid);
 
       const start = item.start;
       const end = item.end ?? start.plus({ hours: 1 });
       const allDay = item.allDay ?? false;
 
-      // Only consider events in a +/- 4 week window around today
       if (end < todayStart.minus({ weeks: 2 }) || start > todayEnd.plus({ weeks: 2 })) {
         return;
       }
 
-      const isOngoing = now >= start && now <= end;
-
       events.push({
-        id: item.uid ?? `evt-${idx}`,
+        id: uid,
         title: item.summary ?? "Untitled",
         start: start.toISO() ?? start.toISODate() ?? "",
         end: end.toISO() ?? end.toISODate() ?? "",
         allDay,
         location: item.location,
-        isOngoing
+        isOngoing: now >= start && now <= end
       });
     });
 
@@ -118,22 +145,17 @@ export async function getCalendar(): Promise<CalendarPayload> {
     });
 
     const payload: CalendarPayload = {
-      today: {
-        allDay: todayAllDay,
-        timed: todayTimed
-      },
-      grid: {
-        days: gridDays
-      },
+      today: { allDay: todayAllDay, timed: todayTimed },
+      grid: { days: gridDays },
       isFallback: false
     };
 
-    setInCache(CALENDAR_CACHE_KEY, payload, config.refresh.calendarMs);
+    setInCache(cacheKey, payload, refreshMs);
     return payload;
   } catch (error) {
     logger.error("Failed to load calendar ICS", { error: String(error) });
     const empty = emptyCalendarPayload(true);
-    setInCache(CALENDAR_CACHE_KEY, empty, 60_000);
+    setInCache(cacheKey, empty, 60_000);
     return empty;
   }
 }
