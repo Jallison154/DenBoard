@@ -45,7 +45,7 @@ export function WeatherPanel() {
           {currentTemp !== null ? (
             <div className="flex items-end gap-3 mt-1">
               <span className="text-6xl lg:text-7xl font-bold denboard-text-primary drop-shadow-[0_0_16px_rgba(0,0,0,0.9)]">
-                {Math.round(currentTemp)}°
+                {formatForecastTemp(currentTemp, data?.units)}
               </span>
               <span className="text-2xl font-semibold denboard-text-primary">
                 {data?.conditionText}
@@ -87,9 +87,14 @@ export function WeatherPanel() {
               <span className="denboard-forecast-icon leading-none">
                 {iconFor(day.iconCode)}
               </span>
-              <span className="denboard-forecast-temp denboard-text-secondary">
-                {Math.round(day.highTemp)}° / {Math.round(day.lowTemp)}°
-              </span>
+              <div className="denboard-forecast-temp denboard-text-secondary flex flex-col items-center leading-tight">
+                <span className="whitespace-nowrap">
+                  {formatForecastTemp(day.highTemp, data?.units)}
+                </span>
+                <span className="whitespace-nowrap">
+                  {formatForecastTemp(day.lowTemp, data?.units)}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -113,6 +118,15 @@ function formatClock(iso: string) {
   } catch {
     return "";
   }
+}
+
+function formatForecastTemp(
+  temp: number,
+  units?: "imperial" | "metric" | null
+): string {
+  const n = Math.round(temp);
+  const sym = units === "metric" ? "℃" : "℉";
+  return `${n}${sym}`;
 }
 
 function iconFor(code?: number | string | null) {

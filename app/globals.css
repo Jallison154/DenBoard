@@ -140,3 +140,10 @@ body {
   }
 }
 
+/* Floating nav: only on hover-capable devices (desktop/laptop with mouse) */
+@media (hover: none) {
+  .denboard-floating-nav {
+    display: none !important;
+  }
+}
+

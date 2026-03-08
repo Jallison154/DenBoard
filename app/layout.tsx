@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { FooterBar } from "@/components/FooterBar";
+import { FloatingNav } from "@/components/FloatingNav";
 import { toCssVars } from "@/lib/theme/tokens";
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen bg-charcoal font-body antialiased" style={{ color: "var(--denboard-text-primary)" }}>
         <style dangerouslySetInnerHTML={{ __html: toCssVars() }} />
+        <FloatingNav />
         {children}
         <footer className="fixed bottom-0 inset-x-0 denboard-footer-scrim backdrop-blur-sm">
           <FooterBar />
