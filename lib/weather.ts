@@ -316,11 +316,16 @@ async function fetchFromHomeAssistant(
 
     const conditionMapping = mapHomeAssistantCondition(rawWeather?.state);
 
-    // Forecast aggregation
+    // Forecast aggregation – try forecast, forecast_daily, forecast_hourly (NWS and others vary)
     const forecast: DailyForecastEntry[] = [];
-    const forecastRaw: any[] = Array.isArray(attrs.forecast)
-      ? attrs.forecast
-      : [];
+    const forecastRaw: any[] =
+      Array.isArray(attrs.forecast_daily) && attrs.forecast_daily.length > 0
+        ? attrs.forecast_daily
+        : Array.isArray(attrs.forecast) && attrs.forecast.length > 0
+        ? attrs.forecast
+        : Array.isArray(attrs.forecast_hourly) && attrs.forecast_hourly.length > 0
+        ? attrs.forecast_hourly
+        : [];
     if (forecastRaw.length > 0) {
       const byDate = new Map<
         string,
@@ -332,9 +337,11 @@ async function fetchFromHomeAssistant(
           item.datetime ||
           item.datetime_iso ||
           item.datetime_local ||
+          item.native_datetime ||
           item.dt ||
           item.date ||
-          item.when;
+          item.when ||
+          item.time;
         if (!dtRaw) continue;
         const dt = DateTime.fromISO(String(dtRaw));
         if (!dt.isValid) continue;
@@ -343,25 +350,33 @@ async function fetchFromHomeAssistant(
         const existing = byDate.get(key) || {
           high: Number.NEGATIVE_INFINITY,
           low: Number.POSITIVE_INFINITY,
-          condition: item.condition ?? rawWeather?.state ?? null
+          condition: item.condition ?? item.native_condition ?? rawWeather?.state ?? null
         };
         const tHigh =
           typeof item.temperature === "number"
             ? item.temperature
             : typeof item.temphigh === "number"
             ? item.temphigh
+            : typeof item.native_temperature === "number"
+            ? item.native_temperature
+            : typeof item.native_temphigh === "number"
+            ? item.native_temphigh
             : existing.high;
         const tLow =
           typeof item.templow === "number"
             ? item.templow
+            : typeof item.native_templow === "number"
+            ? item.native_templow
             : typeof item.temperature === "number"
             ? Math.min(existing.low, item.temperature)
+            : typeof item.native_temperature === "number"
+            ? Math.min(existing.low, item.native_temperature)
             : existing.low;
 
         existing.high = Number.isFinite(tHigh) ? Math.max(existing.high, tHigh) : existing.high;
         existing.low = Number.isFinite(tLow) ? Math.min(existing.low, tLow) : existing.low;
-        if (!existing.condition && item.condition) {
-          existing.condition = item.condition;
+        if (!existing.condition && (item.condition || item.native_condition)) {
+          existing.condition = item.condition ?? item.native_condition ?? null;
         }
         byDate.set(key, existing);
       }
