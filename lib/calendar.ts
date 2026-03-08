@@ -330,6 +330,34 @@ function parseIcsDate(
   return { dt, allDay: isDateOnly };
 }
 
+/** Extract color and name from VCALENDAR-level properties. Google Calendar does not include color. */
+export function parseIcsMetadata(text: string): { color?: string; name?: string } {
+  const result: { color?: string; name?: string } = {};
+  const lines = text.split(/\r?\n/);
+  const unfolded: string[] = [];
+  for (const line of lines) {
+    if (!line) continue;
+    if (line.startsWith(" ") || line.startsWith("\t")) {
+      if (unfolded.length > 0) unfolded[unfolded.length - 1] += line.slice(1);
+    } else {
+      unfolded.push(line);
+    }
+  }
+  for (const rawLine of unfolded) {
+    const line = rawLine.trim();
+    if (line === "BEGIN:VEVENT") break;
+    const [field, value = ""] = line.split(":", 2);
+    const name = field.split(";")[0].toUpperCase();
+    const v = value.trim();
+    if (name === "COLOR" || name === "X-APPLE-CALENDAR-COLOR") {
+      if (v && !result.color) result.color = v.startsWith("#") ? v : `#${v}`;
+    } else if (name === "X-WR-CALNAME" && v && !result.name) {
+      result.name = v;
+    }
+  }
+  return result;
+}
+
 function emptyCalendarPayload(
   isFallback: boolean,
   timezone?: string
@@ -413,4 +441,3 @@ export async function getCalendarDebug(): Promise<CalendarDebugPayload> {
     fetchedAt: new Date().toISOString()
   };
 }
-

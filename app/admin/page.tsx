@@ -692,13 +692,43 @@ function CalendarForm({
             </div>
             <div>
               <label className={labelClass}>ICS URL (iCal link)</label>
-              <input
-                type="url"
-                value={cal.icsUrl}
-                onChange={(e) => updateCal(idx, { icsUrl: e.target.value })}
-                className={inputClass}
-                placeholder="https://calendar.google.com/calendar/ical/..."
-              />
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={cal.icsUrl}
+                  onChange={(e) => updateCal(idx, { icsUrl: e.target.value })}
+                  className={inputClass}
+                  placeholder="https://calendar.google.com/calendar/ical/..."
+                />
+                <button
+                  type="button"
+                  disabled={!cal.icsUrl?.trim()}
+                  onClick={async () => {
+                    const url = cal.icsUrl?.trim();
+                    if (!url) return;
+                    try {
+                      const res = await fetch(
+                        `/api/calendar/metadata?url=${encodeURIComponent(url)}`,
+                        { cache: "no-store" }
+                      );
+                      const data = await res.json();
+                      const patch: Partial<CalendarSource> = {};
+                      if (data.color) patch.color = data.color;
+                      if (data.name) patch.name = data.name;
+                      if (Object.keys(patch).length > 0) {
+                        updateCal(idx, patch);
+                      } else {
+                        alert("No color or name found in feed. Google Calendar does not include these.");
+                      }
+                    } catch {
+                      alert("Could not fetch calendar metadata.");
+                    }
+                  }}
+                  className="rounded-lg border border-white/15 px-2 py-1.5 text-xs hover:bg-white/10 disabled:opacity-50 shrink-0"
+                >
+                  Detect
+                </button>
+              </div>
               <details className="mt-2">
                 <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-400">
                   Where to find the ICS URL
