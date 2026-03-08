@@ -7,7 +7,13 @@ import { getConfig } from "@/lib/config";
 import { usePolling } from "./hooks";
 
 async function fetchCalendar(): Promise<CalendarPayload> {
-  const res = await fetch("/api/calendar", { cache: "no-store" });
+  const tz = typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "";
+  const now = new Date().toISOString();
+  const params = new URLSearchParams();
+  if (tz) params.set("tz", tz);
+  params.set("now", now);
+  const url = `/api/calendar?${params.toString()}`;
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) {
     throw new Error("Failed to load calendar");
   }

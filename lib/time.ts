@@ -21,15 +21,13 @@ export type DayCell = {
 };
 
 export function buildFourWeekGrid(reference: DateTime): DayCell[] {
-  // Sunday = first day of week (US convention, matches "Sun Mon Tue..." header)
-  // Luxon weekday: 1=Mon..7=Sun. Go back to most recent Sunday.
+  // Sunday = first day of week (US convention). Current week at top, 4 weeks out.
   const daysBackToSunday = reference.weekday === 7 ? 0 : reference.weekday;
   const startOfWeek = reference.minus({ days: daysBackToSunday }).startOf("day");
-  const start = startOfWeek.minus({ weeks: 1 });
   const cells: DayCell[] = [];
 
   for (let i = 0; i < 28; i += 1) {
-    const date = start.plus({ days: i });
+    const date = startOfWeek.plus({ days: i });
     cells.push({
       date,
       isToday: date.hasSame(reference, "day"),

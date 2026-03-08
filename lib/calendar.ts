@@ -43,11 +43,30 @@ type RawEvent = {
   location?: string;
 };
 
-export async function getCalendar(): Promise<CalendarPayload> {
+export type CalendarOptions = {
+  /** Client timezone (e.g. from Intl) – overrides server config */
+  timezone?: string;
+  /** Client "now" as ISO string – overrides server time */
+  nowOverride?: string;
+};
+
+export async function getCalendar(
+  options?: CalendarOptions
+): Promise<CalendarPayload> {
   const config = getConfig();
   const settings = await loadSettings();
-  const timezone = settings.location?.timezone ?? config.timezone;
+  const timezone =
+    options?.timezone ??
+    settings.location?.timezone ??
+    config.timezone;
   const refreshMs = (settings.calendar?.refreshMinutes ?? 5) * 60 * 1000;
+
+  let now = options?.nowOverride
+    ? DateTime.fromISO(options.nowOverride, { zone: timezone })
+    : DateTime.now().setZone(timezone);
+  if (!now.isValid) {
+    now = DateTime.now().setZone(timezone);
+  }
 
   // ICS URLs: from admin settings (enabled calendars with URL) or fallback to env
   const icsUrls: string[] = [];
@@ -64,14 +83,21 @@ export async function getCalendar(): Promise<CalendarPayload> {
     icsUrls.length === 0
       ? CALENDAR_CACHE_KEY_PREFIX + "empty"
       : CALENDAR_CACHE_KEY_PREFIX +
-        createHash("md5").update([...icsUrls].sort().join("|")).digest("hex").slice(0, 16);
+        createHash("md5")
+          .update([...icsUrls].sort().join("|") + ":" + timezone)
+          .digest("hex")
+          .slice(0, 16);
 
-  const cached = getFromCache<CalendarPayload>(cacheKey);
-  if (cached) return cached;
+  if (!options?.timezone && !options?.nowOverride) {
+    const cached = getFromCache<CalendarPayload>(cacheKey);
+    if (cached) return cached;
+  }
 
   if (icsUrls.length === 0) {
-    const empty = emptyCalendarPayload(true);
-    setInCache(cacheKey, empty, refreshMs);
+    const empty = emptyCalendarPayload(true, timezone);
+    if (!options?.timezone && !options?.nowOverride) {
+      setInCache(cacheKey, empty, refreshMs);
+    }
     return empty;
   }
 
@@ -89,8 +115,6 @@ export async function getCalendar(): Promise<CalendarPayload> {
         logger.error("Failed to fetch calendar ICS", { url, error: String(err) });
       }
     }
-
-    const now = DateTime.now().setZone(timezone);
     const todayStart = now.startOf("day");
 
     const gridBase = buildFourWeekGrid(now);
