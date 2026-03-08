@@ -26,7 +26,8 @@ export async function getHomeAssistantState(): Promise<HomeAssistantPayload> {
     };
   }
 
-  const baseUrl = config.homeAssistantUrl.replace(/\/+$/, "");
+  const raw = config.homeAssistantUrl.replace(/\/+$/, "");
+  const baseUrl = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`;
 
   const headers = {
     Authorization: `Bearer ${config.homeAssistantToken}`,

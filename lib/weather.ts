@@ -254,11 +254,9 @@ async function fetchFromHomeAssistant(
   fallbackUnits: WeatherUnits
 ): Promise<WeatherDebugPayload> {
   const config = getConfig();
-  const baseUrl =
-    (settings.homeAssistant.baseUrl || config.homeAssistantUrl || "").replace(
-      /\/+$/,
-      ""
-    );
+  const raw = (settings.homeAssistant.baseUrl || config.homeAssistantUrl || "")
+    .replace(/\/+$/, "");
+  const baseUrl = /^https?:\/\//i.test(raw) ? raw : raw ? `http://${raw}` : "";
   const token = config.homeAssistantToken;
 
   if (!baseUrl || !token) {

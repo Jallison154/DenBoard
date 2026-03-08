@@ -305,8 +305,12 @@ function parseIcsDate(
   return { dt, allDay: isDateOnly };
 }
 
-function emptyCalendarPayload(isFallback: boolean): CalendarPayload {
-  const now = DateTime.now().setZone(getConfig().timezone);
+function emptyCalendarPayload(
+  isFallback: boolean,
+  timezone?: string
+): CalendarPayload {
+  const tz = timezone ?? getConfig().timezone;
+  const now = DateTime.now().setZone(tz);
   return {
     today: {
       allDay: [],
