@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { DateTime } from "luxon";
+import { DateTime, Duration } from "luxon";
 import { getConfig } from "./config";
 import { loadSettings } from "./settings";
 import { fetchWithRetry } from "./fetchWithRetry";
@@ -130,7 +130,11 @@ export async function getCalendar(
       seenUids.add(uid);
 
       const start = item.start;
-      const end = item.end ?? start.plus({ hours: 1 });
+      let end = item.end ?? start.plus({ hours: 1 });
+      // Zero/negative duration or invalid end: show at start time for 1 hour
+      if (!(item.allDay ?? false) && (!end || !end.isValid || end <= start)) {
+        end = start.plus({ hours: 1 });
+      }
       const allDay = item.allDay ?? false;
 
       if (end < gridStart || start > gridEnd) return;
@@ -266,6 +270,15 @@ function parseIcsEvents(text: string, defaultTimezone: string): RawEvent[] {
         if (dt.isValid) {
           current.end = dt;
           if (allDay) current.allDay = true;
+        }
+        break;
+      }
+      case "DURATION": {
+        if (current?.start) {
+          const dur = Duration.fromISO(value);
+          if (dur.isValid) {
+            current.end = current.start.plus(dur);
+          }
         }
         break;
       }
