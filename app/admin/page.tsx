@@ -45,12 +45,6 @@ type Settings = {
   };
 };
 
-type LoginState = {
-  pin: string;
-  status: "idle" | "success" | "error";
-  message?: string;
-};
-
 const inputClass =
   "w-full rounded-lg bg-slate-950/70 border border-white/15 px-3 py-2 text-sm outline-none focus:border-sandstone";
 const labelClass = "text-xs uppercase tracking-[0.2em] text-slate-400";
@@ -70,7 +64,6 @@ async function saveSettings(patch: Partial<Settings>) {
 }
 
 export default function AdminPage() {
-  const [login, setLogin] = useState<LoginState>({ pin: "", status: "idle" });
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{
@@ -94,47 +87,10 @@ export default function AdminPage() {
     fetchSettings().catch(() => {});
   }, []);
 
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setLogin((prev) => ({ ...prev, status: "idle", message: undefined }));
-    try {
-      const res = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin: login.pin }),
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        setLogin((prev) => ({
-          ...prev,
-          status: "error",
-          message: data.error || "Invalid PIN.",
-        }));
-        return;
-      }
-      setLogin((prev) => ({
-        ...prev,
-        status: "success",
-        message: data.warning || "Admin unlocked.",
-      }));
-      await fetchSettings();
-    } catch {
-      setLogin((prev) => ({
-        ...prev,
-        status: "error",
-        message: "Failed to contact server.",
-      }));
-    }
-  }
-
   const showSaveFeedback = (section: string, ok: boolean, message: string) => {
     setSaveStatus({ section, ok, message });
     setTimeout(() => setSaveStatus(null), 4000);
   };
-
-  const adminPinUnset =
-    !process.env.NEXT_PUBLIC_ADMIN_PIN && !process.env.ADMIN_PIN;
 
   return (
     <div className="min-h-screen px-6 py-10 md:px-12 lg:px-16 text-slate-100">
@@ -142,44 +98,9 @@ export default function AdminPage() {
         <header className="space-y-2">
           <h1 className="text-3xl font-semibold">DenBoard Control Panel</h1>
           <p className="text-sm text-slate-300">
-            Configure calendar, weather, and Home Assistant integrations. Unlock
-            with your admin PIN to save changes.
+            Configure calendar, weather, and Home Assistant integrations.
           </p>
-          {adminPinUnset && (
-            <p className="text-xs text-amber-300">
-              ADMIN_PIN is not set. For production, set ADMIN_PIN in your
-              environment.
-            </p>
-          )}
         </header>
-
-        {/* Login */}
-        <section className="rounded-2xl bg-slate-900/80 border border-white/10 px-5 py-4 max-w-md">
-          <form className="space-y-3" onSubmit={handleLogin}>
-            <label className={labelClass}>Admin PIN</label>
-            <input
-              type="password"
-              value={login.pin}
-              onChange={(e) =>
-                setLogin((prev) => ({ ...prev, pin: e.target.value }))
-              }
-              className={inputClass}
-              placeholder="Enter PIN to unlock"
-            />
-            <button
-              type="submit"
-              className="rounded-lg bg-sandstone/90 text-slate-950 text-xs font-semibold px-4 py-2 hover:bg-sandstone transition-colors"
-            >
-              Unlock Admin
-            </button>
-            {login.status === "success" && (
-              <p className="text-xs text-emerald-300">{login.message}</p>
-            )}
-            {login.status === "error" && (
-              <p className="text-xs text-rose-300">{login.message}</p>
-            )}
-          </form>
-        </section>
 
         {/* Quick Links */}
         <section className="rounded-2xl bg-slate-900/80 border border-white/10 px-5 py-4">

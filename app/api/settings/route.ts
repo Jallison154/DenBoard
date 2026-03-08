@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   loadSettings,
@@ -7,27 +6,12 @@ import {
   type DenBoardSettings
 } from "@/lib/settings";
 
-const ADMIN_COOKIE_NAME = "denboard_admin";
-
-async function isAdmin() {
-  const cookieStore = await cookies();
-  const flag = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
-  return flag === "1";
-}
-
 export async function GET() {
   const settings = await loadSettings();
   return NextResponse.json(settings, { status: 200 });
 }
 
 export async function PUT(req: Request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json(
-      { ok: false, error: "Not authorized. Please enter the admin PIN." },
-      { status: 401 }
-    );
-  }
-
   let body: Partial<DenBoardSettings>;
   try {
     body = await req.json();
