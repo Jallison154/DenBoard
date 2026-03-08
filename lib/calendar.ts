@@ -26,6 +26,8 @@ export type CalendarPayload = {
     displayMonth: string;
     days: {
       date: string;
+      dayOfMonth: number;
+      isToday: boolean;
       events: CalendarEvent[];
     }[];
   };
@@ -61,8 +63,9 @@ export async function getCalendar(
     config.timezone;
   const refreshMs = (settings.calendar?.refreshMinutes ?? 5) * 60 * 1000;
 
+  // Parse client "now" as UTC, then convert to user's zone (client sends ISO with Z)
   let now = options?.nowOverride
-    ? DateTime.fromISO(options.nowOverride, { zone: timezone })
+    ? DateTime.fromISO(options.nowOverride, { zone: "utc" }).setZone(timezone)
     : DateTime.now().setZone(timezone);
   if (!now.isValid) {
     now = DateTime.now().setZone(timezone);
@@ -189,7 +192,12 @@ export async function getCalendar(
       const dateStr = cell.date.toISODate() ?? cell.date.toISO() ?? "";
       const cellEvents = (dateStrToEvents.get(dateStr) ?? [])
         .sort((a, b) => Number(new Date(a.start)) - Number(new Date(b.start)));
-      return { date: dateStr, events: cellEvents };
+      return {
+        date: dateStr,
+        dayOfMonth: cell.date.day,
+        isToday: cell.isToday,
+        events: cellEvents
+      };
     });
 
     const displayMonth = now.toFormat("MMMM yyyy");

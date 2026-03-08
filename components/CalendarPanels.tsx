@@ -130,12 +130,11 @@ export function FourWeekGrid() {
       </div>
       <div className="grid grid-cols-7 gap-2 text-xs">
         {data.grid.days.map((day) => {
-          const date = new Date(day.date);
-          const dayOfMonth = date.getDate();
+          const dayOfMonth = day.dayOfMonth ?? new Date(day.date + "T12:00:00").getDate();
           const events = day.events ?? [];
           const visible = events.slice(0, maxPerCell);
           const remaining = events.length - visible.length;
-          const isToday = isSameDay(date, new Date());
+          const isToday = day.isToday ?? isSameDay(new Date(day.date + "T12:00:00"), new Date());
 
           return (
             <div
