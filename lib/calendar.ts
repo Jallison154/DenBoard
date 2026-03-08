@@ -290,6 +290,10 @@ function parseIcsDate(
 
   if (isDateOnly || !value.includes("T")) {
     dt = DateTime.fromFormat(value, "yyyyMMdd", { zone });
+    // Date-only without VALUE=DATE = no explicit time → treat as start of day (timed event)
+    if (!isDateOnly && dt.isValid) {
+      dt = dt.startOf("day");
+    }
   } else if (value.endsWith("Z")) {
     dt = DateTime.fromISO(value, { zone: "utc" }).setZone(zone);
   } else {
@@ -321,6 +325,71 @@ function emptyCalendarPayload(
       days: []
     },
     isFallback
+  };
+}
+
+export type CalendarDebugPayload = {
+  icsUrls: string[];
+  timezone: string;
+  fetchResults: { url: string; ok: boolean; eventCount?: number; error?: string }[];
+  todayCount: number;
+  gridEventCount: number;
+  payload: CalendarPayload;
+  fetchedAt: string;
+};
+
+export async function getCalendarDebug(): Promise<CalendarDebugPayload> {
+  const config = getConfig();
+  const settings = await loadSettings();
+  const timezone =
+    settings.location?.timezone ?? config.timezone;
+
+  const icsUrls: string[] = [];
+  const fromSettings = (settings.calendar?.calendars ?? [])
+    .filter((c) => c.enabled && c.icsUrl?.trim())
+    .map((c) => c.icsUrl.trim());
+  if (fromSettings.length > 0) {
+    icsUrls.push(...fromSettings);
+  } else if (config.gcalIcsUrl) {
+    icsUrls.push(config.gcalIcsUrl);
+  }
+
+  const fetchResults: CalendarDebugPayload["fetchResults"] = [];
+
+  for (const url of icsUrls) {
+    try {
+      const res = await fetchWithRetry(url, {
+        headers: { Accept: "text/calendar" },
+        next: { revalidate: 0 }
+      });
+      const text = await res.text();
+      const events = parseIcsEvents(text, timezone);
+      fetchResults.push({ url, ok: true, eventCount: events.length });
+    } catch (err) {
+      fetchResults.push({
+        url,
+        ok: false,
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  }
+
+  const payload = await getCalendar({ timezone });
+  const todayCount =
+    payload.today.allDay.length + payload.today.timed.length;
+  const gridEventCount = payload.grid.days.reduce(
+    (sum, d) => sum + d.events.length,
+    0
+  );
+
+  return {
+    icsUrls,
+    timezone,
+    fetchResults,
+    todayCount,
+    gridEventCount,
+    payload,
+    fetchedAt: new Date().toISOString()
   };
 }
 

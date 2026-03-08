@@ -192,27 +192,53 @@ export default function AdminPage() {
             {/* Calendar */}
             <ConfigSection
               title="Calendar"
-              description="ICS calendar sources. Add Google Calendar by pasting its private ICS URL."
+              description="ICS calendar sources (iCal links). Paste your calendar's ICS URL below."
             >
-              <CalendarForm
-                settings={settings}
-                onSave={async (patch) => {
-                  try {
-                    const updated = await saveSettings(patch);
-                    setSettings(updated);
-                    showSaveFeedback("calendar", true, "Calendar saved.");
-                  } catch (e) {
-                    showSaveFeedback(
-                      "calendar",
-                      false,
-                      e instanceof Error ? e.message : "Save failed"
-                    );
+              <div className="space-y-4">
+                <CalendarForm
+                  settings={settings}
+                  onSave={async (patch) => {
+                    try {
+                      const updated = await saveSettings(patch);
+                      setSettings(updated);
+                      showSaveFeedback("calendar", true, "Calendar saved.");
+                    } catch (e) {
+                      showSaveFeedback(
+                        "calendar",
+                        false,
+                        e instanceof Error ? e.message : "Save failed"
+                      );
+                    }
+                  }}
+                  saveStatus={
+                    saveStatus?.section === "calendar" ? saveStatus : null
                   }
-                }}
-                saveStatus={
-                  saveStatus?.section === "calendar" ? saveStatus : null
-                }
-              />
+                />
+                <button
+                  type="button"
+                  className="rounded-lg border border-white/15 px-3 py-1.5 text-xs hover:bg-white/10"
+                  onClick={async () => {
+                    const res = await fetch("/api/debug/calendar", {
+                      cache: "no-store",
+                    });
+                    const data = await res.json();
+                    const lines = [
+                      `ICS URLs: ${data.icsUrls?.length ?? 0}`,
+                      ...(data.fetchResults ?? []).map(
+                        (r: { url: string; ok: boolean; eventCount?: number; error?: string }) =>
+                          r.ok
+                            ? `✓ ${r.url.slice(0, 50)}… → ${r.eventCount ?? 0} events`
+                            : `✗ ${r.url.slice(0, 50)}… → ${r.error ?? "failed"}`
+                      ),
+                      `Today: ${data.todayCount ?? 0} events`,
+                      `Grid: ${data.gridEventCount ?? 0} total events`,
+                    ];
+                    alert(lines.join("\n"));
+                  }}
+                >
+                  Test Calendar
+                </button>
+              </div>
             </ConfigSection>
 
             {/* Home Assistant */}
@@ -665,7 +691,7 @@ function CalendarForm({
               </div>
             </div>
             <div>
-              <label className={labelClass}>ICS URL</label>
+              <label className={labelClass}>ICS URL (iCal link)</label>
               <input
                 type="url"
                 value={cal.icsUrl}
@@ -673,6 +699,27 @@ function CalendarForm({
                 className={inputClass}
                 placeholder="https://calendar.google.com/calendar/ical/..."
               />
+              <details className="mt-2">
+                <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-400">
+                  Where to find the ICS URL
+                </summary>
+                <p className="mt-2 text-xs text-slate-500 leading-relaxed">
+                  <strong>Google Calendar:</strong> Open{" "}
+                  <a
+                    href="https://calendar.google.com/calendar/u/0/r/settings"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sandstone hover:underline"
+                  >
+                    calendar.google.com → Settings
+                  </a>
+                  , click your calendar name in the left sidebar, then scroll to{" "}
+                  <strong>Integrate calendar</strong>. Copy either{" "}
+                  <strong>Secret address in iCal format</strong> (private) or{" "}
+                  <strong>Public address in iCal format</strong>. The URL ends in{" "}
+                  <code className="text-slate-400">.ics</code>.
+                </p>
+              </details>
             </div>
             <label className="flex items-center gap-2 text-xs text-slate-400">
               <input

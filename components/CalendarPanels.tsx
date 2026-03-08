@@ -156,9 +156,18 @@ export function FourWeekGrid() {
                 {visible.map((evt) => (
                   <div
                     key={evt.id}
-                    className="rounded-xl denboard-card-nested px-1 py-[2px] text-[10px] denboard-text-primary truncate"
+                    className="rounded-xl denboard-card-nested px-1 py-[2px] text-[10px] denboard-text-primary flex items-center gap-1 min-w-0"
                   >
-                    {evt.title}
+                    {evt.allDay ? (
+                      <span className="truncate">{evt.title}</span>
+                    ) : (
+                      <>
+                        <span className="denboard-text-secondary text-[9px] shrink-0">
+                          {formatTime(evt.start)}
+                        </span>
+                        <span className="truncate">{evt.title}</span>
+                      </>
+                    )}
                   </div>
                 ))}
                 {remaining > 0 && (
