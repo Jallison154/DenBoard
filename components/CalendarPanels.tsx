@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import { motion } from "framer-motion";
 import type { CalendarPayload } from "@/lib/calendar";
-import { getConfig } from "@/lib/config";
 import { usePolling } from "./hooks";
 
 async function fetchCalendar(): Promise<CalendarPayload> {
@@ -93,15 +92,20 @@ export function TodayEventsPanel() {
   );
 }
 
+const VISIBLE_EVENTS_PER_CELL = 2;
+const DEFAULT_CALENDAR_COLORS = ["#3B82F6", "#F59E0B", "#22C55E", "#EF4444"];
+
+function getEventColor(evt: { calendarColor?: string }, index: number): string {
+  if (evt.calendarColor) return evt.calendarColor;
+  return DEFAULT_CALENDAR_COLORS[index % DEFAULT_CALENDAR_COLORS.length];
+}
+
 export function FourWeekGrid() {
   const fetcher = useCallback(fetchCalendar, []);
   const { data } = usePolling<CalendarPayload>(fetcher, {
     intervalMs: 5 * 60 * 1000,
     immediate: true
   });
-
-  const config = getConfig();
-  const maxPerCell = config.calendarMaxEventsPerCell;
 
   if (!data?.grid.days || data.grid.days.length === 0) {
     return (
@@ -121,63 +125,113 @@ export function FourWeekGrid() {
       <h3 className="text-2xl md:text-3xl font-semibold denboard-text-primary mb-4 uppercase tracking-wide">
         {data.grid.displayMonth ?? new Date().toLocaleString(undefined, { month: "long", year: "numeric" })}
       </h3>
-      <div className="grid grid-cols-7 gap-3 text-xl denboard-text-secondary mb-3">
+      <div className="grid grid-cols-7 gap-2 text-xl denboard-text-secondary mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d} className="text-center">
             {d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-3 text-xl">
-        {data.grid.days.map((day) => {
-          const dayOfMonth = day.dayOfMonth ?? new Date(day.date + "T12:00:00").getDate();
-          const events = day.events ?? [];
-          const visible = events.slice(0, maxPerCell);
-          const remaining = events.length - visible.length;
-          const isToday = day.isToday ?? isSameDay(new Date(day.date + "T12:00:00"), new Date());
-
-          return (
-            <div
-              key={day.date}
-              className={`rounded-2xl min-h-[120px] px-3 py-2 flex flex-col gap-2 ${
-                isToday
-                  ? "bg-sandstone/20 border border-sandstone/60"
-                  : "denboard-card-nested"
-              }`}
-            >
-              <div className="flex items-center justify-between text-[22px] denboard-text-secondary">
-                <span>{dayOfMonth}</span>
-                {isToday && (
-                  <span className="h-3 w-3 rounded-full bg-sandstone" />
-                )}
-              </div>
-              <div className="flex flex-col gap-1">
-                {visible.map((evt) => (
-                  <div
-                    key={evt.id}
-                    className="rounded-xl denboard-card-nested px-2 py-1 text-[20px] denboard-text-primary flex items-center gap-2 min-w-0"
-                  >
-                    {evt.allDay ? (
-                      <span className="truncate">{evt.title}</span>
-                    ) : (
-                      <>
-                        <span className="denboard-text-secondary text-[18px] shrink-0">
-                          {formatTime(evt.start)}
-                        </span>
-                        <span className="truncate">{evt.title}</span>
-                      </>
-                    )}
-                  </div>
-                ))}
-                {remaining > 0 && (
-                  <div className="text-[20px] denboard-text-secondary">+{remaining} more</div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div className="grid grid-cols-7 gap-2">
+        {data.grid.days.map((day) => (
+          <DayCell key={day.date} day={day} />
+        ))}
       </div>
     </motion.div>
+  );
+}
+
+function DayCell({
+  day
+}: {
+  day: {
+    date: string;
+    dayOfMonth?: number;
+    isToday?: boolean;
+    events: import("@/lib/calendar").CalendarEvent[];
+  };
+}) {
+  const dayOfMonth =
+    day.dayOfMonth ?? new Date(day.date + "T12:00:00").getDate();
+  const events = day.events ?? [];
+  const visible = events.slice(0, VISIBLE_EVENTS_PER_CELL);
+  const remaining = events.length - visible.length;
+  const isToday =
+    day.isToday ?? isSameDay(new Date(day.date + "T12:00:00"), new Date());
+
+  return (
+    <div
+      className={`rounded-xl h-[96px] min-h-[96px] flex flex-col overflow-hidden ${
+        isToday
+          ? "bg-sandstone/25 border-2 border-sandstone/70 shadow-[0_0_12px_rgba(209,163,124,0.15)]"
+          : "denboard-card-nested border border-transparent"
+      }`}
+    >
+      {/* Day number - top left, bolder when today */}
+      <div
+        className={`shrink-0 px-2 pt-1 text-left font-semibold denboard-text-secondary ${
+          isToday ? "text-xl font-bold denboard-text-primary" : "text-lg"
+        }`}
+      >
+        {dayOfMonth}
+      </div>
+
+      {/* Event rows - up to 2 visible */}
+      <div className="flex-1 min-h-0 flex flex-col gap-0.5 px-2 py-1 overflow-hidden">
+        {visible.map((evt, idx) => (
+          <EventRow
+            key={evt.id}
+            evt={evt}
+            color={getEventColor(evt, idx)}
+          />
+        ))}
+        {remaining > 0 && (
+          <div className="mt-auto pt-0.5 text-sm denboard-text-secondary/80 shrink-0">
+            +{remaining} more
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EventRow({
+  evt,
+  color
+}: {
+  evt: import("@/lib/calendar").CalendarEvent;
+  color: string;
+}) {
+  if (evt.allDay) {
+    return (
+      <div
+        className="w-full rounded py-1 px-2 truncate text-base font-medium denboard-text-primary shrink-0"
+        style={{
+          backgroundColor: `${color}30`,
+          borderLeft: `3px solid ${color}`
+        }}
+        title={evt.title}
+      >
+        <span className="truncate block">{evt.title}</span>
+      </div>
+    );
+  }
+  const time = formatTime(evt.start);
+  return (
+    <div
+      className="flex items-center gap-2 min-w-0 shrink-0 rounded py-0.5 px-2 text-base denboard-text-primary"
+      style={{
+        backgroundColor: `${color}25`,
+        borderLeft: `3px solid ${color}`
+      }}
+      title={evt.title}
+    >
+      <span className="text-sandstone/80 shrink-0">•</span>
+      <span className="truncate flex-1 min-w-0">{evt.title}</span>
+      <span className="denboard-text-secondary/90 text-sm shrink-0 tabular-nums">
+        {time}
+      </span>
+    </div>
   );
 }
 

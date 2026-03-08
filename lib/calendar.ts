@@ -15,6 +15,8 @@ export type CalendarEvent = {
   allDay: boolean;
   location?: string;
   isOngoing: boolean;
+  /** Hex color from calendar source (e.g. #3B82F6) */
+  calendarColor?: string;
 };
 
 export type CalendarPayload = {
@@ -71,17 +73,23 @@ export async function getCalendar(
     now = DateTime.now().setZone(timezone);
   }
 
-  // ICS URLs: from admin settings (enabled calendars with URL) or fallback to env
-  const icsUrls: string[] = [];
+  // Calendar sources: from admin settings (enabled with URL) or fallback to env
+  type CalSource = { url: string; color: string };
+  const calSources: CalSource[] = [];
   const fromSettings = (settings.calendar?.calendars ?? [])
-    .filter((c) => c.enabled && c.icsUrl?.trim())
-    .map((c) => c.icsUrl.trim());
+    .filter((c) => c.enabled && c.icsUrl?.trim());
   if (fromSettings.length > 0) {
-    icsUrls.push(...fromSettings);
+    calSources.push(
+      ...fromSettings.map((c) => ({
+        url: c.icsUrl.trim(),
+        color: c.color?.trim() || "#3B82F6"
+      }))
+    );
   } else if (config.gcalIcsUrl) {
-    icsUrls.push(config.gcalIcsUrl);
+    calSources.push({ url: config.gcalIcsUrl, color: "#3B82F6" });
   }
 
+  const icsUrls = calSources.map((c) => c.url);
   const cacheKey =
     icsUrls.length === 0
       ? CALENDAR_CACHE_KEY_PREFIX + "empty"
@@ -105,53 +113,53 @@ export async function getCalendar(
   }
 
   try {
-    const allRawEvents: RawEvent[] = [];
-    for (const url of icsUrls) {
-      try {
-        const res = await fetchWithRetry(url, {
-          headers: { Accept: "text/calendar" },
-          next: { revalidate: 0 }
-        });
-        const text = await res.text();
-        allRawEvents.push(...parseIcsEvents(text, timezone));
-      } catch (err) {
-        logger.error("Failed to fetch calendar ICS", { url, error: String(err) });
-      }
-    }
     const todayStart = now.startOf("day");
-
     const gridBase = buildFourWeekGrid(now);
     const gridStart = gridBase[0]?.date.startOf("day") ?? todayStart.minus({ weeks: 2 });
     const gridEnd = gridBase[gridBase.length - 1]?.date.endOf("day") ?? todayStart.plus({ weeks: 2 });
 
     const seenUids = new Set<string>();
     const events: CalendarEvent[] = [];
-    allRawEvents.forEach((item, idx) => {
-      if (!item.start) return;
-      const uid = item.uid ?? `evt-${idx}`;
-      if (seenUids.has(uid)) return;
-      seenUids.add(uid);
+    let globalIdx = 0;
+    for (const { url, color } of calSources) {
+      try {
+        const res = await fetchWithRetry(url, {
+          headers: { Accept: "text/calendar" },
+          next: { revalidate: 0 }
+        });
+        const text = await res.text();
+        const rawEvents = parseIcsEvents(text, timezone);
+        for (const item of rawEvents) {
+          if (!item.start) continue;
+          const uid = item.uid ?? `evt-${globalIdx}`;
+          globalIdx += 1;
+          if (seenUids.has(uid)) continue;
+          seenUids.add(uid);
 
-      const start = item.start;
-      let end = item.end ?? start.plus({ hours: 1 });
-      // Zero/negative duration or invalid end: show at start time for 1 hour
-      if (!(item.allDay ?? false) && (!end || !end.isValid || end <= start)) {
-        end = start.plus({ hours: 1 });
+          const start = item.start;
+          let end = item.end ?? start.plus({ hours: 1 });
+          if (!(item.allDay ?? false) && (!end || !end.isValid || end <= start)) {
+            end = start.plus({ hours: 1 });
+          }
+          const allDay = item.allDay ?? false;
+
+          if (end < gridStart || start > gridEnd) continue;
+
+          events.push({
+            id: uid,
+            title: item.summary ?? "Untitled",
+            start: start.toISO() ?? start.toISODate() ?? "",
+            end: end.toISO() ?? end.toISODate() ?? "",
+            allDay,
+            location: item.location,
+            isOngoing: now >= start && now <= end,
+            calendarColor: color
+          });
+        }
+      } catch (err) {
+        logger.error("Failed to fetch calendar ICS", { url, error: String(err) });
       }
-      const allDay = item.allDay ?? false;
-
-      if (end < gridStart || start > gridEnd) return;
-
-      events.push({
-        id: uid,
-        title: item.summary ?? "Untitled",
-        start: start.toISO() ?? start.toISODate() ?? "",
-        end: end.toISO() ?? end.toISODate() ?? "",
-        allDay,
-        location: item.location,
-        isOngoing: now >= start && now <= end
-      });
-    });
+    }
 
     const todayAllDay = events.filter(
       (e) => e.allDay && DateTime.fromISO(e.start).hasSame(todayStart, "day")
@@ -190,8 +198,11 @@ export async function getCalendar(
     }
     const gridDays = gridBase.map((cell) => {
       const dateStr = cell.date.toISODate() ?? cell.date.toISO() ?? "";
-      const cellEvents = (dateStrToEvents.get(dateStr) ?? [])
-        .sort((a, b) => Number(new Date(a.start)) - Number(new Date(b.start)));
+      const cellEvents = (dateStrToEvents.get(dateStr) ?? []).sort((a, b) => {
+        if (a.allDay && !b.allDay) return -1;
+        if (!a.allDay && b.allDay) return 1;
+        return Number(new Date(a.start)) - Number(new Date(b.start));
+      });
       return {
         date: dateStr,
         dayOfMonth: cell.date.day,
