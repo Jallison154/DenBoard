@@ -63,6 +63,8 @@ export function BackgroundLayer({ children }: Props) {
         </motion.div>
       )}
 
+      <div className="denboard-weather-ambient" aria-hidden />
+
       <div className="denboard-overlay-strong" />
 
       <WeatherOverlayLayer kind={overlay} />
