@@ -23,6 +23,7 @@ export type CalendarPayload = {
     timed: CalendarEvent[];
   };
   grid: {
+    displayMonth: string;
     days: {
       date: string;
       events: CalendarEvent[];
@@ -91,7 +92,10 @@ export async function getCalendar(): Promise<CalendarPayload> {
 
     const now = DateTime.now().setZone(timezone);
     const todayStart = now.startOf("day");
-    const todayEnd = now.endOf("day");
+
+    const gridBase = buildFourWeekGrid(now);
+    const gridStart = gridBase[0]?.date.startOf("day") ?? todayStart.minus({ weeks: 2 });
+    const gridEnd = gridBase[gridBase.length - 1]?.date.endOf("day") ?? todayStart.plus({ weeks: 2 });
 
     const seenUids = new Set<string>();
     const events: CalendarEvent[] = [];
@@ -105,9 +109,7 @@ export async function getCalendar(): Promise<CalendarPayload> {
       const end = item.end ?? start.plus({ hours: 1 });
       const allDay = item.allDay ?? false;
 
-      if (end < todayStart.minus({ weeks: 2 }) || start > todayEnd.plus({ weeks: 2 })) {
-        return;
-      }
+      if (end < gridStart || start > gridEnd) return;
 
       events.push({
         id: uid,
@@ -131,22 +133,41 @@ export async function getCalendar(): Promise<CalendarPayload> {
       )
       .sort((a, b) => Number(new Date(a.start)) - Number(new Date(b.start)));
 
-    const gridBase = buildFourWeekGrid(now);
+    const dateStrToEvents = new Map<string, CalendarEvent[]>();
+    for (const cell of gridBase) {
+      const dateStr = cell.date.toISODate() ?? "";
+      if (!dateStr) continue;
+      dateStrToEvents.set(dateStr, []);
+    }
+    for (const evt of events) {
+      const evtStart = DateTime.fromISO(evt.start);
+      const evtEnd = DateTime.fromISO(evt.end);
+      if (!evtStart.isValid) continue;
+      const startDate = evtStart.toISODate() ?? "";
+      const endDate = evtEnd.isValid ? (evtEnd.toISODate() ?? startDate) : startDate;
+      for (const cell of gridBase) {
+        const dateStr = cell.date.toISODate() ?? "";
+        if (dateStr < startDate) continue;
+        if (evt.allDay) {
+          if (dateStr >= endDate) continue;
+        } else {
+          if (dateStr > endDate) continue;
+        }
+        const arr = dateStrToEvents.get(dateStr);
+        if (arr) arr.push(evt);
+      }
+    }
     const gridDays = gridBase.map((cell) => {
       const dateStr = cell.date.toISODate() ?? cell.date.toISO() ?? "";
-      const cellEvents = events
-        .filter((e) => DateTime.fromISO(e.start).toISODate() === dateStr)
+      const cellEvents = (dateStrToEvents.get(dateStr) ?? [])
         .sort((a, b) => Number(new Date(a.start)) - Number(new Date(b.start)));
-
-      return {
-        date: dateStr,
-        events: cellEvents
-      };
+      return { date: dateStr, events: cellEvents };
     });
 
+    const displayMonth = now.toFormat("MMMM yyyy");
     const payload: CalendarPayload = {
       today: { allDay: todayAllDay, timed: todayTimed },
-      grid: { days: gridDays },
+      grid: { displayMonth, days: gridDays },
       isFallback: false
     };
 
@@ -261,12 +282,14 @@ function parseIcsDate(
 }
 
 function emptyCalendarPayload(isFallback: boolean): CalendarPayload {
+  const now = DateTime.now().setZone(getConfig().timezone);
   return {
     today: {
       allDay: [],
       timed: []
     },
     grid: {
+      displayMonth: now.toFormat("MMMM yyyy"),
       days: []
     },
     isFallback

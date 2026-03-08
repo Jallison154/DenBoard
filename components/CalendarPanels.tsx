@@ -112,6 +112,9 @@ export function FourWeekGrid() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: "easeOut", delay: 0.1 }}
     >
+      <h3 className="text-base md:text-lg font-semibold denboard-text-primary mb-3 uppercase tracking-wide">
+        {data.grid.displayMonth ?? new Date().toLocaleString(undefined, { month: "long", year: "numeric" })}
+      </h3>
       <div className="grid grid-cols-7 gap-2 text-xs denboard-text-secondary mb-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d} className="text-center">
