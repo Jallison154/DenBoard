@@ -24,22 +24,24 @@ export default function TvGuestPage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col pt-10 pb-10">
+    <div className="flex-1 flex flex-col pt-6 pb-10">
       <div className="px-16">
         <SevereAlertBanner alerts={weather?.alerts} />
       </div>
-      <div className="flex-1 grid grid-cols-12 gap-10 items-center px-16">
-        <section className="col-span-5 flex flex-col justify-center gap-6">
-          <TimePanel />
-          <div className="max-w-2xl">
-            <DadJokePanel />
-          </div>
-        </section>
-        <section className="col-span-7 flex justify-end">
-          <div className="w-full max-w-3xl">
+
+      <div className="flex justify-center pt-4 pb-6">
+        <TimePanel />
+      </div>
+
+      <div className="flex-1 flex flex-col gap-6 px-16 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <section>
             <WeatherPanel />
-          </div>
-        </section>
+          </section>
+          <section className="flex flex-col gap-4">
+            <DadJokePanel />
+          </section>
+        </div>
       </div>
     </div>
   );

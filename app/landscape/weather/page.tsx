@@ -27,30 +27,37 @@ export default function TvWeatherPage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col pt-6 pb-10">
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div className="flex-1 grid grid-cols-12 gap-8 items-center pt-6 pb-6">
-        <section className="col-span-5 flex flex-col justify-center gap-8">
-          <TimePanel />
-          {!guestMode && <TodayEventsPanel />}
-          <div className="max-w-md">
+      <div className="flex justify-center pt-4 pb-6">
+        <TimePanel />
+      </div>
+
+      <div className="flex-1 flex flex-col gap-6 px-16 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <section>
+            <WeatherPanel />
+          </section>
+          <section className="flex flex-col gap-4">
+            {!guestMode && <TodayEventsPanel />}
+            <div className="rounded-3xl denboard-card px-6 py-4 text-sm denboard-text-primary">
+              <p className="text-[11px] uppercase tracking-[0.25em] denboard-text-secondary mb-1">
+                Outlook
+              </p>
+              <p className="leading-relaxed">
+                A calm, mountain-focused view of the next few days. Conditions update
+                automatically every few minutes to stay in sync with the weather over
+                your home.
+              </p>
+            </div>
+          </section>
+        </div>
+        <div className="flex justify-center">
+          <div className="max-w-2xl w-full">
             <DadJokePanel />
           </div>
-        </section>
-        <section className="col-span-7 flex flex-col gap-6">
-          <WeatherPanel />
-          <div className="rounded-3xl denboard-card px-6 py-4 text-sm denboard-text-primary max-w-xl">
-            <p className="text-[11px] uppercase tracking-[0.25em] denboard-text-secondary mb-1">
-              Outlook
-            </p>
-            <p className="leading-relaxed">
-              A calm, mountain-focused view of the next few days. Conditions update
-              automatically every few minutes to stay in sync with the weather over
-              your home.
-            </p>
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   );

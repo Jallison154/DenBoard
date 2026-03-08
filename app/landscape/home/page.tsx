@@ -27,26 +27,33 @@ export default function TvHomePage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col pt-10 pb-10">
+    <div className="flex-1 flex flex-col pt-6 pb-10">
       <div className="px-16">
         <SevereAlertBanner alerts={weather?.alerts} />
       </div>
-      <div className="flex-1 grid grid-cols-12 gap-10 items-center px-16">
-        {/* Left column: time + date + dad joke */}
-        <section className="col-span-5 flex flex-col justify-center gap-6">
-          <TimePanel />
-          {!guestMode && <TodayEventsPanel />}
-          <div className="max-w-2xl">
+
+      {/* Clock top centered */}
+      <div className="flex justify-center pt-4 pb-6">
+        <TimePanel />
+      </div>
+
+      {/* Content below in a clean grid */}
+      <div className="flex-1 flex flex-col gap-6 px-16 max-w-6xl mx-auto w-full">
+        <div className={`grid gap-6 ${guestMode ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"}`}>
+          <section className="flex flex-col gap-4">
+            <WeatherPanel />
+          </section>
+          {!guestMode && (
+            <section className="flex flex-col gap-4">
+              <TodayEventsPanel />
+            </section>
+          )}
+        </div>
+        <div className="flex justify-center">
+          <div className="max-w-2xl w-full">
             <DadJokePanel />
           </div>
-        </section>
-
-        {/* Right column: weather card */}
-        <section className="col-span-7 flex justify-end">
-          <div className="w-full max-w-3xl">
-            <WeatherPanel />
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   );

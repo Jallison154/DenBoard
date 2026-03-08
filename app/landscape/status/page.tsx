@@ -27,27 +27,32 @@ export default function TvStatusPage() {
   const { guestMode } = useGuestMode();
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col pt-6 pb-10">
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div className="flex-1 grid grid-cols-12 gap-8 items-stretch pt-6 pb-6">
-        <section className="col-span-5 flex flex-col justify-between gap-8">
-          <TimePanel />
-          {!guestMode && <TodayEventsPanel />}
-          <WeatherPanel />
-        </section>
-        <section className="col-span-7 flex flex-col justify-between gap-6">
-          <HomeAssistantStatus hideWhenGuest />
-          <div className="max-w-xl">
-            <DadJokePanel />
-            {guestMode && (
-              <p className="mt-2 text-xs denboard-text-secondary">
-                Guest Mode hides detailed home tiles while keeping time, weather,
-                forecasts, jokes, and alerts visible.
-              </p>
-            )}
-          </div>
-        </section>
+      <div className="flex justify-center pt-4 pb-6">
+        <TimePanel />
+      </div>
+
+      <div className="flex-1 flex flex-col gap-6 px-16 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <section className="flex flex-col gap-6">
+            <WeatherPanel />
+            {!guestMode && <TodayEventsPanel />}
+          </section>
+          <section className="flex flex-col gap-6">
+            <HomeAssistantStatus hideWhenGuest />
+            <div className="max-w-xl">
+              <DadJokePanel />
+              {guestMode && (
+                <p className="mt-2 text-xs denboard-text-secondary">
+                  Guest Mode hides detailed home tiles while keeping time, weather,
+                  forecasts, jokes, and alerts visible.
+                </p>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   );
