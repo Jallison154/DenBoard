@@ -540,7 +540,7 @@ function WeatherForm({
               value={haWeatherEntityId}
               onChange={(e) => setHaWeatherEntityId(e.target.value)}
               className={inputClass}
-              placeholder="weather.home"
+              placeholder="weather.kbil"
             />
           </div>
           <div>

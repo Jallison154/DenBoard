@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import WebSocket from "ws";
 import { getConfig } from "./config";
 import { fetchWithRetry } from "./fetchWithRetry";
 import { getFromCache, setInCache } from "./cache";
@@ -280,6 +281,72 @@ async function fetchFromHomeAssistant(
     return res.json();
   }
 
+  /** Fetch forecast via WebSocket (HA removed forecast from entity attributes) */
+  async function fetchForecastViaWebSocket(entityId: string): Promise<any[]> {
+    const wsProto = baseUrl.startsWith("https") ? "wss" : "ws";
+    const wsHost = baseUrl.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+    const wsUrl = `${wsProto}://${wsHost}/api/websocket`;
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        ws.close();
+        reject(new Error("WebSocket forecast timeout"));
+      }, 15000);
+      const ws = new WebSocket(wsUrl);
+      let msgId = 1;
+      ws.on("open", () => {});
+      ws.on("message", (data: Buffer) => {
+        try {
+          const msg = JSON.parse(data.toString());
+          if (msg.type === "auth_required") {
+            ws.send(JSON.stringify({ type: "auth", access_token: token }));
+            return;
+          }
+          if (msg.type === "auth_ok") {
+            ws.send(
+              JSON.stringify({
+                id: msgId,
+                type: "call_service",
+                domain: "weather",
+                service: "get_forecasts",
+                service_data: {
+                  entity_id: entityId,
+                  type: "twice_daily"
+                }
+              })
+            );
+            return;
+          }
+          if (msg.type === "result" && msg.id === msgId) {
+            clearTimeout(timeout);
+            ws.close();
+            if (!msg.success) {
+              reject(new Error(msg.error?.message || "get_forecasts failed"));
+              return;
+            }
+            const result = msg.result as Record<string, { forecast?: any[] }>;
+            const entityResult = result?.[entityId];
+            const arr = entityResult?.forecast;
+            resolve(Array.isArray(arr) ? arr : []);
+            return;
+          }
+          if (msg.type === "auth_invalid") {
+            clearTimeout(timeout);
+            ws.close();
+            reject(new Error("Home Assistant auth invalid"));
+          }
+        } catch (e) {
+          clearTimeout(timeout);
+          ws.close();
+          reject(e);
+        }
+      });
+      ws.on("error", (err) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
+  }
+
   try {
     const weatherId = settings.weather.haWeatherEntityId || "weather.home";
     const sunId = settings.weather.haSunEntityId || "sun.sun";
@@ -316,9 +383,9 @@ async function fetchFromHomeAssistant(
 
     const conditionMapping = mapHomeAssistantCondition(rawWeather?.state);
 
-    // Forecast aggregation – try forecast, forecast_daily, forecast_hourly (NWS and others vary)
+    // Forecast aggregation – try entity attributes first, then WebSocket get_forecasts (HA removed forecast from attributes)
     const forecast: DailyForecastEntry[] = [];
-    const forecastRaw: any[] =
+    let forecastRaw: any[] =
       Array.isArray(attrs.forecast_daily) && attrs.forecast_daily.length > 0
         ? attrs.forecast_daily
         : Array.isArray(attrs.forecast) && attrs.forecast.length > 0
@@ -326,6 +393,16 @@ async function fetchFromHomeAssistant(
         : Array.isArray(attrs.forecast_hourly) && attrs.forecast_hourly.length > 0
         ? attrs.forecast_hourly
         : [];
+    if (forecastRaw.length === 0) {
+      try {
+        forecastRaw = await fetchForecastViaWebSocket(weatherId);
+        if (forecastRaw.length > 0) {
+          logger.info("Weather forecast fetched via WebSocket get_forecasts", { count: forecastRaw.length });
+        }
+      } catch (err) {
+        logger.warn("WebSocket get_forecasts failed, no forecast available", { error: String(err) });
+      }
+    }
     if (forecastRaw.length > 0) {
       const byDate = new Map<
         string,
@@ -379,6 +456,17 @@ async function fetchFromHomeAssistant(
           existing.condition = item.condition ?? item.native_condition ?? null;
         }
         byDate.set(key, existing);
+
+        // NWS "twice daily": midnight entries with is_daytime=false are the "night" of the previous day
+        const temp = typeof item.temperature === "number" ? item.temperature : typeof item.native_temperature === "number" ? item.native_temperature : null;
+        if (dt.hour === 0 && dt.minute === 0 && temp !== null && Number.isFinite(temp) && item.is_daytime === false) {
+          const prevKey = dt.minus({ days: 1 }).toISODate();
+          if (prevKey) {
+            const prev = byDate.get(prevKey) || { high: Number.NEGATIVE_INFINITY, low: Number.POSITIVE_INFINITY, condition: null };
+            prev.low = Math.min(prev.low, temp);
+            byDate.set(prevKey, prev);
+          }
+        }
       }
 
       const keys = Array.from(byDate.keys()).sort();
