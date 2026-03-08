@@ -285,9 +285,7 @@ export function validateSettings(settings: DenBoardSettings): SettingsValidation
     if (!cal.name) {
       errors.push(`Calendar '${cal.id}' must have a name.`);
     }
-    if (cal.enabled && !cal.icsUrl) {
-      errors.push(`Calendar '${cal.id}' is enabled but has no ICS URL.`);
-    }
+    // Allow enabled calendars with empty ICS URL (shows "Nothing scheduled" until URL is added)
   }
 
   if (settings.homeAssistant.refreshSeconds <= 0) {
