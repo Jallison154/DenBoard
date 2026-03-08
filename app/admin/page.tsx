@@ -121,6 +121,18 @@ export default function AdminPage() {
               Landscape Guest
             </a>
             <a
+              href="/landscape/weather"
+              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
+            >
+              Landscape Weather
+            </a>
+            <a
+              href="/landscape/status"
+              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
+            >
+              Landscape Status
+            </a>
+            <a
               href="/portrait/home"
               className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
             >
@@ -131,6 +143,12 @@ export default function AdminPage() {
               className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
             >
               Portrait Calendar
+            </a>
+            <a
+              href="/portrait/status"
+              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
+            >
+              Portrait Status
             </a>
           </div>
         </section>
