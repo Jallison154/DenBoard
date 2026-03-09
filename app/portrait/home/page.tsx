@@ -30,13 +30,29 @@ export default function PortraitHomePage() {
     <div className="flex-1 flex flex-col">
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div className="flex-1 flex flex-col gap-6 pt-4 pb-6">
-        <section className="flex flex-col gap-6">
+      <div
+        className="flex-1 flex flex-col"
+        style={{
+          gap: "var(--denboard-scale-gap-lg)",
+          paddingTop: "var(--denboard-scale-space-md)",
+          paddingBottom: "var(--denboard-scale-gap-lg)"
+        }}
+      >
+        <section
+          className="flex flex-col"
+          style={{ gap: "var(--denboard-scale-gap-lg)" }}
+        >
           <TimePanel />
           {!guestMode && <TodayEventsPanel />}
           <WeatherPanel />
         </section>
-        <section className="flex flex-col gap-4 pt-2">
+        <section
+          className="flex flex-col"
+          style={{
+            gap: "var(--denboard-scale-space-md)",
+            paddingTop: "var(--denboard-scale-gap)"
+          }}
+        >
           <HomeAssistantStatus hideWhenGuest />
           <DadJokePanel />
         </section>

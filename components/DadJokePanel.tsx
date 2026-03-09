@@ -22,18 +22,31 @@ export function DadJokePanel() {
 
   return (
     <motion.div
-      className="rounded-3xl denboard-card border-sandstone/40 px-6 py-5 text-sm denboard-text-primary max-w-2xl"
+      className="rounded-3xl denboard-card border-sandstone/40 denboard-scale-calendar-event denboard-text-primary max-w-2xl"
+      style={{ padding: "var(--denboard-scale-card-padding)" }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
     >
-      <div className="flex items-center gap-2 mb-2">
-        <div className="h-5 w-1 rounded-full bg-sandstone/80" />
-        <div className="text-[11px] uppercase tracking-[0.32em] text-sandstone/90">
+      <div
+        className="flex items-center"
+        style={{ gap: "var(--denboard-scale-gap)", marginBottom: "var(--denboard-scale-gap)" }}
+      >
+        <div
+          className="w-1 rounded-full bg-sandstone/80"
+          style={{ height: "var(--denboard-scale-space-md)" }}
+        />
+        <div className="uppercase tracking-[0.32em] text-sandstone/90 denboard-scale-status">
           Dad Joke
         </div>
       </div>
-      <div className="text-[1.05rem] leading-relaxed max-h-24 overflow-hidden">
+      <div
+        className="leading-relaxed overflow-hidden"
+        style={{
+          fontSize: "var(--denboard-scale-calendar-event)",
+          maxHeight: "var(--denboard-scale-calendar-cell-height)"
+        }}
+      >
         {data?.joke ?? "Loading a mountain-grade dad joke..."}
       </div>
     </motion.div>

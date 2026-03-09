@@ -8,6 +8,8 @@ import { usePolling } from "./hooks";
 
 type Props = {
   children: React.ReactNode;
+  /** "hotel" = lighter overlay, scenic image prominent, for /tv/home */
+  variant?: "default" | "hotel";
 };
 
 type Combined = {
@@ -32,7 +34,7 @@ async function fetchCombined(): Promise<Combined> {
   return { background, weather };
 }
 
-export function BackgroundLayer({ children }: Props) {
+export function BackgroundLayer({ children, variant = "default" }: Props) {
   const fetcher = useCallback(fetchCombined, []);
   const { data } = usePolling<Combined>(fetcher, {
     intervalMs: 45 * 60 * 1000,
@@ -41,15 +43,16 @@ export function BackgroundLayer({ children }: Props) {
 
   const imageUrl = data?.background?.imageUrl ?? null;
   const overlay = data?.weather?.overlay ?? null;
+  const isHotel = variant === "hotel";
 
   return (
-    <div className="relative min-h-screen denboard-gradient denboard-content-area">
+    <div className={`relative min-h-screen denboard-content-area ${!isHotel ? "denboard-gradient" : ""}`}>
       {imageUrl && (
         <motion.div
           key={imageUrl}
           className="pointer-events-none fixed inset-0 z-0"
-          initial={{ opacity: 0.12 }}
-          animate={{ opacity: 0.4 }}
+          initial={{ opacity: isHotel ? 0.5 : 0.12 }}
+          animate={{ opacity: isHotel ? 0.95 : 0.4 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
         >
           <img
@@ -57,7 +60,7 @@ export function BackgroundLayer({ children }: Props) {
             alt=""
             role="presentation"
             className="h-full w-full object-cover"
-            style={{ filter: "blur(10px) brightness(1.05) contrast(1.05)" }}
+            style={{ filter: isHotel ? "brightness(0.92) contrast(1.02)" : "blur(10px) brightness(1.05) contrast(1.05)" }}
             referrerPolicy="no-referrer"
           />
         </motion.div>
@@ -65,7 +68,11 @@ export function BackgroundLayer({ children }: Props) {
 
       <div className="denboard-weather-ambient" aria-hidden />
 
-      <div className="denboard-overlay-strong" />
+      {isHotel ? (
+        <div className="pointer-events-none fixed inset-0 z-10 denboard-hotel-overlay" />
+      ) : (
+        <div className="denboard-overlay-strong" />
+      )}
 
       <WeatherOverlayLayer kind={overlay} />
 

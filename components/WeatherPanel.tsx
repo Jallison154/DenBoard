@@ -32,32 +32,45 @@ export function WeatherPanel() {
 
   return (
     <motion.div
-      className="rounded-3xl denboard-card px-9 py-7 flex flex-col gap-6 min-w-[26rem]"
+      className="rounded-3xl denboard-card flex flex-col min-w-[min(26rem,90vw)]"
+      style={{
+        padding: "var(--denboard-scale-card-padding)",
+        gap: "var(--denboard-scale-gap-lg)"
+      }}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
     >
       <div className="flex items-baseline justify-between gap-4">
         <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-[0.28em] denboard-text-secondary">
+          <span className="uppercase tracking-[0.28em] denboard-text-secondary denboard-scale-status">
             Weather
           </span>
           {currentTemp !== null ? (
-            <div className="flex items-end gap-3 mt-1">
-              <span className="text-6xl lg:text-7xl font-bold denboard-text-primary drop-shadow-[0_0_16px_rgba(0,0,0,0.9)]">
+            <div
+              className="flex items-end"
+              style={{ gap: "var(--denboard-scale-space-md)", marginTop: "var(--denboard-scale-space)" }}
+            >
+              <span className="denboard-scale-temp font-bold denboard-text-primary drop-shadow-[0_0_16px_rgba(0,0,0,0.9)]">
                 {formatForecastTemp(currentTemp, data?.units)}
               </span>
-              <span className="text-2xl font-semibold denboard-text-primary">
+              <span
+                className="font-semibold denboard-text-primary"
+                style={{ fontSize: "var(--denboard-scale-date)" }}
+              >
                 {data?.conditionText}
               </span>
             </div>
           ) : (
-            <span className="denboard-text-secondary text-lg">
+            <span
+              className="denboard-text-secondary"
+              style={{ fontSize: "var(--denboard-scale-date)", marginTop: "var(--denboard-scale-space)" }}
+            >
               {loading ? "Loading..." : "Weather unavailable"}
             </span>
           )}
         </div>
-        <div className="flex flex-col items-end text-right text-[11px] denboard-text-secondary">
+        <div className="flex flex-col items-end text-right denboard-text-secondary denboard-scale-status">
           {data?.sunrise && (
             <span>Sunrise {formatClock(data.sunrise)}</span>
           )}
@@ -67,21 +80,34 @@ export function WeatherPanel() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-sm denboard-text-secondary">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-full denboard-card-nested text-xl">
+      <div
+        className="flex items-center denboard-text-secondary"
+        style={{ gap: "var(--denboard-scale-gap)", fontSize: "var(--denboard-scale-date)" }}
+      >
+        <span
+          className="inline-flex items-center justify-center rounded-full denboard-card-nested"
+          style={{
+            width: "var(--denboard-scale-forecast-icon)",
+            height: "var(--denboard-scale-forecast-icon)",
+            fontSize: "var(--denboard-scale-forecast-icon)"
+          }}
+        >
           {iconFor(data?.conditionCode)}
         </span>
         <span>{data?.conditionText ?? "Local conditions"}</span>
       </div>
 
       {data?.dailyForecast && data.dailyForecast.length > 0 && (
-        <div className="mt-4 grid grid-cols-5 denboard-forecast-grid text-center text-xs denboard-text-secondary">
+        <div
+          className="grid grid-cols-5 denboard-forecast-grid text-center denboard-text-secondary"
+          style={{ marginTop: "var(--denboard-scale-space-md)" }}
+        >
           {data.dailyForecast.slice(0, 5).map((day) => (
             <div
               key={day.dateISO}
               className="flex flex-col items-center rounded-2xl denboard-card-nested denboard-forecast-tile"
             >
-              <span className="text-[13px] uppercase tracking-wide denboard-text-secondary">
+              <span className="uppercase tracking-wide denboard-text-secondary denboard-scale-status">
                 {day.dayName}
               </span>
               <span className="denboard-forecast-icon leading-none">
@@ -101,7 +127,10 @@ export function WeatherPanel() {
       )}
 
       {data?.overlay && (
-        <p className="text-[11px] denboard-text-secondary mt-2">
+        <p
+          className="denboard-text-secondary denboard-scale-status"
+          style={{ marginTop: "var(--denboard-scale-gap)" }}
+        >
           {overlayLabel[data.overlay] ?? "Mountain conditions"}
         </p>
       )}

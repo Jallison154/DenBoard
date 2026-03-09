@@ -36,13 +36,16 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-xs denboard-text-secondary">
+      <div
+        className="flex items-center denboard-text-secondary denboard-scale-status"
+        style={{ gap: "var(--denboard-scale-gap)" }}
+      >
         <span className="uppercase tracking-[0.25em] denboard-text-secondary">
           Home Status
         </span>
         <span className="h-1 w-1 rounded-full bg-slate-600" />
         <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] text-[10px] ${
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] denboard-scale-status ${
             guestMode
               ? "bg-slate-800/90 text-slate-100"
               : "bg-emerald-700/80 text-emerald-50"
@@ -61,7 +64,8 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
         {showTiles && payload && (
           <motion.div
             key={guestMode ? "guest-off" : "guest-on"}
-            className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 max-w-xl"
+            className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 max-w-xl"
+            style={{ gap: "var(--denboard-scale-gap)" }}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
@@ -70,12 +74,16 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
             {payload.entities.map((entity) => (
               <div
                 key={entity.id}
-                className="rounded-2xl denboard-card px-3 py-2 flex flex-col gap-1"
+                className="rounded-2xl denboard-card flex flex-col"
+                style={{
+                  padding: "var(--denboard-scale-space-md)",
+                  gap: "var(--denboard-scale-space)"
+                }}
               >
-                <div className="text-[11px] denboard-text-secondary uppercase tracking-wide">
+                <div className="denboard-text-secondary uppercase tracking-wide denboard-scale-status">
                   {entity.label}
                 </div>
-                <div className="text-lg font-semibold denboard-text-primary">
+                <div className="font-semibold denboard-text-primary denboard-scale-date">
                   {formatState(entity.state)}
                 </div>
               </div>

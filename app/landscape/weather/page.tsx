@@ -27,22 +27,47 @@ export default function TvWeatherPage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col pt-6 pb-10">
+    <div
+      className="flex-1 flex flex-col max-w-6xl mx-auto w-full"
+      style={{
+        padding: "var(--denboard-scale-space-lg)",
+        paddingTop: "var(--denboard-scale-space-lg)",
+        paddingBottom: "var(--denboard-scale-space-xl)"
+      }}
+    >
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div className="flex justify-center pt-4 pb-6">
+      <div
+        className="flex justify-center"
+        style={{
+          paddingTop: "var(--denboard-scale-space-md)",
+          paddingBottom: "var(--denboard-scale-gap-lg)"
+        }}
+      >
         <TimePanel />
       </div>
 
-      <div className="flex-1 flex flex-col gap-6 px-16 max-w-6xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div
+        className="flex-1 flex flex-col"
+        style={{ gap: "var(--denboard-scale-gap-lg)" }}
+      >
+        <div
+          className="grid grid-cols-1 lg:grid-cols-2"
+          style={{ gap: "var(--denboard-scale-gap-lg)" }}
+        >
           <section>
             <WeatherPanel />
           </section>
-          <section className="flex flex-col gap-4">
+          <section
+            className="flex flex-col"
+            style={{ gap: "var(--denboard-scale-space-md)" }}
+          >
             {!guestMode && <TodayEventsPanel />}
-            <div className="rounded-3xl denboard-card px-6 py-4 text-sm denboard-text-primary">
-              <p className="text-[11px] uppercase tracking-[0.25em] denboard-text-secondary mb-1">
+            <div
+              className="rounded-3xl denboard-card denboard-scale-calendar-event denboard-text-primary"
+              style={{ padding: "var(--denboard-scale-card-padding)" }}
+            >
+              <p className="uppercase tracking-[0.25em] denboard-text-secondary denboard-scale-status mb-1">
                 Outlook
               </p>
               <p className="leading-relaxed">

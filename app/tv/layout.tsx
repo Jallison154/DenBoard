@@ -3,12 +3,12 @@ import { BackgroundLayer } from "@/components/BackgroundLayer";
 
 export default function TvLayout({ children }: { children: ReactNode }) {
   return (
-    <BackgroundLayer>
+    <BackgroundLayer variant="hotel">
       <main
         data-orientation="landscape"
         className="min-h-screen flex flex-col"
         style={{
-          padding: "var(--denboard-scale-space-xl) var(--denboard-scale-space-lg)"
+          padding: "clamp(24px, 3vmin, 64px)"
         }}
       >
         {children}
@@ -16,4 +16,3 @@ export default function TvLayout({ children }: { children: ReactNode }) {
     </BackgroundLayer>
   );
 }
-

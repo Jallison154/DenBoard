@@ -30,15 +30,25 @@ export default function PortraitStatusPage() {
     <div className="flex-1 flex flex-col">
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div className="flex-1 flex flex-col gap-5 pt-4 pb-6">
+      <div
+        className="flex-1 flex flex-col"
+        style={{
+          gap: "var(--denboard-scale-gap-lg)",
+          paddingTop: "var(--denboard-scale-space-md)",
+          paddingBottom: "var(--denboard-scale-gap-lg)"
+        }}
+      >
         <TimePanel />
         {!guestMode && <TodayEventsPanel />}
         <WeatherPanel />
         <HomeAssistantStatus hideWhenGuest />
-        <div className="pt-1">
+        <div style={{ paddingTop: "var(--denboard-scale-space)" }}>
           <DadJokePanel />
           {guestMode && (
-            <p className="mt-2 text-xs denboard-text-secondary">
+            <p
+              className="denboard-text-secondary denboard-scale-status"
+              style={{ marginTop: "var(--denboard-scale-gap)" }}
+            >
               Guest Mode keeps the home dashboard welcoming while hiding personal
               details.
             </p>

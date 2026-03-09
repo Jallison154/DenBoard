@@ -1,6 +1,9 @@
 /**
  * DenBoard theme tokens – central control for brightness and readability.
  * Change these values to brighten or darken the whole UI without editing components.
+ *
+ * Scaling: Base design 1920×1080 (landscape) / 1080×1920 (portrait).
+ * Uses vmin for proportional scaling. Min sizes preserved for 8–12ft readability.
  */
 
 export const themeTokens = {
@@ -42,9 +45,42 @@ export const themeTokens = {
   forecastPaddingInlineRem: 1.5,
 } as const;
 
+/** Scaling: 1vmin ≈ 10.8px at 1080. clamp(min, preferred, max) preserves readability. */
+const scalingVars = [
+  /* Time – largest, min 80px */
+  "--denboard-scale-time: clamp(80px, 11vmin, 200px)",
+  /* Temperature – second largest, min 28px */
+  "--denboard-scale-temp: clamp(28px, 6.5vmin, 120px)",
+  /* Date – medium */
+  "--denboard-scale-date: clamp(20px, 2.8vmin, 48px)",
+  /* Greeting – between date and time */
+  "--denboard-scale-greeting: clamp(18px, 2.2vmin, 36px)",
+  /* Calendar event – readable, min 18px */
+  "--denboard-scale-calendar-event: clamp(18px, 2vmin, 32px)",
+  /* Forecast temp – min 28px */
+  "--denboard-scale-forecast-temp: clamp(28px, 2.5vmin, 48px)",
+  /* Forecast icon */
+  "--denboard-scale-forecast-icon: clamp(24px, 2.8vmin, 56px)",
+  /* Status chips – smallest */
+  "--denboard-scale-status: clamp(10px, 1.2vmin, 20px)",
+  /* Spacing base – scales with viewport */
+  "--denboard-scale-space: clamp(4px, 0.5vmin, 16px)",
+  "--denboard-scale-space-md: clamp(8px, 1vmin, 24px)",
+  "--denboard-scale-space-lg: clamp(16px, 2vmin, 48px)",
+  "--denboard-scale-space-xl: clamp(24px, 3vmin, 64px)",
+  /* Card padding */
+  "--denboard-scale-card-padding: clamp(12px, 1.5vmin, 36px)",
+  /* Gap between elements */
+  "--denboard-scale-gap: clamp(6px, 0.8vmin, 20px)",
+  "--denboard-scale-gap-lg: clamp(12px, 1.5vmin, 40px)",
+  /* Calendar grid cell height – scales with viewport */
+  "--denboard-scale-calendar-cell-height: clamp(72px, 9vmin, 140px)"
+];
+
 /** Generate :root CSS custom properties for injection into document */
 export function toCssVars(): string {
   const vars = [
+    ...scalingVars,
     `--denboard-scrim-left: ${themeTokens.scrimOpacityLeft}`,
     `--denboard-scrim-center: ${themeTokens.scrimOpacityCenter}`,
     `--denboard-scrim-right: ${themeTokens.scrimOpacityRight}`,

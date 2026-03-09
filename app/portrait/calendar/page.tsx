@@ -29,7 +29,14 @@ export default function PortraitCalendarPage() {
     <div className="flex-1 flex flex-col">
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div className="flex-1 flex flex-col gap-5 pt-4 pb-6">
+      <div
+        className="flex-1 flex flex-col"
+        style={{
+          gap: "var(--denboard-scale-gap-lg)",
+          paddingTop: "var(--denboard-scale-space-md)",
+          paddingBottom: "var(--denboard-scale-gap-lg)"
+        }}
+      >
         <TimePanel />
 
         {!guestMode ? (
@@ -38,8 +45,11 @@ export default function PortraitCalendarPage() {
             <FourWeekGrid />
           </>
         ) : (
-          <div className="rounded-3xl denboard-card px-6 py-6 text-sm denboard-text-primary">
-            <p className="text-[11px] uppercase tracking-[0.3em] denboard-text-secondary mb-2">
+          <div
+            className="rounded-3xl denboard-card denboard-scale-calendar-event denboard-text-primary"
+            style={{ padding: "var(--denboard-scale-card-padding)" }}
+          >
+            <p className="uppercase tracking-[0.3em] denboard-text-secondary denboard-scale-status mb-2">
               Guest Mode
             </p>
             <p className="leading-relaxed">
@@ -50,7 +60,7 @@ export default function PortraitCalendarPage() {
           </div>
         )}
 
-        <div className="pt-2">
+        <div style={{ paddingTop: "var(--denboard-scale-gap)" }}>
           <DadJokePanel />
         </div>
       </div>

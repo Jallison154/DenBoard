@@ -41,33 +41,41 @@ export function TimePanel() {
 
   return (
     <motion.div
-      className="flex flex-col gap-2"
+      className="flex flex-col"
+      style={{ gap: "var(--denboard-scale-gap)" }}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <span
-        className="denboard-text-secondary text-xl md:text-2xl font-medium"
+        className="denboard-text-secondary denboard-scale-greeting font-medium"
         suppressHydrationWarning
       >
         {display.greeting}
       </span>
-      <div className="flex items-baseline gap-4">
+      <div
+        className="flex items-baseline"
+        style={{ gap: "var(--denboard-scale-space-md)" }}
+      >
         <span
-          className="denboard-time-primary text-7xl md:text-8xl lg:text-9xl font-extrabold tracking-tight"
+          className="denboard-time-primary denboard-scale-time font-extrabold tracking-tight"
           suppressHydrationWarning
         >
           {display.time}
         </span>
         <span
-          className="denboard-time-subtitle text-3xl md:text-4xl mt-3 font-semibold"
+          className="denboard-time-subtitle font-semibold"
+          style={{
+            fontSize: "clamp(20px, 2.5vmin, 48px)",
+            marginTop: "var(--denboard-scale-space-md)"
+          }}
           suppressHydrationWarning
         >
           {display.ampm}
         </span>
       </div>
       <span
-        className="denboard-time-subtitle text-2xl md:text-3xl font-semibold whitespace-nowrap"
+        className="denboard-time-subtitle denboard-scale-date font-semibold whitespace-nowrap"
         suppressHydrationWarning
       >
         {display.dateLine}

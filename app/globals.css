@@ -39,6 +39,12 @@ body {
   );
 }
 
+/* Hotel dashboard: subtle gradient behind content only, preserves scenic background */
+.denboard-hotel-overlay {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0) 40%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.2) 0%, transparent 25%);
+}
+
 .denboard-time-primary {
   color: var(--denboard-text-primary);
   text-shadow: 0 0 18px rgba(0, 0, 0, 0.9);
@@ -47,6 +53,41 @@ body {
 .denboard-time-subtitle {
   color: var(--denboard-text-secondary);
   text-shadow: 0 0 12px rgba(0, 0, 0, 0.85);
+}
+
+/* Scalable typography – uses viewport-based clamp for 8–12ft readability */
+.denboard-scale-time {
+  font-size: var(--denboard-scale-time);
+  line-height: 1.1;
+}
+
+.denboard-scale-temp {
+  font-size: var(--denboard-scale-temp);
+  line-height: 1.1;
+}
+
+.denboard-scale-date {
+  font-size: var(--denboard-scale-date);
+}
+
+.denboard-scale-greeting {
+  font-size: var(--denboard-scale-greeting);
+}
+
+.denboard-scale-calendar-event {
+  font-size: var(--denboard-scale-calendar-event);
+}
+
+.denboard-scale-forecast-temp {
+  font-size: var(--denboard-scale-forecast-temp);
+}
+
+.denboard-scale-forecast-icon {
+  font-size: var(--denboard-scale-forecast-icon);
+}
+
+.denboard-scale-status {
+  font-size: var(--denboard-scale-status);
 }
 
 .denboard-text-primary {
@@ -73,20 +114,23 @@ body {
   background: var(--denboard-footer-scrim);
 }
 
-/* Forecast tiles – uses --denboard-forecast-* tokens */
+/* Forecast tiles – scalable */
 .denboard-forecast-grid {
-  gap: var(--denboard-forecast-gap);
+  gap: var(--denboard-scale-gap-lg);
 }
+
 .denboard-forecast-tile {
-  padding: var(--denboard-forecast-padding-block) var(--denboard-forecast-padding-inline);
-  gap: var(--denboard-forecast-gap);
+  padding: var(--denboard-scale-space-md) var(--denboard-scale-card-padding);
+  gap: var(--denboard-scale-gap);
 }
+
 .denboard-forecast-icon {
-  font-size: var(--denboard-forecast-icon-size);
+  font-size: var(--denboard-scale-forecast-icon);
   line-height: 1;
 }
+
 .denboard-forecast-temp {
-  font-size: var(--denboard-forecast-temp-size);
+  font-size: var(--denboard-scale-forecast-temp);
 }
 
 /* Subtle rain and snow particle effects */

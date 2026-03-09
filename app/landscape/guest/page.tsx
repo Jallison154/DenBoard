@@ -24,21 +24,41 @@ export default function TvGuestPage() {
   });
 
   return (
-    <div className="flex-1 flex flex-col pt-6 pb-10">
-      <div className="px-16">
-        <SevereAlertBanner alerts={weather?.alerts} />
-      </div>
+    <div
+      className="flex-1 flex flex-col max-w-6xl mx-auto w-full"
+      style={{
+        padding: "var(--denboard-scale-space-lg)",
+        paddingTop: "var(--denboard-scale-space-lg)",
+        paddingBottom: "var(--denboard-scale-space-xl)"
+      }}
+    >
+      <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div className="flex justify-center pt-4 pb-6">
+      <div
+        className="flex justify-center"
+        style={{
+          paddingTop: "var(--denboard-scale-space-md)",
+          paddingBottom: "var(--denboard-scale-gap-lg)"
+        }}
+      >
         <TimePanel />
       </div>
 
-      <div className="flex-1 flex flex-col gap-6 px-16 max-w-6xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div
+        className="flex-1 flex flex-col"
+        style={{ gap: "var(--denboard-scale-gap-lg)" }}
+      >
+        <div
+          className="grid grid-cols-1 lg:grid-cols-2"
+          style={{ gap: "var(--denboard-scale-gap-lg)" }}
+        >
           <section>
             <WeatherPanel />
           </section>
-          <section className="flex flex-col gap-4">
+          <section
+            className="flex flex-col"
+            style={{ gap: "var(--denboard-scale-space-md)" }}
+          >
             <DadJokePanel />
           </section>
         </div>
