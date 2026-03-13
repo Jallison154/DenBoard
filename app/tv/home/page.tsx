@@ -46,14 +46,17 @@ function formatTemp(temp: number, units?: "imperial" | "metric" | null) {
 
 function iconFor(code?: number | string | null) {
   if (code === undefined || code === null) return "⛰";
-  const k = typeof code === "string" ? code : "";
+  const k = typeof code === "string" ? code.toLowerCase() : "";
   switch (k) {
-    case "rain": return "🌧";
-    case "snow": return "🌨";
-    case "storm": return "⛈";
-    case "cloudy": return "☁️";
-    case "clear": return "☀️";
-    default: return "⛰";
+    case "rain": case "rainy": case "pouring": return "🌧";
+    case "snow": case "snowy": return "🌨";
+    case "storm": case "lightning": return "⛈";
+    case "cloudy": case "overcast": return "☁️";
+    case "clear": case "sunny": return "☀️";
+    case "clear-night": return "🌙";
+    case "partlycloudy": case "partly cloudy": return "🌤";
+    default:
+      return k.includes("clear") ? "☀️" : k.includes("cloud") ? "☁️" : "⛰";
   }
 }
 
@@ -147,6 +150,14 @@ export default function TvHomePage() {
         >
           <div className="flex items-end gap-4">
             <span
+              className="leading-none mb-1"
+              style={{
+                fontSize: "clamp(40px, 4.5vmin, 72px)"
+              }}
+            >
+              {iconFor(weather?.conditionCode)}
+            </span>
+            <span
               className="denboard-text-primary font-bold"
               style={{
                 fontSize: "clamp(64px, 7vmin, 110px)",
@@ -158,14 +169,6 @@ export default function TvHomePage() {
                 ? formatTemp(weather.temperatureCurrent, weather.units)
                 : "–°"}
             </span>
-            <span
-              className="leading-none mb-2"
-              style={{
-                fontSize: "clamp(40px, 4.5vmin, 72px)"
-              }}
-            >
-              {iconFor(weather?.conditionCode)}
-            </span>
           </div>
           <div
             className="denboard-text-primary font-medium capitalize"
@@ -174,14 +177,20 @@ export default function TvHomePage() {
             {weather?.conditionText ?? "Loading…"}
           </div>
           <div
-            className="denboard-text-secondary flex gap-6 mt-2"
+            className="denboard-text-secondary flex flex-col gap-1 mt-2"
             style={{ fontSize: "clamp(14px, 1.3vmin, 22px)" }}
           >
             {weather?.sunrise && (
-              <span>Sunrise {formatSunTime(weather.sunrise)}</span>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-white/60 shrink-0" />
+                Sunrise {formatSunTime(weather.sunrise)}
+              </span>
             )}
             {weather?.sunset && (
-              <span>Sunset {formatSunTime(weather.sunset)}</span>
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-white/60 shrink-0" />
+                Sunset {formatSunTime(weather.sunset)}
+              </span>
             )}
           </div>
           {weather?.dailyForecast && weather.dailyForecast.length > 0 && (
@@ -189,7 +198,7 @@ export default function TvHomePage() {
               className="flex gap-4 mt-4 pt-4 border-t border-white/10"
               style={{ fontSize: "clamp(14px, 1.2vmin, 20px)" }}
             >
-              {weather.dailyForecast.slice(0, 5).map((day) => (
+              {weather.dailyForecast.slice(0, 4).map((day) => (
                 <div
                   key={day.dateISO}
                   className="flex flex-col items-center denboard-text-secondary flex-1 min-w-0"
@@ -222,7 +231,7 @@ export default function TvHomePage() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div
-            className="rounded-2xl flex flex-col w-full max-w-3xl border border-white/10"
+            className="rounded-2xl flex flex-col w-full max-w-4xl border border-white/10"
             style={{
               background: "rgba(0,0,0,0.35)",
               backdropFilter: "blur(18px)",
@@ -251,13 +260,27 @@ export default function TvHomePage() {
                 No events today
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2">
                 {visibleEvents.map((evt, i) => {
                   const color = evt.calendarColor ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+                  const timeStr = evt.allDay
+                    ? "All day"
+                    : (() => {
+                        const start = formatTime(evt.start);
+                        try {
+                          const startDate = new Date(evt.start);
+                          const endDate = new Date(evt.end);
+                          const durationMin = (endDate.getTime() - startDate.getTime()) / 60000;
+                          if (durationMin > 0 && durationMin < 24 * 60) {
+                            return `${start} – ${formatTime(evt.end)}`;
+                          }
+                        } catch {}
+                        return start;
+                      })();
                   return (
                     <div
                       key={evt.id}
-                      className="flex items-center gap-4"
+                      className="flex items-center gap-3"
                       style={{ fontSize: "clamp(18px, 1.6vmin, 24px)" }}
                     >
                       <span
@@ -268,10 +291,10 @@ export default function TvHomePage() {
                           backgroundColor: color
                         }}
                       />
-                      <span className="denboard-text-secondary shrink-0 tabular-nums w-24 text-left">
-                        {evt.allDay ? "All day" : formatTime(evt.start)}
+                      <span className="denboard-text-secondary shrink-0 tabular-nums">
+                        {timeStr}
                       </span>
-                      <span className="denboard-text-primary flex-1 text-right truncate">
+                      <span className="denboard-text-primary truncate min-w-0">
                         {evt.title}
                       </span>
                     </div>
