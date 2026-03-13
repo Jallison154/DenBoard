@@ -1,5 +1,6 @@
 import { getConfig } from "./config";
 import { fetchWithRetry } from "./fetchWithRetry";
+import { loadSettings } from "./settings";
 import { logger } from "./logging";
 
 export type HomeAssistantEntityState = {
@@ -70,8 +71,26 @@ async function fetchEntitySoft(
 
 export async function getHomeAssistantState(): Promise<HomeAssistantPayload> {
   const config = getConfig();
+  const settings = await loadSettings();
 
-  if (!config.homeAssistantUrl || !config.homeAssistantToken) {
+  const baseUrlRaw =
+    (settings.homeAssistant?.baseUrl || "").trim() ||
+    (config.homeAssistantUrl || "").trim();
+  const baseUrl = baseUrlRaw
+    ? /^https?:\/\//i.test(baseUrlRaw)
+      ? baseUrlRaw
+      : `http://${baseUrlRaw}`
+    : "";
+  const token = config.homeAssistantToken;
+  const guestModeEntityId =
+    settings.homeAssistant?.guestModeEntityId?.trim() ||
+    config.guestModeEntityId;
+  const entityList =
+    settings.homeAssistant?.entities != null
+      ? settings.homeAssistant.entities
+      : config.homeAssistantEntities;
+
+  if (!baseUrl || !token) {
     return {
       guestMode: false,
       entities: [],
@@ -79,33 +98,30 @@ export async function getHomeAssistantState(): Promise<HomeAssistantPayload> {
     };
   }
 
-  const raw = config.homeAssistantUrl.replace(/\/+$/, "");
-  const baseUrl = /^https?:\/\//i.test(raw) ? raw : `http://${raw}`;
-
   const headers = {
-    Authorization: `Bearer ${config.homeAssistantToken}`,
+    Authorization: `Bearer ${token}`,
     "Content-Type": "application/json"
   };
 
   try {
     const [guestRaw, ...entityRaw] = await Promise.all([
-      fetchEntitySoft(baseUrl, config.guestModeEntityId, headers),
-      ...config.homeAssistantEntities.map((e) =>
-        fetchEntitySoft(baseUrl, e.id, headers)
-      )
+      fetchEntitySoft(baseUrl, guestModeEntityId, headers),
+      ...entityList.map((e) => fetchEntitySoft(baseUrl, e.id, headers))
     ]);
 
-    const guestMode = String(guestRaw?.state ?? "off") === "on";
+    const guestMode =
+      String((guestRaw as { state?: string } | null)?.state ?? "off") === "on";
 
-    const entities: HomeAssistantEntityState[] = config.homeAssistantEntities
+    const entities: HomeAssistantEntityState[] = entityList
       .map((rawData, idx) => {
         const data = entityRaw[idx];
         if (data == null) return null;
         return {
-          id: config.homeAssistantEntities[idx].id,
-          label: config.homeAssistantEntities[idx].label,
+          id: rawData.id,
+          label: rawData.label,
           state: String((data as { state?: string })?.state ?? "unknown"),
-          attributes: ((data as { attributes?: Record<string, unknown> })?.attributes ?? {})
+          attributes: ((data as { attributes?: Record<string, unknown> })
+            ?.attributes ?? {})
         };
       })
       .filter((e): e is HomeAssistantEntityState => e != null);
