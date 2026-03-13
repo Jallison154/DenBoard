@@ -134,14 +134,28 @@ body {
 }
 
 /* Subtle rain and snow particle effects */
+.denboard-rain,
+.denboard-snow {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  /* Establish containing block for pseudo-elements */
+  contain: layout style;
+}
+
 .denboard-rain::before,
 .denboard-rain::after {
   content: "";
   position: absolute;
   inset: -50%;
+  width: 200%;
+  height: 200%;
+  left: -50%;
+  top: -50%;
   background-image: radial-gradient(circle at 2px 10px, rgba(148, 163, 184, 0.45) 0, transparent 40%);
   background-size: 8px 32px;
   animation: denboard-rainfall 12s linear infinite;
+  will-change: transform;
 }
 
 .denboard-rain::after {
@@ -164,9 +178,14 @@ body {
   content: "";
   position: absolute;
   inset: -30%;
+  width: 160%;
+  height: 160%;
+  left: -30%;
+  top: -30%;
   background-image: radial-gradient(circle, rgba(248, 250, 252, 0.7) 0, transparent 55%);
   background-size: 24px 24px;
   animation: denboard-snowfall 24s linear infinite;
+  will-change: transform;
 }
 
 .denboard-snow::after {

@@ -15,23 +15,30 @@ type Props = {
 type Combined = {
   background: BackgroundPayload | null;
   weather: WeatherPayload | null;
+  enableWeatherEffects: boolean;
 };
 
 async function fetchCombined(): Promise<Combined> {
-  const [bgRes, weatherRes] = await Promise.all([
+  const [bgRes, weatherRes, settingsRes] = await Promise.all([
     fetch("/api/background", { cache: "no-store" }),
-    fetch("/api/weather", { cache: "no-store" })
+    fetch("/api/weather", { cache: "no-store" }),
+    fetch("/api/settings", { cache: "no-store" })
   ]);
 
   if (!bgRes.ok || !weatherRes.ok) {
     throw new Error("Failed to load background data");
   }
 
-  const [background, weather] = await Promise.all([
+  const [background, weather, settings] = await Promise.all([
     bgRes.json(),
-    weatherRes.json()
+    weatherRes.json(),
+    settingsRes.ok ? settingsRes.json() : Promise.resolve({ display: { enableWeatherEffects: true } })
   ]);
-  return { background, weather };
+  return {
+    background,
+    weather,
+    enableWeatherEffects: settings?.display?.enableWeatherEffects ?? true
+  };
 }
 
 export function BackgroundLayer({ children, variant = "default" }: Props) {
@@ -86,9 +93,9 @@ type OverlayKind = WeatherPayload["overlay"];
 function WeatherOverlayLayer({ kind }: { kind: OverlayKind }) {
   if (!kind || kind === "clear") return null;
 
-  // Atmospheric overlays only change mood, not brightness.
+  /* z-[15] above overlay (z-10). isolation: isolate ensures mix-blend-screen renders correctly. */
   return (
-    <div className="pointer-events-none fixed inset-0 z-15">
+    <div className="pointer-events-none fixed inset-0 z-[15] isolate" style={{ isolation: "isolate" }}>
       {kind === "rain" && (
         <div className="absolute inset-0 opacity-40 mix-blend-screen overflow-hidden">
           <div className="denboard-rain" />
