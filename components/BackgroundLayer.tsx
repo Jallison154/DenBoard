@@ -92,18 +92,14 @@ type OverlayKind = WeatherPayload["overlay"];
 function WeatherOverlayLayer({ kind }: { kind: OverlayKind }) {
   if (!kind || kind === "clear") return null;
 
-  /* z-[15] above overlay (z-10). isolation: isolate ensures mix-blend-screen renders correctly. */
+  /* z-[15] above overlay (z-10). Rain/snow: subtle tint only (particle grid removed). */
   return (
-    <div className="pointer-events-none fixed inset-0 z-[15] isolate" style={{ isolation: "isolate" }}>
+    <div className="pointer-events-none fixed inset-0 z-[15]">
       {kind === "rain" && (
-        <div className="absolute inset-0 opacity-40 mix-blend-screen overflow-hidden">
-          <div className="denboard-rain" />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-500/8 via-transparent to-slate-600/12" />
       )}
       {kind === "snow" && (
-        <div className="absolute inset-0 opacity-45 mix-blend-screen overflow-hidden">
-          <div className="denboard-snow" />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-slate-300/8" />
       )}
       {kind === "cloudy" && (
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/18" />
