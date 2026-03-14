@@ -133,13 +133,19 @@ body {
   font-size: var(--denboard-scale-forecast-temp);
 }
 
-/* Very subtle weather “breathing” – single opacity keyframe, low CPU/GPU cost */
+/* Weather overlay: subtle breathing + gentle drift, GPU-friendly */
 @keyframes denboard-weather-subtle {
-  0%, 100% { opacity: 0.85; }
+  0%, 100% { opacity: 0.75; }
   50% { opacity: 1; }
 }
+@keyframes denboard-weather-drift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(8px); }
+}
 .denboard-weather-subtle {
-  animation: denboard-weather-subtle 14s ease-in-out infinite;
+  animation:
+    denboard-weather-subtle 12s ease-in-out infinite,
+    denboard-weather-drift 18s linear infinite;
 }
 
 /* Floating nav: only on hover-capable devices (desktop/laptop with mouse) */
