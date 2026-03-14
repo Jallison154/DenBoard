@@ -15,6 +15,8 @@ async function fetchHomeAssistant(): Promise<HomeAssistantPayload> {
 
 type Props = {
   hideWhenGuest?: boolean;
+  /** When true, entities span full width and shrink as more are added */
+  fullWidth?: boolean;
 };
 
 export function useGuestMode() {
@@ -29,13 +31,13 @@ export function useGuestMode() {
   };
 }
 
-export function HomeAssistantStatus({ hideWhenGuest }: Props) {
+export function HomeAssistantStatus({ hideWhenGuest, fullWidth }: Props) {
   const { guestMode, payload } = useGuestMode();
 
   const showTiles = !(hideWhenGuest && guestMode);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 w-full">
       <div
         className="flex items-center denboard-text-secondary denboard-scale-status"
         style={{ gap: "var(--denboard-scale-gap)" }}
@@ -64,8 +66,12 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
         {showTiles && payload && (
           <motion.div
             key={guestMode ? "guest-off" : "guest-on"}
-            className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 max-w-xl"
-            style={{ gap: "var(--denboard-scale-gap)" }}
+            className={
+              fullWidth
+                ? "flex flex-wrap w-full"
+                : "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 max-w-xl"
+            }
+            style={fullWidth ? { gap: "var(--denboard-scale-gap)" } : undefined}
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
@@ -74,16 +80,18 @@ export function HomeAssistantStatus({ hideWhenGuest }: Props) {
             {payload.entities.map((entity) => (
               <div
                 key={entity.id}
-                className="rounded-2xl denboard-card flex flex-col"
+                className={`rounded-2xl denboard-card flex flex-col ${
+                  fullWidth ? "flex-1 min-w-[4.5rem]" : ""
+                }`}
                 style={{
                   padding: "var(--denboard-scale-space-md)",
                   gap: "var(--denboard-scale-space)"
                 }}
               >
-                <div className="denboard-text-secondary uppercase tracking-wide denboard-scale-status">
+                <div className="denboard-text-secondary uppercase tracking-wide denboard-scale-status truncate">
                   {entity.label}
                 </div>
-                <div className="font-semibold denboard-text-primary denboard-scale-date">
+                <div className="font-semibold denboard-text-primary denboard-scale-date truncate">
                   {formatState(entity.state)}
                 </div>
               </div>

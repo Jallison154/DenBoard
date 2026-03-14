@@ -66,9 +66,9 @@ export default function PortraitCalendarPage() {
           </div>
         )}
 
-        {/* Home Assistant entities */}
+        {/* Home Assistant entities – full width, tiles shrink as more are added */}
         <div className="w-full flex-shrink-0">
-          <HomeAssistantStatus hideWhenGuest />
+          <HomeAssistantStatus hideWhenGuest fullWidth />
         </div>
         {/* Dad joke full width */}
         <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
