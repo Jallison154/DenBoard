@@ -161,7 +161,7 @@ export function FourWeekGrid() {
         style={{
           gap: "var(--denboard-scale-gap)",
           marginBottom: "var(--denboard-scale-gap)",
-          fontSize: "calc(var(--denboard-scale-date) * 0.88)"
+          fontSize: "calc(var(--denboard-scale-date) * 0.78)"
         }}
       >
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
@@ -217,7 +217,7 @@ function DayCell({
         className={`shrink-0 px-2 pt-1 text-left font-semibold denboard-text-secondary ${
           isToday ? "font-bold denboard-text-primary" : ""
         }`}
-        style={{ fontSize: "calc(var(--denboard-scale-date) * 0.88)" }}
+        style={{ fontSize: "calc(var(--denboard-scale-date) * 0.78)" }}
       >
         {dayOfMonth}
       </div>
@@ -246,11 +246,11 @@ function EventRow({
   if (evt.allDay) {
     return (
       <div
-        className="w-full rounded py-0.5 px-1.5 truncate font-medium denboard-text-primary shrink-0"
+        className="w-full rounded py-0.5 px-1 truncate font-medium denboard-text-primary shrink-0"
         style={{
           backgroundColor: `${color}30`,
-          borderLeft: `3px solid ${color}`,
-          fontSize: "calc(var(--denboard-scale-calendar-event) * 0.82)"
+          borderLeft: `2px solid ${color}`,
+          fontSize: "calc(var(--denboard-scale-calendar-event) * 0.68)"
         }}
         title={evt.title}
       >
@@ -261,19 +261,19 @@ function EventRow({
   const time = formatTime(evt.start);
   return (
     <div
-      className="flex items-center gap-1.5 min-w-0 shrink-0 rounded py-0.5 px-1.5 denboard-text-primary"
+      className="flex items-center gap-1 min-w-0 shrink-0 rounded py-0.5 px-1 denboard-text-primary"
       style={{
         backgroundColor: `${color}25`,
-        borderLeft: `3px solid ${color}`,
-        fontSize: "calc(var(--denboard-scale-calendar-event) * 0.82)"
+        borderLeft: `2px solid ${color}`,
+        fontSize: "calc(var(--denboard-scale-calendar-event) * 0.68)"
       }}
       title={evt.title}
     >
-      <span className="text-sandstone/80 shrink-0">•</span>
+      <span className="text-sandstone/80 shrink-0 text-[0.65em]">•</span>
       <span className="truncate flex-1 min-w-0" style={{ fontSize: "inherit" }}>{evt.title}</span>
       <span
         className="denboard-text-secondary/90 shrink-0 tabular-nums"
-        style={{ fontSize: "calc(var(--denboard-scale-status) * 0.9)" }}
+        style={{ fontSize: "calc(var(--denboard-scale-status) * 0.82)" }}
       >
         {time}
       </span>

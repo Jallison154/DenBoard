@@ -119,20 +119,37 @@ export default function PortraitCalendarPage() {
                     {weather.dailyForecast.slice(0, 5).map((day) => (
                       <div
                         key={day.dateISO}
-                        className="flex flex-col items-center justify-center text-center rounded-xl denboard-card-nested py-3 sm:py-4 px-2"
+                        className="flex items-center justify-between gap-2 rounded-xl denboard-card-nested py-3 sm:py-4 px-3 sm:px-4"
                       >
-                        <span className="denboard-text-secondary text-sm sm:text-base font-medium truncate w-full">
-                          {day.dayName}
-                        </span>
-                        <span className="text-2xl sm:text-3xl md:text-4xl my-1 sm:my-2" aria-hidden>
-                          {weatherIcon(day.iconCode)}
-                        </span>
-                        <span className="denboard-text-primary text-lg sm:text-xl md:text-2xl font-semibold tabular-nums">
-                          {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
-                        </span>
-                        <span className="denboard-text-secondary text-sm sm:text-base tabular-nums">
-                          {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
-                        </span>
+                        <div className="flex flex-col items-start min-w-0 shrink">
+                          <span
+                            className="denboard-text-secondary font-semibold truncate w-full text-left"
+                            style={{ fontSize: "clamp(14px, 2vmin, 22px)" }}
+                          >
+                            {day.dayName}
+                          </span>
+                          <span
+                            className="shrink-0 mt-0.5"
+                            style={{ fontSize: "clamp(24px, 4vmin, 44px)" }}
+                            aria-hidden
+                          >
+                            {weatherIcon(day.iconCode)}
+                          </span>
+                        </div>
+                        <div className="flex flex-col items-end shrink-0">
+                          <span
+                            className="denboard-text-primary font-bold tabular-nums"
+                            style={{ fontSize: "clamp(28px, 5vmin, 56px)" }}
+                          >
+                            {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
+                          </span>
+                          <span
+                            className="denboard-text-secondary font-medium tabular-nums"
+                            style={{ fontSize: "clamp(18px, 3vmin, 32px)" }}
+                          >
+                            {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
