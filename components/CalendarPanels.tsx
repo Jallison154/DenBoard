@@ -104,7 +104,6 @@ export function TodayEventsPanel() {
   );
 }
 
-const VISIBLE_EVENTS_PER_CELL = 2;
 const DEFAULT_CALENDAR_COLORS = ["#3B82F6", "#F59E0B", "#22C55E", "#EF4444"];
 
 function getEventColor(evt: { calendarColor?: string }, index: number): string {
@@ -179,22 +178,16 @@ function DayCell({
   const dayOfMonth =
     day.dayOfMonth ?? new Date(day.date + "T12:00:00").getDate();
   const events = day.events ?? [];
-  const visible = events.slice(0, VISIBLE_EVENTS_PER_CELL);
-  const remaining = events.length - visible.length;
   const isToday =
     day.isToday ?? isSameDay(new Date(day.date + "T12:00:00"), new Date());
 
   return (
     <div
-      className={`rounded-xl flex flex-col overflow-hidden ${
+      className={`rounded-xl flex flex-col overflow-hidden min-h-[var(--denboard-scale-calendar-cell-height)] ${
         isToday
           ? "bg-sandstone/25 border-2 border-sandstone/70 shadow-[0_0_12px_rgba(209,163,124,0.15)]"
           : "denboard-card-nested border border-transparent"
       }`}
-      style={{
-        height: "var(--denboard-scale-calendar-cell-height)",
-        minHeight: "var(--denboard-scale-calendar-cell-height)"
-      }}
     >
       {/* Day number - top left, bolder when today */}
       <div
@@ -205,20 +198,15 @@ function DayCell({
         {dayOfMonth}
       </div>
 
-      {/* Event rows - up to 2 visible */}
-      <div className="flex-1 min-h-0 flex flex-col gap-0.5 px-2 py-1 overflow-hidden">
-        {visible.map((evt, idx) => (
+      {/* Event rows - all events visible, auto-scales to content */}
+      <div className="flex flex-col gap-0.5 px-2 py-1 shrink-0">
+        {events.map((evt, idx) => (
           <EventRow
             key={evt.id}
             evt={evt}
             color={getEventColor(evt, idx)}
           />
         ))}
-        {remaining > 0 && (
-          <div className="mt-auto pt-0.5 denboard-scale-status denboard-text-secondary/80 shrink-0">
-            +{remaining} more
-          </div>
-        )}
       </div>
     </div>
   );

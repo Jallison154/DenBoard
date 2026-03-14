@@ -96,7 +96,7 @@ export default function TvHomePage() {
     ...(today?.allDay ?? []).map((e) => ({ ...e, sortKey: 0 })),
     ...(today?.timed ?? []).map((e) => ({ ...e, sortKey: new Date(e.start).getTime() }))
   ].sort((a, b) => a.sortKey - b.sortKey);
-  const visibleEvents = allEvents.slice(0, 5);
+  const visibleEvents = allEvents;
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
@@ -224,8 +224,9 @@ export default function TvHomePage() {
 
       {/* BOTTOM LEFT: Today's Schedule (hidden in privacy/guest mode) */}
       {!guestMode && (
-        <motion.div
-          className="flex justify-start pb-4 w-full max-w-[50vw]"
+        <div className="w-full flex justify-start pb-4">
+          <motion.div
+            className="flex flex-col w-full max-w-[50vw]"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -304,6 +305,7 @@ export default function TvHomePage() {
             )}
           </div>
         </motion.div>
+        </div>
       )}
     </div>
   );
