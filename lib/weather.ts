@@ -204,6 +204,41 @@ async function fetchFromExternal(units?: WeatherUnits): Promise<WeatherDebugPayl
   }
 }
 
+/** Fetch only 5-day daily forecast from Open-Meteo (e.g. when HA has no forecast). */
+async function fetchOpenMeteoDailyForecastOnly(
+  lat: number,
+  lon: number,
+  timezone: string,
+  units: WeatherUnits
+): Promise<DailyForecastEntry[]> {
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", String(lat));
+  url.searchParams.set("longitude", String(lon));
+  url.searchParams.set("daily", "temperature_2m_max,temperature_2m_min,weather_code");
+  url.searchParams.set("timezone", timezone);
+  url.searchParams.set("forecast_days", "5");
+  url.searchParams.set("temperature_unit", units === "imperial" ? "fahrenheit" : "celsius");
+  const res = await fetchWithRetry(url.toString());
+  const raw: any = await res.json();
+  const dailyForecast: DailyForecastEntry[] = [];
+  const days: string[] = raw.daily?.time ?? [];
+  const currentCode: number = typeof raw.daily?.weather_code?.[0] === "number" ? raw.daily.weather_code[0] : 0;
+  for (let i = 0; i < Math.min(days.length, 5); i += 1) {
+    const dateISO = days[i];
+    const codeForDay: number = typeof raw.daily?.weather_code?.[i] === "number" ? raw.daily.weather_code[i] : currentCode;
+    const m = mapWeatherCodeToCondition(codeForDay);
+    const date = DateTime.fromISO(dateISO, { zone: timezone });
+    dailyForecast.push({
+      dateISO,
+      dayName: date.isValid ? date.toFormat("ccc") : "",
+      iconCode: m.icon,
+      highTemp: raw.daily?.temperature_2m_max?.[i] ?? NaN,
+      lowTemp: raw.daily?.temperature_2m_min?.[i] ?? NaN
+    });
+  }
+  return dailyForecast;
+}
+
 async function fetchAndMapWeather(): Promise<WeatherDebugPayload> {
   const config = getConfig();
   const settings = await loadSettings();
@@ -482,6 +517,21 @@ async function fetchFromHomeAssistant(
           highTemp: Number.isFinite(day.high) ? day.high : NaN,
           lowTemp: Number.isFinite(day.low) ? day.low : NaN
         });
+      }
+    }
+
+    if (forecast.length === 0) {
+      try {
+        const lat = settings.location?.lat ?? config.lat;
+        const lon = settings.location?.lon ?? config.lon;
+        const tz = settings.location?.timezone ?? config.timezone;
+        const fallbackForecast = await fetchOpenMeteoDailyForecastOnly(lat, lon, tz, unitsFromHa || units);
+        forecast.push(...fallbackForecast);
+        if (fallbackForecast.length > 0) {
+          logger.info("Weather forecast: using Open-Meteo fallback (HA had no forecast)");
+        }
+      } catch (err) {
+        logger.warn("Open-Meteo forecast fallback failed", { error: String(err) });
       }
     }
 

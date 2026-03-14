@@ -203,8 +203,10 @@ function DayCell({
       className={`rounded-xl flex flex-col overflow-hidden min-h-[var(--denboard-scale-calendar-cell-height)] ${
         isToday
           ? "bg-sandstone/25 border-2 border-sandstone/70 shadow-[0_0_12px_rgba(209,163,124,0.15)]"
+          : isPast
+          ? "denboard-card-nested border border-transparent bg-black/20 opacity-75"
           : "denboard-card-nested border border-transparent"
-      } ${isPast ? "opacity-60" : ""}`}
+      }`}
     >
       {/* Day number - top left, bolder when today */}
       <div
