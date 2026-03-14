@@ -13,7 +13,9 @@ async function fetchDadJoke(): Promise<DadJokePayload> {
   return res.json();
 }
 
-export function DadJokePanel() {
+type Props = { fullWidth?: boolean };
+
+export function DadJokePanel({ fullWidth }: Props) {
   const fetcher = useCallback(fetchDadJoke, []);
   const { data } = usePolling<DadJokePayload>(fetcher, {
     intervalMs: 45 * 60 * 1000,
@@ -22,7 +24,7 @@ export function DadJokePanel() {
 
   return (
     <motion.div
-      className="rounded-3xl denboard-card border-sandstone/40 denboard-scale-calendar-event denboard-text-primary max-w-2xl"
+      className={`rounded-3xl denboard-card border-sandstone/40 denboard-scale-calendar-event denboard-text-primary ${fullWidth ? "w-full" : "max-w-2xl"}`}
       style={{ padding: "var(--denboard-scale-card-padding)" }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}

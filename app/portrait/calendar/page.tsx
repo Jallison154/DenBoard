@@ -30,7 +30,7 @@ export default function PortraitCalendarPage() {
       <SevereAlertBanner alerts={weather?.alerts} />
 
       <div
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col min-h-0"
         style={{
           gap: "var(--denboard-scale-gap-lg)",
           paddingTop: "var(--denboard-scale-space-md)",
@@ -41,7 +41,13 @@ export default function PortraitCalendarPage() {
 
         {!guestMode ? (
           <>
-            <TodayEventsPanel />
+            {/* Today view centered */}
+            <div className="flex justify-center flex-shrink-0">
+              <TodayEventsPanel />
+            </div>
+            {/* Spacer pushes calendar to bottom */}
+            <div className="flex-1 min-h-0" />
+            {/* Calendar at bottom */}
             <FourWeekGrid />
           </>
         ) : (
@@ -60,8 +66,9 @@ export default function PortraitCalendarPage() {
           </div>
         )}
 
-        <div style={{ paddingTop: "var(--denboard-scale-gap)" }}>
-          <DadJokePanel />
+        {/* Dad joke full width */}
+        <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
+          <DadJokePanel fullWidth />
         </div>
       </div>
     </div>
