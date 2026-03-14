@@ -41,9 +41,9 @@ export default function PortraitCalendarPage() {
 
         {!guestMode ? (
           <>
-            {/* Today view centered */}
-            <div className="flex justify-center flex-shrink-0">
-              <TodayEventsPanel />
+            {/* Today view: stretches from far left to center */}
+            <div className="flex flex-shrink-0 w-[50%] min-w-0 self-start mr-auto">
+              <TodayEventsPanel stretchFromLeft />
             </div>
             {/* Spacer pushes calendar to bottom */}
             <div className="flex-1 min-h-0" />

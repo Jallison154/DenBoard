@@ -19,7 +19,12 @@ async function fetchCalendar(): Promise<CalendarPayload> {
   return res.json();
 }
 
-export function TodayEventsPanel() {
+type TodayEventsPanelProps = {
+  /** When true, panel stretches from left to center (e.g. portrait calendar) */
+  stretchFromLeft?: boolean;
+};
+
+export function TodayEventsPanel({ stretchFromLeft }: TodayEventsPanelProps = {}) {
   const fetcher = useCallback(fetchCalendar, []);
   const { data } = usePolling<CalendarPayload>(fetcher, {
     intervalMs: 5 * 60 * 1000,
@@ -30,7 +35,7 @@ export function TodayEventsPanel() {
 
   return (
     <motion.div
-      className="rounded-3xl denboard-card flex flex-col max-w-xl"
+      className={`rounded-3xl denboard-card flex flex-col ${stretchFromLeft ? "w-full max-w-none" : "max-w-xl"}`}
       style={{
         padding: "var(--denboard-scale-card-padding)",
         gap: "var(--denboard-scale-gap)"
