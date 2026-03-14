@@ -266,18 +266,7 @@ export default function TvHomePage() {
                   const color = evt.calendarColor ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length];
                   const timeStr = evt.allDay
                     ? "All day"
-                    : (() => {
-                        const start = formatTime(evt.start);
-                        try {
-                          const startDate = new Date(evt.start);
-                          const endDate = new Date(evt.end);
-                          const durationMin = (endDate.getTime() - startDate.getTime()) / 60000;
-                          if (durationMin > 0 && durationMin < 24 * 60) {
-                            return `${start} – ${formatTime(evt.end)}`;
-                          }
-                        } catch {}
-                        return start;
-                      })();
+                    : formatTime(evt.start);
                   return (
                     <div
                       key={evt.id}

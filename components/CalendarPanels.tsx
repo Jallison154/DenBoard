@@ -105,7 +105,7 @@ export function TodayEventsPanel({ stretchFromLeft }: TodayEventsPanelProps = {}
                 title={evt.title}
               >
                 <span className="denboard-text-secondary shrink-0 tabular-nums" style={{ minWidth: "6ch" }}>
-                  {formatTime(evt.start)} – {formatTime(evt.end)}
+                  {formatTime(evt.start)}
                 </span>
                 <span className="denboard-text-primary truncate min-w-0">{evt.title}</span>
               </div>
