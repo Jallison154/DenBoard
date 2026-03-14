@@ -311,7 +311,8 @@ async function fetchFromHomeAssistant(
                 service_data: {
                   entity_id: entityId,
                   type: "twice_daily"
-                }
+                },
+                return_response: true
               })
             );
             return;
