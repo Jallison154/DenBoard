@@ -69,11 +69,16 @@ export function TodayEventsPanel({ stretchFromLeft }: TodayEventsPanelProps = {}
           <div className="denboard-scale-calendar-event uppercase tracking-[0.2em] denboard-text-secondary">
             All Day
           </div>
-          {today.allDay.map((evt) => (
+          {today.allDay.map((evt, idx) => (
             <div
               key={evt.id}
-              className="rounded-2xl denboard-card-nested denboard-scale-calendar-event denboard-text-primary"
-              style={{ padding: "var(--denboard-scale-space-md) var(--denboard-scale-card-padding)" }}
+              className="rounded-2xl denboard-card-nested denboard-scale-calendar-event denboard-text-primary font-medium truncate"
+              style={{
+                padding: "var(--denboard-scale-space-md) var(--denboard-scale-card-padding)",
+                backgroundColor: `${getEventColor(evt, idx)}30`,
+                borderLeft: `3px solid ${getEventColor(evt, idx)}`
+              }}
+              title={evt.title}
             >
               {evt.title}
             </div>
@@ -87,19 +92,22 @@ export function TodayEventsPanel({ stretchFromLeft }: TodayEventsPanelProps = {}
             Scheduled
           </div>
           <div className="flex flex-col" style={{ gap: "var(--denboard-scale-gap)" }}>
-            {today.timed.map((evt) => (
+            {today.timed.map((evt, idx) => (
               <div
                 key={evt.id}
                 className="rounded-2xl denboard-card-nested denboard-scale-calendar-event flex items-baseline denboard-text-primary"
                 style={{
                   padding: "var(--denboard-scale-space-md) var(--denboard-scale-card-padding)",
-                  gap: "var(--denboard-scale-space-md)"
+                  gap: "var(--denboard-scale-space-md)",
+                  backgroundColor: `${getEventColor(evt, idx)}25`,
+                  borderLeft: `3px solid ${getEventColor(evt, idx)}`
                 }}
+                title={evt.title}
               >
-                <span className="denboard-text-secondary shrink-0" style={{ minWidth: "6ch" }}>
+                <span className="denboard-text-secondary shrink-0 tabular-nums" style={{ minWidth: "6ch" }}>
                   {formatTime(evt.start)} – {formatTime(evt.end)}
                 </span>
-                <span className="denboard-text-primary">{evt.title}</span>
+                <span className="denboard-text-primary truncate min-w-0">{evt.title}</span>
               </div>
             ))}
           </div>
@@ -183,8 +191,12 @@ function DayCell({
   const dayOfMonth =
     day.dayOfMonth ?? new Date(day.date + "T12:00:00").getDate();
   const events = day.events ?? [];
+  const dayDate = new Date(day.date + "T12:00:00");
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
   const isToday =
-    day.isToday ?? isSameDay(new Date(day.date + "T12:00:00"), new Date());
+    day.isToday ?? isSameDay(dayDate, new Date());
+  const isPast = dayDate < todayStart;
 
   return (
     <div
@@ -192,7 +204,7 @@ function DayCell({
         isToday
           ? "bg-sandstone/25 border-2 border-sandstone/70 shadow-[0_0_12px_rgba(209,163,124,0.15)]"
           : "denboard-card-nested border border-transparent"
-      }`}
+      } ${isPast ? "opacity-60" : ""}`}
     >
       {/* Day number - top left, bolder when today */}
       <div

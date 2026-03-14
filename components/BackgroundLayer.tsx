@@ -95,24 +95,31 @@ type OverlayKind = WeatherPayload["overlay"];
 function WeatherOverlayLayer({ kind }: { kind: OverlayKind }) {
   if (!kind || kind === "clear") return null;
 
-  /* z-[15] above overlay (z-10). Rain/snow: subtle tint only (particle grid removed). */
+  /* z-[15] above overlay (z-10). Single-layer gradients + one cheap CSS opacity pulse. */
   return (
     <div className="pointer-events-none fixed inset-0 z-[15]">
       {kind === "rain" && (
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-500/8 via-transparent to-slate-600/12" />
+        <div
+          className="denboard-weather-subtle absolute inset-0 bg-gradient-to-b from-slate-500/8 via-transparent to-slate-600/12"
+          aria-hidden
+        />
       )}
       {kind === "snow" && (
-        <div className="absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-slate-300/8" />
+        <div
+          className="denboard-weather-subtle absolute inset-0 bg-gradient-to-b from-white/5 via-transparent to-slate-300/8"
+          aria-hidden
+        />
       )}
       {kind === "cloudy" && (
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/18" />
+        <div
+          className="denboard-weather-subtle absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/18"
+          aria-hidden
+        />
       )}
       {kind === "storm" && (
-        <motion.div
-          className="absolute inset-0 rounded-[4rem] border border-amberSoft/40 shadow-[0_0_55px_rgba(251,191,36,0.45)]"
-          initial={{ opacity: 0.4 }}
-          animate={{ opacity: [0.4, 0.75, 0.4] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        <div
+          className="denboard-weather-subtle absolute inset-0 rounded-[4rem] border border-amber-400/30 shadow-[0_0_40px_rgba(251,191,36,0.25)]"
+          aria-hidden
         />
       )}
     </div>

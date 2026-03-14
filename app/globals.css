@@ -133,7 +133,14 @@ body {
   font-size: var(--denboard-scale-forecast-temp);
 }
 
-/* Rain/snow particle effects removed – created visible dot grid pattern. */
+/* Very subtle weather “breathing” – single opacity keyframe, low CPU/GPU cost */
+@keyframes denboard-weather-subtle {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+.denboard-weather-subtle {
+  animation: denboard-weather-subtle 14s ease-in-out infinite;
+}
 
 /* Floating nav: only on hover-capable devices (desktop/laptop with mouse) */
 @media (hover: none) {

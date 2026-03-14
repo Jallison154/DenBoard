@@ -3,11 +3,11 @@
 import { TimePanel } from "@/components/TimePanel";
 import { DadJokePanel } from "@/components/DadJokePanel";
 import { TodayEventsPanel, FourWeekGrid } from "@/components/CalendarPanels";
+import { HomeAssistantStatus, useGuestMode } from "@/components/HomeAssistantStatus";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "@/components/hooks";
 import { useCallback } from "react";
-import { useGuestMode } from "@/components/HomeAssistantStatus";
 
 async function fetchWeather(): Promise<WeatherPayload> {
   const res = await fetch("/api/weather", { cache: "no-store" });
@@ -66,6 +66,10 @@ export default function PortraitCalendarPage() {
           </div>
         )}
 
+        {/* Home Assistant entities */}
+        <div className="w-full flex-shrink-0">
+          <HomeAssistantStatus hideWhenGuest />
+        </div>
         {/* Dad joke full width */}
         <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
           <DadJokePanel fullWidth />
