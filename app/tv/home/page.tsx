@@ -222,16 +222,16 @@ export default function TvHomePage() {
         </motion.div>
       </div>
 
-      {/* CENTER BOTTOM: Today's Schedule (hidden in privacy/guest mode) */}
+      {/* BOTTOM LEFT: Today's Schedule (hidden in privacy/guest mode) */}
       {!guestMode && (
         <motion.div
-          className="flex justify-center pb-4"
+          className="flex justify-start pb-4 w-full max-w-[50vw]"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div
-            className="rounded-2xl flex flex-col w-full max-w-4xl border border-white/10"
+            className="rounded-2xl flex flex-col w-full border border-white/10"
             style={{
               background: "rgba(0,0,0,0.35)",
               backdropFilter: "blur(18px)",
@@ -280,21 +280,21 @@ export default function TvHomePage() {
                   return (
                     <div
                       key={evt.id}
-                      className="flex items-center gap-3"
+                      className="flex flex-col items-start gap-1"
                       style={{ fontSize: "clamp(18px, 1.6vmin, 24px)" }}
                     >
-                      <span
-                        className="rounded-full shrink-0"
-                        style={{
-                          width: 10,
-                          height: 10,
-                          backgroundColor: color
-                        }}
-                      />
-                      <span className="denboard-text-secondary shrink-0 tabular-nums">
+                      <span className="flex items-center gap-2 denboard-text-secondary tabular-nums">
+                        <span
+                          className="rounded-full shrink-0"
+                          style={{
+                            width: 10,
+                            height: 10,
+                            backgroundColor: color
+                          }}
+                        />
                         {timeStr}
                       </span>
-                      <span className="denboard-text-primary truncate min-w-0">
+                      <span className="denboard-text-primary truncate w-full">
                         {evt.title}
                       </span>
                     </div>

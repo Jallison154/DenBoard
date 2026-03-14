@@ -16,13 +16,18 @@ export function usePolling<T>(
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const mountedRef = useRef(true);
+  const isFirstRunRef = useRef(true);
 
   useEffect(() => {
     mountedRef.current = true;
+    isFirstRunRef.current = true;
     async function runOnce() {
       try {
         setError(null);
-        if (immediate) setLoading(true);
+        if (immediate && isFirstRunRef.current) {
+          setLoading(true);
+          isFirstRunRef.current = false;
+        }
         const next = await fetcher();
         if (!mountedRef.current) return;
         setData(next);

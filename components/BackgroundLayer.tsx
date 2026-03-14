@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { BackgroundPayload } from "@/lib/background";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "./hooks";
@@ -55,24 +55,27 @@ export function BackgroundLayer({ children, variant = "default" }: Props) {
 
   return (
     <div className={`relative min-h-screen denboard-content-area ${!isHotel ? "denboard-gradient" : ""}`}>
-      {imageUrl && (
-        <motion.div
-          key={imageUrl}
-          className="pointer-events-none fixed inset-0 z-0"
-          initial={{ opacity: isHotel ? 0.5 : 0.12 }}
-          animate={{ opacity: isHotel ? 0.95 : 0.4 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-        >
-          <img
-            src={imageUrl}
-            alt=""
-            role="presentation"
-            className="h-full w-full object-cover"
-            style={{ filter: isHotel ? "brightness(0.92) contrast(1.02)" : "blur(10px) brightness(1.05) contrast(1.05)" }}
-            referrerPolicy="no-referrer"
-          />
-        </motion.div>
-      )}
+      <AnimatePresence initial={false}>
+        {imageUrl && (
+          <motion.div
+            key={imageUrl}
+            className="pointer-events-none fixed inset-0 z-0"
+            initial={{ opacity: isHotel ? 0.5 : 0.12 }}
+            animate={{ opacity: isHotel ? 0.95 : 0.4 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+          >
+            <img
+              src={imageUrl}
+              alt=""
+              role="presentation"
+              className="h-full w-full object-cover"
+              style={{ filter: isHotel ? "brightness(0.92) contrast(1.02)" : "blur(10px) brightness(1.05) contrast(1.05)" }}
+              referrerPolicy="no-referrer"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isHotel ? (
         <div className="pointer-events-none fixed inset-0 z-10 denboard-hotel-overlay" />
