@@ -14,6 +14,34 @@ export type BackgroundPayload = {
 
 const BACKGROUND_CACHE_KEY = "background:current";
 
+/** Seasonal and major holiday search terms for Unsplash (time of year). */
+function getSeasonalQuery(now: DateTime): string {
+  const month = now.month;
+  const day = now.day;
+  const terms: string[] = [];
+
+  if (month === 1) {
+    if (day <= 2) terms.push("new year winter celebration");
+    else terms.push("winter snow landscape");
+  } else if (month === 2) terms.push("valentines winter romance");
+  else if (month === 3) terms.push("spring landscape nature");
+  else if (month === 4) terms.push("easter spring blossoms");
+  else if (month === 5) terms.push("spring flowers landscape");
+  else if (month === 6) terms.push("summer landscape nature");
+  else if (month === 7) terms.push("independence day summer american");
+  else if (month === 8) terms.push("summer landscape mountains");
+  else if (month === 9) terms.push("autumn fall landscape");
+  else if (month === 10) terms.push("halloween autumn fall");
+  else if (month === 11) terms.push("thanksgiving autumn fall");
+  else if (month === 12) terms.push("christmas winter holiday snow");
+
+  return terms.length > 0 ? terms.join(" ") : "seasonal landscape";
+}
+
+function isValidImageUrl(url: unknown): url is string {
+  return typeof url === "string" && url.startsWith("https") && url.length > 10;
+}
+
 export async function getBackground(weather: WeatherPayload | null): Promise<BackgroundPayload> {
   const cached = getFromCache<BackgroundPayload>(BACKGROUND_CACHE_KEY);
   if (cached) return cached;
@@ -21,9 +49,10 @@ export async function getBackground(weather: WeatherPayload | null): Promise<Bac
   const config = getConfig();
   const now = DateTime.now().setZone(config.timezone);
   const timeOfDay = describeTimeOfDay(now);
+  const seasonal = getSeasonalQuery(now);
 
   const condition = weather?.conditionText?.toLowerCase() ?? "mountain";
-  const terms = [`${timeOfDay}`, condition, "mountain landscape", "calm", "minimal"].join(" ");
+  const terms = [timeOfDay, condition, seasonal, "mountain landscape", "calm", "minimal"].filter(Boolean).join(" ");
 
   if (!config.unsplashAccessKey) {
     const fallback: BackgroundPayload = {
@@ -62,8 +91,8 @@ export async function getBackground(weather: WeatherPayload | null): Promise<Bac
     }
 
     const data: any = await res.json();
-    const imageUrl: string | null =
-      data?.urls?.regular ?? data?.urls?.full ?? data?.urls?.raw ?? null;
+    const rawUrl = data?.urls?.regular ?? data?.urls?.full ?? data?.urls?.raw ?? null;
+    const imageUrl: string | null = isValidImageUrl(rawUrl) ? rawUrl : null;
     const attribution =
       data?.user?.name && data?.links?.html
         ? `Photo by ${data.user.name} on Unsplash`

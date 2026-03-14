@@ -74,23 +74,32 @@ export default function PortraitCalendarPage() {
             <div className="flex flex-shrink-0 w-[50%] min-w-0 self-start mr-auto">
               <TodayEventsPanel stretchFromLeft />
             </div>
-            {/* Full-width weather: current (left) + 5-day forecast (right) */}
+            {/* Spacer pushes weather + calendar to bottom; weather sits right above calendar */}
+            <div className="flex-1 min-h-0" />
+            {/* Full-width weather: current (left, temp half of time size) + 5-day forecast (center to right, much bigger) */}
             <div className="w-full flex-shrink-0 rounded-2xl denboard-card border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-5">
-              <div className="flex flex-col justify-center min-w-0 flex-1">
+              <div className="flex flex-col justify-center min-w-0 w-full sm:w-auto sm:min-w-[30%] sm:max-w-[45%]">
                 <span className="uppercase tracking-[0.2em] denboard-text-secondary text-xs sm:text-sm mb-1">
                   Weather
                 </span>
                 <div className="flex items-baseline gap-3 flex-wrap">
-                  <span className="denboard-text-primary font-bold text-4xl sm:text-5xl md:text-6xl tabular-nums">
+                  <span
+                    className="denboard-text-primary font-bold tabular-nums"
+                    style={{ fontSize: "calc(var(--denboard-scale-time) * 0.5)" }}
+                  >
                     {weather?.temperatureCurrent != null
                       ? formatTemp(weather.temperatureCurrent, weather.units)
                       : "–°"}
                   </span>
-                  <span className="text-2xl sm:text-3xl" aria-hidden>
+                  <span
+                    className="tabular-nums"
+                    style={{ fontSize: "calc(var(--denboard-scale-time) * 0.35)" }}
+                    aria-hidden
+                  >
                     {weatherIcon(weather?.conditionCode)}
                   </span>
                 </div>
-                <p className="denboard-text-primary font-medium text-lg sm:text-xl mt-1 capitalize">
+                <p className="denboard-text-primary font-medium text-base sm:text-lg mt-1 capitalize">
                   {weather?.conditionText ?? "—"}
                 </p>
                 {(weather?.sunrise || weather?.sunset) && (
@@ -101,27 +110,27 @@ export default function PortraitCalendarPage() {
                   </p>
                 )}
               </div>
-              <div className="flex flex-col sm:border-l border-white/10 sm:pl-6 min-w-0">
-                <span className="uppercase tracking-[0.2em] denboard-text-secondary text-xs sm:text-sm mb-2">
+              <div className="flex flex-col sm:border-l border-white/10 sm:pl-6 min-w-0 flex-1 sm:min-w-[50%]">
+                <span className="uppercase tracking-[0.2em] denboard-text-secondary text-sm sm:text-base mb-2">
                   5-day forecast
                 </span>
                 {weather?.dailyForecast && weather.dailyForecast.length > 0 ? (
-                  <div className="grid grid-cols-5 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-5 gap-3 sm:gap-4 flex-1">
                     {weather.dailyForecast.slice(0, 5).map((day) => (
                       <div
                         key={day.dateISO}
-                        className="flex flex-col items-center text-center rounded-xl denboard-card-nested py-2 px-1"
+                        className="flex flex-col items-center justify-center text-center rounded-xl denboard-card-nested py-3 sm:py-4 px-2"
                       >
-                        <span className="denboard-text-secondary text-xs font-medium truncate w-full">
+                        <span className="denboard-text-secondary text-sm sm:text-base font-medium truncate w-full">
                           {day.dayName}
                         </span>
-                        <span className="text-lg sm:text-xl my-0.5" aria-hidden>
+                        <span className="text-2xl sm:text-3xl md:text-4xl my-1 sm:my-2" aria-hidden>
                           {weatherIcon(day.iconCode)}
                         </span>
-                        <span className="denboard-text-primary text-sm font-semibold tabular-nums">
+                        <span className="denboard-text-primary text-lg sm:text-xl md:text-2xl font-semibold tabular-nums">
                           {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
                         </span>
-                        <span className="denboard-text-secondary text-xs tabular-nums">
+                        <span className="denboard-text-secondary text-sm sm:text-base tabular-nums">
                           {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
                         </span>
                       </div>
@@ -134,9 +143,7 @@ export default function PortraitCalendarPage() {
                 )}
               </div>
             </div>
-            {/* Spacer pushes calendar to bottom */}
-            <div className="flex-1 min-h-0" />
-            {/* Calendar at bottom */}
+            {/* Calendar directly below weather */}
             <FourWeekGrid />
           </>
         ) : (

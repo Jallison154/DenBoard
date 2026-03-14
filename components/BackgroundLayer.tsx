@@ -18,27 +18,46 @@ type Combined = {
   enableWeatherEffects: boolean;
 };
 
-async function fetchCombined(): Promise<Combined> {
-  const [bgRes, weatherRes, settingsRes] = await Promise.all([
-    fetch("/api/background", { cache: "no-store" }),
-    fetch("/api/weather", { cache: "no-store" }),
-    fetch("/api/settings", { cache: "no-store" })
-  ]);
+function safeJson<T>(res: Response): Promise<T | null> {
+  return res.ok ? res.json().catch(() => null) : Promise.resolve(null);
+}
 
-  if (!bgRes.ok || !weatherRes.ok) {
-    throw new Error("Failed to load background data");
+async function fetchCombined(): Promise<Combined> {
+  let background: BackgroundPayload | null = null;
+  let weather: WeatherPayload | null = null;
+  let enableWeatherEffects = true;
+
+  try {
+    const [bgRes, weatherRes, settingsRes] = await Promise.all([
+      fetch("/api/background", { cache: "no-store" }),
+      fetch("/api/weather", { cache: "no-store" }),
+      fetch("/api/settings", { cache: "no-store" })
+    ]);
+
+    const [bgData, weatherData, settingsData] = await Promise.all([
+      safeJson<BackgroundPayload>(bgRes),
+      safeJson<WeatherPayload>(weatherRes),
+      settingsRes.ok ? settingsRes.json().catch(() => null) : Promise.resolve(null)
+    ]);
+
+    background = bgData ?? null;
+    weather = weatherData ?? null;
+    if (settingsData && typeof settingsData.display?.enableWeatherEffects === "boolean") {
+      enableWeatherEffects = settingsData.display.enableWeatherEffects;
+    }
+  } catch {
+    // Never throw: allow page to render with gradient-only background
   }
 
-  const [background, weather, settings] = await Promise.all([
-    bgRes.json(),
-    weatherRes.json(),
-    settingsRes.ok ? settingsRes.json() : Promise.resolve({ display: { enableWeatherEffects: true } })
-  ]);
   return {
     background,
     weather,
-    enableWeatherEffects: settings?.display?.enableWeatherEffects ?? true
+    enableWeatherEffects
   };
+}
+
+function isValidImageUrl(url: unknown): url is string {
+  return typeof url === "string" && url.startsWith("https") && url.length > 10;
 }
 
 export function BackgroundLayer({ children, variant = "default" }: Props) {
@@ -48,7 +67,8 @@ export function BackgroundLayer({ children, variant = "default" }: Props) {
     immediate: true
   });
 
-  const imageUrl = data?.background?.imageUrl ?? null;
+  const rawUrl = data?.background?.imageUrl;
+  const imageUrl = isValidImageUrl(rawUrl) ? rawUrl : null;
   const overlay = data?.weather?.overlay ?? null;
   const isHotel = variant === "hotel";
   const showWeatherEffects = data?.enableWeatherEffects ?? true;
