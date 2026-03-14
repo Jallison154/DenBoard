@@ -93,9 +93,19 @@ export default function AdminPage() {
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
+  type TabId = "overview" | "location" | "weather" | "calendar" | "homeAssistant";
+  const tabs: { id: TabId; label: string }[] = [
+    { id: "overview", label: "Overview" },
+    { id: "location", label: "Location" },
+    { id: "weather", label: "Weather" },
+    { id: "calendar", label: "Calendar" },
+    { id: "homeAssistant", label: "Home Assistant" },
+  ];
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
+
   return (
     <div className="min-h-screen px-6 py-10 md:px-12 lg:px-16 text-slate-100">
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="max-w-3xl mx-auto space-y-6">
         <header className="space-y-2">
           <h1 className="text-3xl font-semibold">DenBoard Control Panel</h1>
           <p className="text-sm text-slate-300">
@@ -103,221 +113,260 @@ export default function AdminPage() {
           </p>
         </header>
 
-        {/* Quick Links */}
-        <section className="rounded-2xl bg-slate-900/80 border border-white/10 px-5 py-4">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300 mb-3">
-            Quick Links
-          </h2>
-          <div className="flex flex-wrap gap-2 text-xs">
-            <a
-              href="/landscape/home"
-              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
+        {/* Tab navigation */}
+        <nav
+          className="flex flex-wrap gap-1 rounded-xl bg-slate-900/80 border border-white/10 p-1"
+          aria-label="Settings sections"
+        >
+          {tabs.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setActiveTab(id)}
+              className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === id
+                  ? "bg-sandstone/20 text-sandstone border border-sandstone/40"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-white/5 border border-transparent"
+              }`}
             >
-              Landscape Home
-            </a>
-            <a
-              href="/landscape/guest"
-              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
-            >
-              Landscape Guest
-            </a>
-            <a
-              href="/landscape/weather"
-              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
-            >
-              Landscape Weather
-            </a>
-            <a
-              href="/landscape/status"
-              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
-            >
-              Landscape Status
-            </a>
-            <a
-              href="/portrait/home"
-              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
-            >
-              Portrait Home
-            </a>
-            <a
-              href="/portrait/calendar"
-              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
-            >
-              Portrait Calendar
-            </a>
-            <a
-              href="/portrait/status"
-              className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10"
-            >
-              Portrait Status
-            </a>
-          </div>
-        </section>
+              {label}
+            </button>
+          ))}
+        </nav>
 
         {loading && (
           <p className="text-sm text-slate-400">Loading settings…</p>
-        )}
-
-        {!loading && settings && (
-          <>
-            {/* Location */}
-            <ConfigSection
-              title="Location"
-              description="Coordinates and timezone used for weather and calendar."
-            >
-              <LocationForm
-                settings={settings}
-                onSave={async (patch) => {
-                  try {
-                    const updated = await saveSettings(patch);
-                    setSettings(updated);
-                    showSaveFeedback("location", true, "Location saved.");
-                  } catch (e) {
-                    showSaveFeedback(
-                      "location",
-                      false,
-                      e instanceof Error ? e.message : "Save failed"
-                    );
-                  }
-                }}
-                saveStatus={saveStatus?.section === "location" ? saveStatus : null}
-              />
-            </ConfigSection>
-
-            {/* Weather */}
-            <ConfigSection
-              title="Weather"
-              description="Choose external (Open-Meteo) or Home Assistant for weather data."
-            >
-              <WeatherForm
-                settings={settings}
-                onSave={async (patch) => {
-                  try {
-                    const updated = await saveSettings(patch);
-                    setSettings(updated);
-                    showSaveFeedback("weather", true, "Weather settings saved.");
-                  } catch (e) {
-                    showSaveFeedback(
-                      "weather",
-                      false,
-                      e instanceof Error ? e.message : "Save failed"
-                    );
-                  }
-                }}
-                saveStatus={saveStatus?.section === "weather" ? saveStatus : null}
-              />
-            </ConfigSection>
-
-            {/* Calendar */}
-            <ConfigSection
-              title="Calendar"
-              description="ICS calendar sources (iCal links). Paste your calendar's ICS URL below."
-            >
-              <div className="space-y-4">
-                <CalendarForm
-                  settings={settings}
-                  onSave={async (patch) => {
-                    try {
-                      const updated = await saveSettings(patch);
-                      setSettings(updated);
-                      showSaveFeedback("calendar", true, "Calendar saved.");
-                    } catch (e) {
-                      showSaveFeedback(
-                        "calendar",
-                        false,
-                        e instanceof Error ? e.message : "Save failed"
-                      );
-                    }
-                  }}
-                  saveStatus={
-                    saveStatus?.section === "calendar" ? saveStatus : null
-                  }
-                />
-                <button
-                  type="button"
-                  className="rounded-lg border border-white/15 px-3 py-1.5 text-xs hover:bg-white/10"
-                  onClick={async () => {
-                    const res = await fetch("/api/debug/calendar", {
-                      cache: "no-store",
-                    });
-                    const data = await res.json();
-                    const lines = [
-                      `ICS URLs: ${data.icsUrls?.length ?? 0}`,
-                      ...(data.fetchResults ?? []).map(
-                        (r: { url: string; ok: boolean; eventCount?: number; error?: string }) =>
-                          r.ok
-                            ? `✓ ${r.url.slice(0, 50)}… → ${r.eventCount ?? 0} events`
-                            : `✗ ${r.url.slice(0, 50)}… → ${r.error ?? "failed"}`
-                      ),
-                      `Today: ${data.todayCount ?? 0} events`,
-                      `Grid: ${data.gridEventCount ?? 0} total events`,
-                    ];
-                    alert(lines.join("\n"));
-                  }}
-                >
-                  Test Calendar
-                </button>
-              </div>
-            </ConfigSection>
-
-            {/* Home Assistant */}
-            <ConfigSection
-              title="Home Assistant"
-              description="Connect to Home Assistant for status tiles and optional weather. Set HOME_ASSISTANT_URL and HOME_ASSISTANT_TOKEN in .env."
-            >
-              <HomeAssistantForm
-                settings={settings}
-                onSave={async (patch) => {
-                  try {
-                    const updated = await saveSettings(patch);
-                    setSettings(updated);
-                    showSaveFeedback(
-                      "homeAssistant",
-                      true,
-                      "Home Assistant settings saved."
-                    );
-                  } catch (e) {
-                    showSaveFeedback(
-                      "homeAssistant",
-                      false,
-                      e instanceof Error ? e.message : "Save failed"
-                    );
-                  }
-                }}
-                saveStatus={
-                  saveStatus?.section === "homeAssistant" ? saveStatus : null
-                }
-              />
-            </ConfigSection>
-
-            {/* Weather Debug */}
-            <section className="rounded-2xl bg-slate-900/80 border border-white/10 px-5 py-4">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300 mb-2">
-                Weather Debug
-              </h2>
-              <button
-                type="button"
-                className="rounded-lg border border-white/15 px-3 py-1.5 text-xs hover:bg-white/10"
-                onClick={async () => {
-                  const res = await fetch("/api/debug/weather", {
-                    cache: "no-store",
-                  });
-                  const data = await res.json();
-                  alert(
-                    `Source: ${data.source}\nUnits: ${data.units}\nCurrent: ${data.mapped?.temperatureCurrent ?? "—"}\nCondition: ${data.mapped?.conditionText ?? "—"}`
-                  );
-                }}
-              >
-                Test Weather API
-              </button>
-            </section>
-          </>
         )}
 
         {!loading && !settings && (
           <p className="text-sm text-rose-300">
             Could not load settings. Check server logs.
           </p>
+        )}
+
+        {!loading && settings && (
+          <div className="space-y-6">
+            {/* Overview tab */}
+            {activeTab === "overview" && (
+              <section className="rounded-2xl bg-slate-900/80 border border-white/10 px-5 py-4">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300 mb-1">
+                  Quick Links
+                </h2>
+                <p className="text-xs text-slate-400 mb-4">
+                  Open DenBoard views in a new tab to preview your settings.
+                </p>
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <a
+                    href="/landscape/home"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Landscape Home
+                  </a>
+                  <a
+                    href="/landscape/guest"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Landscape Guest
+                  </a>
+                  <a
+                    href="/landscape/weather"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Landscape Weather
+                  </a>
+                  <a
+                    href="/landscape/status"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Landscape Status
+                  </a>
+                  <a
+                    href="/portrait/home"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Portrait Home
+                  </a>
+                  <a
+                    href="/portrait/calendar"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Portrait Calendar
+                  </a>
+                  <a
+                    href="/portrait/status"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Portrait Status
+                  </a>
+                </div>
+              </section>
+            )}
+
+            {/* Location tab */}
+            {activeTab === "location" && (
+              <ConfigSection
+                title="Location"
+                description="Coordinates and timezone used for weather and calendar."
+              >
+                <LocationForm
+                  settings={settings}
+                  onSave={async (patch) => {
+                    try {
+                      const updated = await saveSettings(patch);
+                      setSettings(updated);
+                      showSaveFeedback("location", true, "Location saved.");
+                    } catch (e) {
+                      showSaveFeedback(
+                        "location",
+                        false,
+                        e instanceof Error ? e.message : "Save failed"
+                      );
+                    }
+                  }}
+                  saveStatus={saveStatus?.section === "location" ? saveStatus : null}
+                />
+              </ConfigSection>
+            )}
+
+            {/* Weather tab – settings + debug in one place */}
+            {activeTab === "weather" && (
+              <div className="space-y-6">
+                <ConfigSection
+                  title="Weather"
+                  description="Choose external (Open-Meteo) or Home Assistant for weather data."
+                >
+                  <WeatherForm
+                    settings={settings}
+                    onSave={async (patch) => {
+                      try {
+                        const updated = await saveSettings(patch);
+                        setSettings(updated);
+                        showSaveFeedback("weather", true, "Weather settings saved.");
+                      } catch (e) {
+                        showSaveFeedback(
+                          "weather",
+                          false,
+                          e instanceof Error ? e.message : "Save failed"
+                        );
+                      }
+                    }}
+                    saveStatus={saveStatus?.section === "weather" ? saveStatus : null}
+                  />
+                </ConfigSection>
+                <ConfigSection
+                  title="Test weather"
+                  description="Verify the weather API returns data correctly."
+                >
+                  <button
+                    type="button"
+                    className="rounded-lg border border-white/15 px-3 py-1.5 text-sm hover:bg-white/10 transition-colors"
+                    onClick={async () => {
+                      const res = await fetch("/api/debug/weather", {
+                        cache: "no-store",
+                      });
+                      const data = await res.json();
+                      alert(
+                        `Source: ${data.source}\nUnits: ${data.units}\nCurrent: ${data.mapped?.temperatureCurrent ?? "—"}\nCondition: ${data.mapped?.conditionText ?? "—"}`
+                      );
+                    }}
+                  >
+                    Test Weather API
+                  </button>
+                </ConfigSection>
+              </div>
+            )}
+
+            {/* Calendar tab – settings + test in one place */}
+            {activeTab === "calendar" && (
+              <div className="space-y-6">
+                <ConfigSection
+                  title="Calendar"
+                  description="ICS calendar sources (iCal links). Paste your calendar's ICS URL below."
+                >
+                  <div className="space-y-4">
+                    <CalendarForm
+                      settings={settings}
+                      onSave={async (patch) => {
+                        try {
+                          const updated = await saveSettings(patch);
+                          setSettings(updated);
+                          showSaveFeedback("calendar", true, "Calendar saved.");
+                        } catch (e) {
+                          showSaveFeedback(
+                            "calendar",
+                            false,
+                            e instanceof Error ? e.message : "Save failed"
+                          );
+                        }
+                      }}
+                      saveStatus={
+                        saveStatus?.section === "calendar" ? saveStatus : null
+                      }
+                    />
+                    <div>
+                      <p className="text-xs text-slate-400 mb-2">Verify calendar fetch and event counts.</p>
+                      <button
+                        type="button"
+                        className="rounded-lg border border-white/15 px-3 py-1.5 text-sm hover:bg-white/10 transition-colors"
+                        onClick={async () => {
+                          const res = await fetch("/api/debug/calendar", {
+                            cache: "no-store",
+                          });
+                          const data = await res.json();
+                          const lines = [
+                            `ICS URLs: ${data.icsUrls?.length ?? 0}`,
+                            ...(data.fetchResults ?? []).map(
+                              (r: { url: string; ok: boolean; eventCount?: number; error?: string }) =>
+                                r.ok
+                                  ? `✓ ${r.url.slice(0, 50)}… → ${r.eventCount ?? 0} events`
+                                  : `✗ ${r.url.slice(0, 50)}… → ${r.error ?? "failed"}`
+                            ),
+                            `Today: ${data.todayCount ?? 0} events`,
+                            `Grid: ${data.gridEventCount ?? 0} total events`,
+                          ];
+                          alert(lines.join("\n"));
+                        }}
+                      >
+                        Test Calendar
+                      </button>
+                    </div>
+                  </div>
+                </ConfigSection>
+              </div>
+            )}
+
+            {/* Home Assistant tab */}
+            {activeTab === "homeAssistant" && (
+              <ConfigSection
+                title="Home Assistant"
+                description="Connect to Home Assistant for status tiles and optional weather. Set HOME_ASSISTANT_URL and HOME_ASSISTANT_TOKEN in .env."
+              >
+                <HomeAssistantForm
+                  settings={settings}
+                  onSave={async (patch) => {
+                    try {
+                      const updated = await saveSettings(patch);
+                      setSettings(updated);
+                      showSaveFeedback(
+                        "homeAssistant",
+                        true,
+                        "Home Assistant settings saved."
+                      );
+                    } catch (e) {
+                      showSaveFeedback(
+                        "homeAssistant",
+                        false,
+                        e instanceof Error ? e.message : "Save failed"
+                      );
+                    }
+                  }}
+                  saveStatus={
+                    saveStatus?.section === "homeAssistant" ? saveStatus : null
+                  }
+                />
+              </ConfigSection>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -362,20 +411,6 @@ function LocationForm({
     settings.location?.units ?? "imperial"
   );
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setLat(String(settings.location?.lat ?? ""));
-    setLon(String(settings.location?.lon ?? ""));
-    setTimezone(settings.location?.timezone ?? "America/Denver");
-    setUnits(settings.location?.units ?? "imperial");
-  }, [settings]);
-
-  useEffect(() => {
-    setLat(String(settings.location?.lat ?? ""));
-    setLon(String(settings.location?.lon ?? ""));
-    setTimezone(settings.location?.timezone ?? "America/Denver");
-    setUnits(settings.location?.units ?? "imperial");
-  }, [settings]);
 
   useEffect(() => {
     setLat(String(settings.location?.lat ?? ""));
