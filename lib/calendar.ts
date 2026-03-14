@@ -1,7 +1,8 @@
 import { createHash } from "crypto";
 import { DateTime, Duration } from "luxon";
 import { getConfig } from "./config";
-import { getRandomCalendarColor, loadSettings } from "./settings";
+import { getRandomCalendarColor } from "./calendarColors";
+import { loadSettings } from "./settings";
 import { fetchWithRetry } from "./fetchWithRetry";
 import { getFromCache, setInCache } from "./cache";
 import { logger } from "./logging";

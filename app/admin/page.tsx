@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { getRandomCalendarColor } from "@/lib/settings";
+import { getRandomCalendarColor } from "@/lib/calendarColors";
 
 type CalendarSource = {
   id: string;
