@@ -942,6 +942,17 @@ function HomeAssistantForm({
     setEntities((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const moveEntity = (fromIdx: number, direction: "up" | "down") => {
+    const toIdx = direction === "up" ? fromIdx - 1 : fromIdx + 1;
+    if (toIdx < 0 || toIdx >= entities.length) return;
+    setEntities((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(fromIdx, 1);
+      next.splice(toIdx, 0, removed);
+      return next;
+    });
+  };
+
   return (
     <form
       className="space-y-4"
@@ -1003,12 +1014,37 @@ function HomeAssistantForm({
             + Add
           </button>
         </div>
+        <p className="text-[11px] text-slate-500">
+          Order matches display order on the board. Use ↑ ↓ to reorder.
+        </p>
         {entities.map((ent, idx) => (
           <div
             key={idx}
             className="flex gap-2 items-end rounded-lg bg-slate-950/60 border border-white/10 p-3"
           >
-            <div className="flex-1">
+            <div className="flex flex-col gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => moveEntity(idx, "up")}
+                disabled={idx === 0}
+                className="rounded border border-white/15 p-1.5 text-slate-400 hover:bg-white/10 hover:text-slate-200 disabled:opacity-30 disabled:pointer-events-none"
+                title="Move up"
+                aria-label="Move entity up"
+              >
+                <span className="text-sm leading-none">↑</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => moveEntity(idx, "down")}
+                disabled={idx === entities.length - 1}
+                className="rounded border border-white/15 p-1.5 text-slate-400 hover:bg-white/10 hover:text-slate-200 disabled:opacity-30 disabled:pointer-events-none"
+                title="Move down"
+                aria-label="Move entity down"
+              >
+                <span className="text-sm leading-none">↓</span>
+              </button>
+            </div>
+            <div className="flex-1 min-w-0">
               <label className={labelClass}>Entity ID</label>
               <input
                 type="text"
@@ -1018,7 +1054,7 @@ function HomeAssistantForm({
                 placeholder="sensor.example"
               />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <label className={labelClass}>Label</label>
               <input
                 type="text"
@@ -1031,7 +1067,7 @@ function HomeAssistantForm({
             <button
               type="button"
               onClick={() => removeEntity(idx)}
-              className="text-xs text-rose-400 hover:text-rose-300 pb-2"
+              className="text-xs text-rose-400 hover:text-rose-300 pb-2 shrink-0"
             >
               Remove
             </button>
