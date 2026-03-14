@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import { getRandomCalendarColor } from "@/lib/settings";
 
 type CalendarSource = {
   id: string;
@@ -607,7 +608,7 @@ function CalendarForm({
 }) {
   const [calendars, setCalendars] = useState<CalendarSource[]>(
     settings.calendar?.calendars ?? [
-      { id: "primary", name: "Family", color: "#FBBF24", icsUrl: "", enabled: true },
+      { id: "primary", name: "Family", color: getRandomCalendarColor(), icsUrl: "", enabled: true },
     ]
   );
   const [refreshMinutes, setRefreshMinutes] = useState(
@@ -633,7 +634,7 @@ function CalendarForm({
       {
         id: `cal-${Date.now()}`,
         name: "New Calendar",
-        color: "#FBBF24",
+        color: getRandomCalendarColor(),
         icsUrl: "",
         enabled: true,
       },
@@ -657,9 +658,15 @@ function CalendarForm({
       onSubmit={async (e) => {
         e.preventDefault();
         setSaving(true);
+        const calendarsToSave = calendars.map((c) => ({
+          ...c,
+          color: c.color?.trim() && /^#[0-9A-Fa-f]{6}$/.test(c.color)
+            ? c.color
+            : getRandomCalendarColor()
+        }));
         await onSave({
           calendar: {
-            calendars,
+            calendars: calendarsToSave,
             refreshMinutes: parseInt(refreshMinutes, 10) || 5,
             maxEventsPerCell: parseInt(maxEventsPerCell, 10) || 3,
             showAllDay,
@@ -699,13 +706,22 @@ function CalendarForm({
               </div>
               <div>
                 <label className={labelClass}>Color</label>
-                <input
-                  type="text"
-                  value={cal.color}
-                  onChange={(e) => updateCal(idx, { color: e.target.value })}
-                  className={inputClass}
-                  placeholder="#FBBF24"
-                />
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="color"
+                    value={/^#[0-9A-Fa-f]{6}$/.test(cal.color) ? cal.color : "#3B82F6"}
+                    onChange={(e) => updateCal(idx, { color: e.target.value })}
+                    className="h-9 w-12 rounded cursor-pointer border border-white/15 bg-slate-950/70"
+                    title="Pick color"
+                  />
+                  <input
+                    type="text"
+                    value={cal.color}
+                    onChange={(e) => updateCal(idx, { color: e.target.value })}
+                    className={inputClass}
+                    placeholder="#3B82F6"
+                  />
+                </div>
               </div>
             </div>
             <div>

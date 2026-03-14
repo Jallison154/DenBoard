@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 import { DateTime, Duration } from "luxon";
 import { getConfig } from "./config";
-import { loadSettings } from "./settings";
+import { getRandomCalendarColor, loadSettings } from "./settings";
 import { fetchWithRetry } from "./fetchWithRetry";
 import { getFromCache, setInCache } from "./cache";
 import { logger } from "./logging";
@@ -82,11 +82,11 @@ export async function getCalendar(
     calSources.push(
       ...fromSettings.map((c) => ({
         url: c.icsUrl.trim(),
-        color: c.color?.trim() || "#3B82F6"
+        color: c.color?.trim() || getRandomCalendarColor()
       }))
     );
   } else if (config.gcalIcsUrl) {
-    calSources.push({ url: config.gcalIcsUrl, color: "#3B82F6" });
+    calSources.push({ url: config.gcalIcsUrl, color: getRandomCalendarColor() });
   }
 
   const icsUrls = calSources.map((c) => c.url);
