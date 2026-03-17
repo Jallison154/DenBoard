@@ -88,6 +88,10 @@ export const SETTINGS_PATH =
   process.env.DENBOARD_SETTINGS_PATH ||
   path.join(process.cwd(), "settings.json");
 
+let cachedSettings: DenBoardSettings | null = null;
+let cachedSettingsLoadedAt = 0;
+const SETTINGS_CACHE_MS = 30_000;
+
 function envNumber(name: string, fallback: number): number {
   const raw = process.env[name];
   if (!raw) return fallback;
@@ -193,11 +197,16 @@ export function getDefaultSettings(): DenBoardSettings {
 }
 
 export async function loadSettings(): Promise<DenBoardSettings> {
+  const now = Date.now();
+  if (cachedSettings && now - cachedSettingsLoadedAt < SETTINGS_CACHE_MS) {
+    return cachedSettings;
+  }
+
   try {
     const raw = await fs.readFile(SETTINGS_PATH, "utf8");
     const parsed: Partial<DenBoardSettings> = JSON.parse(raw);
     const defaults = getDefaultSettings();
-    return {
+    const merged: DenBoardSettings = {
       ...defaults,
       ...parsed,
       location: { ...defaults.location, ...(parsed.location || {}) },
@@ -222,14 +231,21 @@ export async function loadSettings(): Promise<DenBoardSettings> {
       },
       display: { ...defaults.display, ...(parsed.display || {}) }
     };
+    cachedSettings = merged;
+    cachedSettingsLoadedAt = now;
+    return merged;
   } catch {
     const defaults = getDefaultSettings();
+    cachedSettings = defaults;
+    cachedSettingsLoadedAt = now;
     await saveSettings(defaults);
     return defaults;
   }
 }
 
 export async function saveSettings(settings: DenBoardSettings): Promise<void> {
+  cachedSettings = settings;
+  cachedSettingsLoadedAt = Date.now();
   await fs.writeFile(
     SETTINGS_PATH,
     JSON.stringify(settings, null, 2),
