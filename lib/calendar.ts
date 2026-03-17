@@ -171,6 +171,21 @@ export async function getCalendar(
       }
     }
 
+    // Final defensive dedupe: if multiple calendars produce the exact same
+    // visible event (same title, start instant, and all-day flag), keep the
+    // first and drop later ones so we don't render obvious duplicates.
+    if (events.length > 0) {
+      const byVisibleKey = new Map<string, CalendarEvent>();
+      for (const evt of events) {
+        const key = `${evt.title}::${evt.start}::${evt.allDay ? "A" : "T"}`;
+        if (!byVisibleKey.has(key)) {
+          byVisibleKey.set(key, evt);
+        }
+      }
+      events.length = 0;
+      events.push(...byVisibleKey.values());
+    }
+
     const todayAllDay = events.filter(
       (e) => e.allDay && DateTime.fromISO(e.start).hasSame(todayStart, "day")
     );
