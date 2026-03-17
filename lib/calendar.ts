@@ -46,6 +46,8 @@ type RawEvent = {
   end?: DateTime;
   allDay?: boolean;
   location?: string;
+  rrule?: string;
+  exdates?: DateTime[];
 };
 
 export type CalendarOptions = {
@@ -119,7 +121,9 @@ export async function getCalendar(
     const gridStart = gridBase[0]?.date.startOf("day") ?? todayStart.minus({ weeks: 2 });
     const gridEnd = gridBase[gridBase.length - 1]?.date.endOf("day") ?? todayStart.plus({ weeks: 2 });
 
-    const seenUids = new Set<string>();
+    // Dedup by (uid + start) so the same instance from multiple sources
+    // does not appear twice, but recurring instances are still unique.
+    const seenInstances = new Set<string>();
     const events: CalendarEvent[] = [];
     let globalIdx = 0;
     for (const { url, color } of calSources) {
@@ -132,30 +136,35 @@ export async function getCalendar(
         const rawEvents = parseIcsEvents(text, timezone);
         for (const item of rawEvents) {
           if (!item.start) continue;
-          const uid = item.uid ?? `evt-${globalIdx}`;
+          const baseUid = item.uid ?? `evt-${globalIdx}`;
           globalIdx += 1;
-          if (seenUids.has(uid)) continue;
-          seenUids.add(uid);
 
-          const start = item.start;
-          let end = item.end ?? start.plus({ hours: 1 });
-          if (!(item.allDay ?? false) && (!end || !end.isValid || end <= start)) {
-            end = start.plus({ hours: 1 });
+          // Expand recurrences into instances within the grid window.
+          const instances = expandRecurringInstances(
+            item,
+            gridStart,
+            gridEnd
+          );
+
+          for (const inst of instances) {
+            const { start, end, allDay } = inst;
+            if (end < gridStart || start > gridEnd) continue;
+
+            const instanceKey = `${baseUid}:${start.toISO() ?? start.toISODate() ?? ""}`;
+            if (seenInstances.has(instanceKey)) continue;
+            seenInstances.add(instanceKey);
+
+            events.push({
+              id: instanceKey,
+              title: item.summary ?? "Untitled",
+              start: start.toISO() ?? start.toISODate() ?? "",
+              end: end.toISO() ?? end.toISODate() ?? "",
+              allDay,
+              location: item.location,
+              isOngoing: now >= start && now <= end,
+              calendarColor: color
+            });
           }
-          const allDay = item.allDay ?? false;
-
-          if (end < gridStart || start > gridEnd) continue;
-
-          events.push({
-            id: uid,
-            title: item.summary ?? "Untitled",
-            start: start.toISO() ?? start.toISODate() ?? "",
-            end: end.toISO() ?? end.toISODate() ?? "",
-            allDay,
-            location: item.location,
-            isOngoing: now >= start && now <= end,
-            calendarColor: color
-          });
         }
       } catch (err) {
         logger.error("Failed to fetch calendar ICS", { url, error: String(err) });
@@ -302,12 +311,131 @@ function parseIcsEvents(text: string, defaultTimezone: string): RawEvent[] {
         }
         break;
       }
+      case "RRULE":
+        current.rrule = value;
+        break;
+      case "EXDATE": {
+        // EXDATE can contain a comma-separated list of dates
+        const parts = value.split(",");
+        const ex: DateTime[] = current.exdates ?? [];
+        for (const part of parts) {
+          const { dt } = parseIcsDate(part.trim(), params, defaultTimezone);
+          if (dt.isValid) ex.push(dt);
+        }
+        current.exdates = ex;
+        break;
+      }
       default:
         break;
     }
   }
 
   return events;
+}
+
+type RecurrenceInstance = {
+  start: DateTime;
+  end: DateTime;
+  allDay: boolean;
+};
+
+/**
+ * Expand a single ICS event into concrete instances within [windowStart, windowEnd].
+ * Supports simple FREQ=DAILY/WEEKLY/MONTHLY with INTERVAL, UNTIL, COUNT.
+ * Complex RRULE clauses (BYxxx) are intentionally not fully implemented to keep this
+ * lightweight; those events will still show their base instance if in range.
+ */
+function expandRecurringInstances(
+  item: RawEvent,
+  windowStart: DateTime,
+  windowEnd: DateTime
+): RecurrenceInstance[] {
+  const start = item.start!;
+  const baseEnd =
+    item.end && item.end.isValid
+      ? item.end
+      : start.plus({ hours: 1 });
+  const allDay = item.allDay ?? false;
+
+  if (!item.rrule) {
+    return [{ start, end: baseEnd, allDay }];
+  }
+
+  const ruleParts = item.rrule.split(";").map((p) => p.trim());
+  const rule: Record<string, string> = {};
+  for (const part of ruleParts) {
+    const [k, v] = part.split("=", 2);
+    if (k && v) {
+      rule[k.toUpperCase()] = v;
+    }
+  }
+
+  const freq = rule["FREQ"] ?? "DAILY";
+  const interval = Number(rule["INTERVAL"] ?? "1") || 1;
+
+  let until: DateTime | null = null;
+  if (rule["UNTIL"]) {
+    const { dt } = parseIcsDate(rule["UNTIL"], [], start.zoneName);
+    if (dt.isValid) {
+      until = dt.endOf("day");
+    }
+  }
+  const count = rule["COUNT"] ? Number(rule["COUNT"]) || 0 : 0;
+
+  const exdates = (item.exdates ?? []).filter((d) => d.isValid);
+
+  const instances: RecurrenceInstance[] = [];
+  let currentStart = start;
+  let currentEnd = baseEnd;
+  let seen = 0;
+
+  // Hard upper bound to avoid pathological rules
+  const MAX_OCCURRENCES = 500;
+
+  while (currentStart <= windowEnd && seen < MAX_OCCURRENCES) {
+    if (until && currentStart > until) break;
+    if (count && seen >= count) break;
+
+    const inWindow =
+      currentEnd >= windowStart && currentStart <= windowEnd;
+
+    const isExcluded = exdates.some((d) =>
+      d.hasSame(currentStart, "day")
+    );
+
+    if (inWindow && !isExcluded) {
+      instances.push({
+        start: currentStart,
+        end: currentEnd,
+        allDay
+      });
+    }
+
+    seen += 1;
+
+    // Advance according to FREQ
+    switch (freq) {
+      case "WEEKLY":
+        currentStart = currentStart.plus({ weeks: interval });
+        currentEnd = currentEnd.plus({ weeks: interval });
+        break;
+      case "MONTHLY":
+        currentStart = currentStart.plus({ months: interval });
+        currentEnd = currentEnd.plus({ months: interval });
+        break;
+      case "DAILY":
+      default:
+        currentStart = currentStart.plus({ days: interval });
+        currentEnd = currentEnd.plus({ days: interval });
+        break;
+    }
+  }
+
+  // If no instances were generated (e.g. unsupported rule), fall back to base event
+  if (instances.length === 0) {
+    return [{ start, end: baseEnd, allDay }];
+  }
+  return instances;
 }
 
 function parseIcsDate(
