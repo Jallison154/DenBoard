@@ -375,7 +375,10 @@ function expandRecurringInstances(
 
   let until: DateTime | null = null;
   if (rule["UNTIL"]) {
-    const { dt } = parseIcsDate(rule["UNTIL"], [], start.zoneName);
+    // Ensure we always pass a concrete string zone name into parseIcsDate
+    const zoneForUntil =
+      start.zoneName || windowStart.zoneName || "UTC";
+    const { dt } = parseIcsDate(rule["UNTIL"], [], zoneForUntil);
     if (dt.isValid) {
       until = dt.endOf("day");
     }
