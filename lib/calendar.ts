@@ -441,6 +441,10 @@ function expandRecurringInstances(
         currentStart = currentStart.plus({ months: interval });
         currentEnd = currentEnd.plus({ months: interval });
         break;
+      case "YEARLY":
+        currentStart = currentStart.plus({ years: interval });
+        currentEnd = currentEnd.plus({ years: interval });
+        break;
       case "DAILY":
       default:
         currentStart = currentStart.plus({ days: interval });
