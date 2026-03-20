@@ -30,31 +30,54 @@ export default function PortraitStatusPage() {
     <div className="flex-1 flex flex-col">
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      <div
-        className="flex-1 flex flex-col"
-        style={{
-          gap: "var(--denboard-scale-gap-lg)",
-          paddingTop: "var(--denboard-scale-space-md)",
-          paddingBottom: "var(--denboard-scale-gap-lg)"
-        }}
-      >
-        <TimePanel />
-        {!guestMode && <TodayEventsPanel />}
-        <WeatherPanel />
-        <HomeAssistantStatus hideWhenGuest />
-        <div style={{ paddingTop: "var(--denboard-scale-space)" }}>
-          <DadJokePanel />
-          {guestMode && (
-            <p
-              className="denboard-text-secondary denboard-scale-status"
-              style={{ marginTop: "var(--denboard-scale-gap)" }}
-            >
-              Guest Mode keeps the home dashboard welcoming while hiding personal
-              details.
-            </p>
-          )}
+      {guestMode ? (
+        <div
+          className="flex-1 flex flex-col items-center"
+          style={{
+            paddingTop: "18vh",
+            paddingBottom: "var(--denboard-scale-gap-lg)",
+            gap: "var(--denboard-scale-gap-lg)"
+          }}
+        >
+          {/* Guest portrait: use more vertical space with centered, larger clock */}
+          <div
+            className="w-full flex justify-center"
+            style={{ transform: "scale(1.15)", transformOrigin: "top center" }}
+          >
+            <TimePanel />
+          </div>
+          <div className="w-full max-w-2xl">
+            <WeatherPanel />
+          </div>
+          <div className="w-full max-w-2xl">
+            <DadJokePanel fullWidth />
+          </div>
+          <p
+            className="denboard-text-secondary denboard-scale-status text-center"
+            style={{ marginTop: "var(--denboard-scale-gap)" }}
+          >
+            Guest Mode keeps the home dashboard welcoming while hiding personal
+            details.
+          </p>
         </div>
-      </div>
+      ) : (
+        <div
+          className="flex-1 flex flex-col"
+          style={{
+            gap: "var(--denboard-scale-gap-lg)",
+            paddingTop: "var(--denboard-scale-space-md)",
+            paddingBottom: "var(--denboard-scale-gap-lg)"
+          }}
+        >
+          <TimePanel />
+          <TodayEventsPanel />
+          <WeatherPanel />
+          <HomeAssistantStatus hideWhenGuest />
+          <div style={{ paddingTop: "var(--denboard-scale-space)" }}>
+            <DadJokePanel />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
