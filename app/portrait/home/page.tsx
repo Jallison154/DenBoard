@@ -8,7 +8,9 @@ import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "@/components/hooks";
 import { motion } from "framer-motion";
-import { useCallback } from "react";
+import { nowInDashboardTz } from "@/lib/time";
+import { DateTime } from "luxon";
+import { useCallback, useEffect, useState } from "react";
 
 async function fetchWeather(): Promise<WeatherPayload> {
   const res = await fetch("/api/weather", { cache: "no-store" });
@@ -94,12 +96,28 @@ function iconAnimationForCondition(kind: ReturnType<typeof currentConditionKey>)
 }
 
 export default function PortraitHomePage() {
+  const [now, setNow] = useState<DateTime | null>(null);
   const fetcher = useCallback(fetchWeather, []);
   const { data: weather } = usePolling<WeatherPayload>(fetcher, {
     intervalMs: 6 * 60 * 1000,
     immediate: true
   });
   const { guestMode } = useGuestMode();
+
+  useEffect(() => {
+    setNow(nowInDashboardTz());
+    const id = setInterval(() => setNow(nowInDashboardTz()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const greeting =
+    now
+      ? now.hour < 12
+        ? "Good morning"
+        : now.hour < 17
+        ? "Good afternoon"
+        : "Good evening"
+      : "Welcome";
 
   return (
     <div className="flex-1 flex flex-col">
@@ -113,10 +131,9 @@ export default function PortraitHomePage() {
           paddingBottom: "var(--denboard-scale-gap-lg)"
         }}
       >
-        <TimePanel />
-
         {!guestMode ? (
           <>
+            <TimePanel />
             <div className="flex flex-shrink-0 w-[50%] min-w-0 self-start mr-auto">
               <TodayEventsPanel stretchFromLeft />
             </div>
@@ -211,27 +228,115 @@ export default function PortraitHomePage() {
             <FourWeekGrid />
           </>
         ) : (
-          <div
-            className="rounded-3xl denboard-card denboard-scale-calendar-event denboard-text-primary"
-            style={{ padding: "var(--denboard-scale-card-padding)" }}
-          >
-            <p className="uppercase tracking-[0.3em] denboard-text-secondary denboard-scale-status mb-2">
-              Guest Mode
-            </p>
-            <p className="leading-relaxed">
-              Personal calendar details are hidden while Guest Mode is on. Time,
-              date, weather, forecasts, jokes, and severe alerts remain visible on
-              the other DenBoard views.
-            </p>
-          </div>
+          <>
+            {/* Portrait guest mode: hotel-style hero clock + weather + joke */}
+            <div className="w-full flex flex-col items-center justify-center text-center">
+              <div
+                className="denboard-text-secondary font-semibold uppercase tracking-[0.28em]"
+                style={{
+                  fontSize: "clamp(16px, 1.8vmin, 26px)",
+                  textShadow: "0 0 14px rgba(0,0,0,0.82), 0 2px 8px rgba(0,0,0,0.68)"
+                }}
+                suppressHydrationWarning
+              >
+                {greeting}
+              </div>
+              <div
+                className="denboard-text-primary font-extrabold tracking-tight whitespace-nowrap"
+                style={{
+                  fontSize: "clamp(112px, 14vmin, 210px)",
+                  lineHeight: 0.95,
+                  textShadow: "0 0 26px rgba(0,0,0,0.62), 0 4px 12px rgba(0,0,0,0.45)"
+                }}
+                suppressHydrationWarning
+              >
+                {now ? `${now.toFormat("h:mm")} ${now.toFormat("a")}` : "–:–– ––"}
+              </div>
+              <div
+                className="denboard-text-primary font-semibold whitespace-nowrap"
+                style={{
+                  fontSize: "clamp(26px, 2.8vmin, 44px)",
+                  textShadow: "0 0 16px rgba(0,0,0,0.55)"
+                }}
+                suppressHydrationWarning
+              >
+                {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : "––––––––––– • ––––––––"}
+              </div>
+            </div>
+
+            <div className="w-full flex-shrink-0 rounded-2xl denboard-card border border-white/10 flex flex-col gap-4 p-4 sm:p-5">
+              <div className="flex items-end justify-between gap-3 flex-wrap">
+                <div className="flex items-end gap-3">
+                  <motion.span
+                    className="tabular-nums"
+                    style={{ fontSize: "clamp(30px, 4.5vmin, 56px)" }}
+                    animate={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).animate}
+                    transition={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).transition}
+                    aria-hidden
+                  >
+                    {weatherIcon(weather?.conditionCode)}
+                  </motion.span>
+                  <span
+                    className="denboard-text-primary font-bold tabular-nums"
+                    style={{ fontSize: "clamp(56px, 7vmin, 110px)", lineHeight: 1 }}
+                  >
+                    {weather?.temperatureCurrent != null
+                      ? formatTemp(weather.temperatureCurrent, weather.units)
+                      : "–°"}
+                  </span>
+                </div>
+                <span className="denboard-text-primary font-medium text-lg sm:text-xl capitalize">
+                  {weather?.conditionText ?? "—"}
+                </span>
+              </div>
+
+              {weather?.dailyForecast && weather.dailyForecast.length > 0 && (
+                <div className="grid grid-cols-5 gap-2 sm:gap-3">
+                  {weather.dailyForecast.slice(0, 5).map((day) => (
+                    <div
+                      key={day.dateISO}
+                      className="flex flex-col items-center justify-center text-center rounded-xl denboard-card-nested py-2 px-1"
+                    >
+                      <span className="denboard-text-secondary text-xs font-medium truncate w-full">
+                        {day.dayName}
+                      </span>
+                      <motion.span
+                        className="my-0.5"
+                        style={{ fontSize: "clamp(18px, 2.8vmin, 34px)" }}
+                        animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
+                        transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
+                        aria-hidden
+                      >
+                        {weatherIcon(day.iconCode)}
+                      </motion.span>
+                      <span className="denboard-text-primary text-sm font-semibold tabular-nums">
+                        {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
+                      </span>
+                      <span className="denboard-text-secondary text-xs tabular-nums">
+                        {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
+              <DadJokePanel fullWidth />
+            </div>
+          </>
         )}
 
-        <div className="w-full flex-shrink-0">
-          <HomeAssistantStatus hideWhenGuest fullWidth />
-        </div>
-        <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
-          <DadJokePanel fullWidth />
-        </div>
+        {!guestMode && (
+          <>
+            <div className="w-full flex-shrink-0">
+              <HomeAssistantStatus hideWhenGuest fullWidth />
+            </div>
+            <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
+              <DadJokePanel fullWidth />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
