@@ -220,7 +220,7 @@ export default function TvHomePage() {
             >
               {dadJoke?.joke ?? "Loading a mountain-grade dad joke..."}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
