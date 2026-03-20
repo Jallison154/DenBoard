@@ -230,99 +230,114 @@ export default function PortraitHomePage() {
         ) : (
           <>
             {/* Portrait guest mode: hotel-style hero clock + weather + joke */}
-            <div className="w-full flex flex-col items-center justify-center text-center">
-              <div
-                className="denboard-text-secondary font-semibold uppercase tracking-[0.28em]"
-                style={{
-                  fontSize: "clamp(16px, 1.8vmin, 26px)",
-                  textShadow: "0 0 14px rgba(0,0,0,0.82), 0 2px 8px rgba(0,0,0,0.68)"
-                }}
-                suppressHydrationWarning
-              >
-                {greeting}
+            <div
+              className="w-full max-w-[min(980px,94vw)] mx-auto flex flex-col"
+              style={{ gap: "clamp(16px, 1.8vmin, 28px)" }}
+            >
+              <div className="w-full flex flex-col items-center justify-center text-center">
+                <div
+                  className="denboard-text-secondary font-semibold uppercase tracking-[0.28em]"
+                  style={{
+                    fontSize: "clamp(16px, 1.7vmin, 24px)",
+                    textShadow: "0 0 14px rgba(0,0,0,0.86), 0 2px 9px rgba(0,0,0,0.72)"
+                  }}
+                  suppressHydrationWarning
+                >
+                  {greeting}
+                </div>
+                <div
+                  className="denboard-text-primary font-extrabold tracking-tight whitespace-nowrap"
+                  style={{
+                    fontSize: "clamp(124px, 15vmin, 220px)",
+                    lineHeight: 0.93,
+                    textShadow: "0 0 28px rgba(0,0,0,0.66), 0 4px 12px rgba(0,0,0,0.48)"
+                  }}
+                  suppressHydrationWarning
+                >
+                  {now ? `${now.toFormat("h:mm")} ${now.toFormat("a")}` : "–:–– ––"}
+                </div>
+                <div
+                  className="denboard-text-primary font-semibold whitespace-nowrap"
+                  style={{
+                    fontSize: "clamp(28px, 2.9vmin, 42px)",
+                    textShadow: "0 0 16px rgba(0,0,0,0.58)"
+                  }}
+                  suppressHydrationWarning
+                >
+                  {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : "––––––––––– • ––––––––"}
+                </div>
               </div>
-              <div
-                className="denboard-text-primary font-extrabold tracking-tight whitespace-nowrap"
-                style={{
-                  fontSize: "clamp(112px, 14vmin, 210px)",
-                  lineHeight: 0.95,
-                  textShadow: "0 0 26px rgba(0,0,0,0.62), 0 4px 12px rgba(0,0,0,0.45)"
-                }}
-                suppressHydrationWarning
-              >
-                {now ? `${now.toFormat("h:mm")} ${now.toFormat("a")}` : "–:–– ––"}
-              </div>
-              <div
-                className="denboard-text-primary font-semibold whitespace-nowrap"
-                style={{
-                  fontSize: "clamp(26px, 2.8vmin, 44px)",
-                  textShadow: "0 0 16px rgba(0,0,0,0.55)"
-                }}
-                suppressHydrationWarning
-              >
-                {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : "––––––––––– • ––––––––"}
-              </div>
-            </div>
 
-            <div className="w-full flex-shrink-0 rounded-2xl denboard-card border border-white/10 flex flex-col gap-4 p-4 sm:p-5">
-              <div className="flex items-end justify-between gap-3 flex-wrap">
-                <div className="flex items-end gap-3">
-                  <motion.span
-                    className="tabular-nums"
-                    style={{ fontSize: "clamp(30px, 4.5vmin, 56px)" }}
-                    animate={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).animate}
-                    transition={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).transition}
-                    aria-hidden
-                  >
-                    {weatherIcon(weather?.conditionCode)}
-                  </motion.span>
-                  <span
-                    className="denboard-text-primary font-bold tabular-nums"
-                    style={{ fontSize: "clamp(56px, 7vmin, 110px)", lineHeight: 1 }}
-                  >
-                    {weather?.temperatureCurrent != null
-                      ? formatTemp(weather.temperatureCurrent, weather.units)
-                      : "–°"}
+              <div
+                className="w-full rounded-3xl denboard-card border border-white/15"
+                style={{
+                  padding: "clamp(16px, 1.6vmin, 30px)",
+                  background: "linear-gradient(180deg, rgba(15,23,42,0.62), rgba(2,6,23,0.56))",
+                  boxShadow: "0 16px 44px rgba(0,0,0,0.42)"
+                }}
+              >
+                <div className="uppercase tracking-[0.2em] denboard-text-secondary text-xs sm:text-sm mb-2">
+                  Weather
+                </div>
+                <div className="flex items-end justify-between gap-3 flex-wrap">
+                  <div className="flex items-end gap-3">
+                    <motion.span
+                      className="tabular-nums"
+                      style={{ fontSize: "clamp(34px, 4.8vmin, 62px)" }}
+                      animate={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).animate}
+                      transition={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).transition}
+                      aria-hidden
+                    >
+                      {weatherIcon(weather?.conditionCode)}
+                    </motion.span>
+                    <span
+                      className="denboard-text-primary font-bold tabular-nums"
+                      style={{ fontSize: "clamp(62px, 7.5vmin, 116px)", lineHeight: 1 }}
+                    >
+                      {weather?.temperatureCurrent != null
+                        ? formatTemp(weather.temperatureCurrent, weather.units)
+                        : "–°"}
+                    </span>
+                  </div>
+                  <span className="denboard-text-primary font-medium text-lg sm:text-xl capitalize">
+                    {weather?.conditionText ?? "—"}
                   </span>
                 </div>
-                <span className="denboard-text-primary font-medium text-lg sm:text-xl capitalize">
-                  {weather?.conditionText ?? "—"}
-                </span>
+
+                {weather?.dailyForecast && weather.dailyForecast.length > 0 && (
+                  <div className="grid grid-cols-5 gap-2 sm:gap-3 mt-3 pt-3 border-t border-white/10">
+                    {weather.dailyForecast.slice(0, 5).map((day) => (
+                      <div
+                        key={day.dateISO}
+                        className="flex flex-col items-center justify-center text-center rounded-xl denboard-card-nested py-2 px-1"
+                      >
+                        <span className="denboard-text-secondary text-xs font-medium truncate w-full">
+                          {day.dayName}
+                        </span>
+                        <motion.span
+                          className="my-0.5"
+                          style={{ fontSize: "clamp(20px, 3vmin, 36px)" }}
+                          animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
+                          transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
+                          aria-hidden
+                        >
+                          {weatherIcon(day.iconCode)}
+                        </motion.span>
+                        <span className="denboard-text-primary text-sm font-semibold tabular-nums">
+                          {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
+                        </span>
+                        <span className="denboard-text-secondary text-xs tabular-nums">
+                          {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {weather?.dailyForecast && weather.dailyForecast.length > 0 && (
-                <div className="grid grid-cols-5 gap-2 sm:gap-3">
-                  {weather.dailyForecast.slice(0, 5).map((day) => (
-                    <div
-                      key={day.dateISO}
-                      className="flex flex-col items-center justify-center text-center rounded-xl denboard-card-nested py-2 px-1"
-                    >
-                      <span className="denboard-text-secondary text-xs font-medium truncate w-full">
-                        {day.dayName}
-                      </span>
-                      <motion.span
-                        className="my-0.5"
-                        style={{ fontSize: "clamp(18px, 2.8vmin, 34px)" }}
-                        animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
-                        transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
-                        aria-hidden
-                      >
-                        {weatherIcon(day.iconCode)}
-                      </motion.span>
-                      <span className="denboard-text-primary text-sm font-semibold tabular-nums">
-                        {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
-                      </span>
-                      <span className="denboard-text-secondary text-xs tabular-nums">
-                        {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
-              <DadJokePanel fullWidth />
+              <div className="w-full" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
+                <DadJokePanel fullWidth />
+              </div>
             </div>
           </>
         )}
