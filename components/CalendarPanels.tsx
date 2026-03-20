@@ -184,6 +184,125 @@ export function FourWeekGrid() {
   );
 }
 
+export function CurrentWeekGrid() {
+  const fetcher = useCallback(fetchCalendar, []);
+  const { data } = usePolling<CalendarPayload>(fetcher, {
+    intervalMs: 5 * 60 * 1000,
+    immediate: true
+  });
+
+  if (!data?.grid.days || data.grid.days.length === 0) {
+    return null;
+  }
+
+  const todayIdx = data.grid.days.findIndex((d) => d.isToday);
+  const safeIdx = todayIdx >= 0 ? todayIdx : 0;
+  const weekStartIdx = Math.floor(safeIdx / 7) * 7;
+  const weekDays = data.grid.days.slice(weekStartIdx, weekStartIdx + 7);
+
+  return (
+    <motion.div
+      className="rounded-3xl denboard-card"
+      style={{ padding: "calc(var(--denboard-scale-card-padding) * 0.82)" }}
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut", delay: 0.08 }}
+    >
+      <div
+        className="grid grid-cols-7 denboard-text-secondary"
+        style={{
+          gap: "calc(var(--denboard-scale-gap) * 0.8)",
+          marginBottom: "calc(var(--denboard-scale-gap) * 0.75)",
+          fontSize: "calc(var(--denboard-scale-date) * 0.68)"
+        }}
+      >
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+          <div key={d} className="text-center">
+            {d}
+          </div>
+        ))}
+      </div>
+      <div
+        className="grid grid-cols-7"
+        style={{ gap: "calc(var(--denboard-scale-gap) * 0.8)" }}
+      >
+        {weekDays.map((day) => (
+          <CompactWeekDayCell key={day.date} day={day} />
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+function CompactWeekDayCell({
+  day
+}: {
+  day: {
+    date: string;
+    dayOfMonth?: number;
+    isToday?: boolean;
+    events: import("@/lib/calendar").CalendarEvent[];
+  };
+}) {
+  const dayDate = new Date(day.date + "T12:00:00");
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const isToday = day.isToday ?? isSameDay(dayDate, new Date());
+  const isPast = dayDate < todayStart;
+  const dayOfMonth = day.dayOfMonth ?? dayDate.getDate();
+  const events = day.events ?? [];
+  const visible = events.slice(0, 3);
+  const overflow = Math.max(0, events.length - visible.length);
+
+  return (
+    <div
+      className={`rounded-xl flex flex-col overflow-hidden min-h-[clamp(78px,7.5vmin,126px)] ${
+        isToday
+          ? "bg-sandstone/25 border border-sandstone/60"
+          : isPast
+          ? "denboard-card-nested border border-transparent bg-black/20 opacity-75"
+          : "denboard-card-nested border border-transparent"
+      }`}
+    >
+      <div
+        className={`px-1.5 pt-1 text-left font-semibold denboard-text-secondary ${
+          isToday ? "font-bold denboard-text-primary" : ""
+        }`}
+        style={{ fontSize: "calc(var(--denboard-scale-date) * 0.62)" }}
+      >
+        {dayOfMonth}
+      </div>
+      <div className="flex flex-col gap-0.5 px-1.5 py-1">
+        {visible.map((evt, idx) => {
+          const color = getEventColor(evt, idx);
+          return (
+            <div
+              key={evt.id}
+              className="truncate rounded px-1 py-0.5 denboard-text-primary"
+              style={{
+                fontSize: "calc(var(--denboard-scale-calendar-event) * 0.52)",
+                backgroundColor: `${color}26`,
+                borderLeft: `2px solid ${color}`
+              }}
+              title={evt.title}
+            >
+              {evt.title}
+            </div>
+          );
+        })}
+        {overflow > 0 && (
+          <div
+            className="denboard-text-secondary"
+            style={{ fontSize: "calc(var(--denboard-scale-status) * 0.9)" }}
+          >
+            +{overflow} more
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DayCell({
   day
 }: {

@@ -2,7 +2,7 @@
 
 import { WeatherPanel } from "@/components/WeatherPanel";
 import { DadJokePanel } from "@/components/DadJokePanel";
-import { TodayEventsPanel } from "@/components/CalendarPanels";
+import { TodayEventsPanel, CurrentWeekGrid } from "@/components/CalendarPanels";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import { useGuestMode } from "@/components/HomeAssistantStatus";
 import type { WeatherPayload } from "@/lib/weather";
@@ -92,7 +92,7 @@ export default function TvHomePage() {
       {/* Content below in a clean grid */}
       <div
         className="flex-1 flex flex-col"
-        style={{ gap: "var(--denboard-scale-gap-lg)", paddingTop: "var(--denboard-scale-gap-lg)" }}
+        style={{ gap: "calc(var(--denboard-scale-gap-lg) * 0.82)", paddingTop: "calc(var(--denboard-scale-gap-lg) * 0.8)" }}
       >
         <div
           className={`grid ${guestMode ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"}`}
@@ -113,6 +113,11 @@ export default function TvHomePage() {
             </section>
           )}
         </div>
+        {!guestMode && (
+          <div className="w-full">
+            <CurrentWeekGrid />
+          </div>
+        )}
         <div className="w-full">
           <DadJokePanel fullWidth />
         </div>
