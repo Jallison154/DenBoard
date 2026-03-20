@@ -7,6 +7,7 @@ import { HomeAssistantStatus, useGuestMode } from "@/components/HomeAssistantSta
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "@/components/hooks";
+import { motion } from "framer-motion";
 import { useCallback } from "react";
 
 async function fetchWeather(): Promise<WeatherPayload> {
@@ -44,6 +45,52 @@ function weatherIcon(code: number | string | null | undefined): string {
 function formatTemp(temp: number, units?: "imperial" | "metric" | null): string {
   const n = Math.round(temp);
   return `${n}${units === "metric" ? "℃" : "°"}`;
+}
+
+function currentConditionKey(code?: number | string | null): "rain" | "snow" | "storm" | "cloudy" | "clear" | "other" {
+  if (code == null) return "other";
+  const k = typeof code === "string" ? code.toLowerCase() : "";
+  if (["rain", "rainy", "pouring"].includes(k)) return "rain";
+  if (["snow", "snowy"].includes(k)) return "snow";
+  if (["storm", "lightning", "lightning-rainy"].includes(k)) return "storm";
+  if (["cloudy", "overcast", "partlycloudy", "partly cloudy"].includes(k)) return "cloudy";
+  if (["clear", "sunny", "clear-night"].includes(k)) return "clear";
+  return "other";
+}
+
+function iconAnimationForCondition(kind: ReturnType<typeof currentConditionKey>) {
+  switch (kind) {
+    case "rain":
+      return {
+        animate: { y: [0, 3, 0], opacity: [0.94, 1, 0.94] },
+        transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "snow":
+      return {
+        animate: { y: [0, 2, 0], rotate: [0, 2, -2, 0] },
+        transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "storm":
+      return {
+        animate: { scale: [1, 1.07, 1], opacity: [0.9, 1, 0.9] },
+        transition: { duration: 1.2, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "cloudy":
+      return {
+        animate: { x: [0, 2, 0] },
+        transition: { duration: 3.6, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "clear":
+      return {
+        animate: { rotate: [0, 5, 0], scale: [1, 1.03, 1] },
+        transition: { duration: 4.6, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    default:
+      return {
+        animate: { opacity: [0.95, 1, 0.95] },
+        transition: { duration: 3.2, repeat: Infinity, ease: "easeInOut" as const }
+      };
+  }
 }
 
 export default function PortraitHomePage() {
@@ -88,13 +135,15 @@ export default function PortraitHomePage() {
                       ? formatTemp(weather.temperatureCurrent, weather.units)
                       : "–°"}
                   </span>
-                  <span
+                  <motion.span
                     className="tabular-nums"
                     style={{ fontSize: "calc(var(--denboard-scale-time) * 0.35)" }}
+                    animate={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).animate}
+                    transition={iconAnimationForCondition(currentConditionKey(weather?.conditionCode)).transition}
                     aria-hidden
                   >
                     {weatherIcon(weather?.conditionCode)}
-                  </span>
+                  </motion.span>
                 </div>
                 <p className="denboard-text-primary font-medium text-base sm:text-lg mt-1 capitalize">
                   {weather?.conditionText ?? "—"}
@@ -125,13 +174,15 @@ export default function PortraitHomePage() {
                           >
                             {day.dayName}
                           </span>
-                          <span
+                          <motion.span
                             className="shrink-0 mt-0.5"
                             style={{ fontSize: "clamp(24px, 4vmin, 44px)" }}
+                            animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
+                            transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
                             aria-hidden
                           >
                             {weatherIcon(day.iconCode)}
-                          </span>
+                          </motion.span>
                         </div>
                         <div className="flex flex-col items-end shrink-0">
                           <span

@@ -64,6 +64,52 @@ function formatSunTime(iso: string) {
   }
 }
 
+function currentConditionKey(code?: number | string | null): "rain" | "snow" | "storm" | "cloudy" | "clear" | "other" {
+  if (code == null) return "other";
+  const k = typeof code === "string" ? code.toLowerCase() : "";
+  if (["rain", "rainy", "pouring"].includes(k)) return "rain";
+  if (["snow", "snowy"].includes(k)) return "snow";
+  if (["storm", "lightning", "lightning-rainy"].includes(k)) return "storm";
+  if (["cloudy", "overcast", "partlycloudy", "partly cloudy"].includes(k)) return "cloudy";
+  if (["clear", "sunny", "clear-night"].includes(k)) return "clear";
+  return "other";
+}
+
+function iconAnimationForCondition(kind: ReturnType<typeof currentConditionKey>) {
+  switch (kind) {
+    case "rain":
+      return {
+        animate: { y: [0, 4, 0], opacity: [0.95, 1, 0.95] },
+        transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
+      };
+    case "snow":
+      return {
+        animate: { y: [0, 3, 0], rotate: [0, 2, -2, 0] },
+        transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" }
+      };
+    case "storm":
+      return {
+        animate: { scale: [1, 1.08, 1], opacity: [0.92, 1, 0.92] },
+        transition: { duration: 1.1, repeat: Infinity, ease: "easeInOut" }
+      };
+    case "cloudy":
+      return {
+        animate: { x: [0, 3, 0] },
+        transition: { duration: 3.6, repeat: Infinity, ease: "easeInOut" }
+      };
+    case "clear":
+      return {
+        animate: { rotate: [0, 6, 0], scale: [1, 1.04, 1] },
+        transition: { duration: 4.8, repeat: Infinity, ease: "easeInOut" }
+      };
+    default:
+      return {
+        animate: { opacity: [0.95, 1, 0.95] },
+        transition: { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
+      };
+  }
+}
+
 export default function TvHomePage() {
   const [now, setNow] = useState<DateTime | null>(null);
   const weatherFetcher = useCallback(fetchWeather, []);
@@ -91,14 +137,20 @@ export default function TvHomePage() {
         ? "Good afternoon"
         : "Good evening"
       : "Welcome";
+  const conditionKey = currentConditionKey(weather?.conditionCode);
+  const iconMotion = iconAnimationForCondition(conditionKey);
 
   return (
     <div className="flex-1 flex flex-col min-h-screen">
       <SevereAlertBanner alerts={weather?.alerts} />
 
       <div
-        className="flex-1 flex flex-col"
-        style={{ gap: "clamp(22px, 2.2vmin, 40px)" }}
+        className="flex-1 flex flex-col justify-center"
+        style={{
+          gap: "clamp(36px, 3.4vmin, 72px)",
+          paddingTop: "clamp(18px, 1.8vmin, 36px)",
+          paddingBottom: "clamp(18px, 1.8vmin, 36px)"
+        }}
       >
         {/* Hero clock block for 16:9 across-room readability */}
         <div className="w-full flex flex-col items-center justify-center text-center">
@@ -146,9 +198,14 @@ export default function TvHomePage() {
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
             <div className="flex items-end gap-5">
-              <span className="leading-none mb-1" style={{ fontSize: "clamp(56px, 5vmin, 90px)" }}>
+              <motion.span
+                className="leading-none mb-1"
+                style={{ fontSize: "clamp(56px, 5vmin, 90px)" }}
+                animate={iconMotion.animate}
+                transition={iconMotion.transition}
+              >
                 {iconFor(weather?.conditionCode)}
-              </span>
+              </motion.span>
               <span
                 className="denboard-text-primary font-bold"
                 style={{

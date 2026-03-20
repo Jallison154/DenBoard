@@ -21,6 +21,52 @@ const overlayLabel: Record<NonNullable<WeatherPayload["overlay"]>, string> = {
   clear: "Clear skies"
 };
 
+function currentConditionKey(code?: number | string | null): "rain" | "snow" | "storm" | "cloudy" | "clear" | "other" {
+  if (code == null) return "other";
+  const k = typeof code === "string" ? code.toLowerCase() : "";
+  if (["rain", "rainy", "pouring"].includes(k)) return "rain";
+  if (["snow", "snowy"].includes(k)) return "snow";
+  if (["storm", "lightning", "lightning-rainy"].includes(k)) return "storm";
+  if (["cloudy", "overcast", "partlycloudy", "partly cloudy"].includes(k)) return "cloudy";
+  if (["clear", "sunny", "clear-night"].includes(k)) return "clear";
+  return "other";
+}
+
+function iconAnimationForCondition(kind: ReturnType<typeof currentConditionKey>) {
+  switch (kind) {
+    case "rain":
+      return {
+        animate: { y: [0, 3, 0], opacity: [0.94, 1, 0.94] },
+        transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "snow":
+      return {
+        animate: { y: [0, 2, 0], rotate: [0, 2, -2, 0] },
+        transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "storm":
+      return {
+        animate: { scale: [1, 1.07, 1], opacity: [0.9, 1, 0.9] },
+        transition: { duration: 1.2, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "cloudy":
+      return {
+        animate: { x: [0, 2, 0] },
+        transition: { duration: 3.6, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    case "clear":
+      return {
+        animate: { rotate: [0, 5, 0], scale: [1, 1.03, 1] },
+        transition: { duration: 4.6, repeat: Infinity, ease: "easeInOut" as const }
+      };
+    default:
+      return {
+        animate: { opacity: [0.95, 1, 0.95] },
+        transition: { duration: 3.2, repeat: Infinity, ease: "easeInOut" as const }
+      };
+  }
+}
+
 type WeatherPanelProps = {
   fullHeight?: boolean;
   largeForecast?: boolean;
@@ -34,6 +80,7 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
   });
 
   const currentTemp = data?.temperatureCurrent ?? null;
+  const currentIconMotion = iconAnimationForCondition(currentConditionKey(data?.conditionCode));
 
   return (
     <motion.div
@@ -89,16 +136,18 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
         className="flex items-center denboard-text-secondary"
         style={{ gap: "var(--denboard-scale-gap)", fontSize: "var(--denboard-scale-date)" }}
       >
-        <span
+        <motion.span
           className="inline-flex items-center justify-center rounded-full denboard-card-nested"
           style={{
             width: "var(--denboard-scale-forecast-icon)",
             height: "var(--denboard-scale-forecast-icon)",
             fontSize: "var(--denboard-scale-forecast-icon)"
           }}
+          animate={currentIconMotion.animate}
+          transition={currentIconMotion.transition}
         >
           {iconFor(data?.conditionCode)}
-        </span>
+        </motion.span>
         <span>{data?.conditionText ?? "Local conditions"}</span>
       </div>
 
@@ -118,12 +167,14 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
               >
                 {day.dayName}
               </span>
-              <span
+              <motion.span
                 className="denboard-forecast-icon leading-none"
                 style={largeForecast ? { fontSize: "calc(var(--denboard-scale-forecast-icon) * 1.2)" } : undefined}
+                animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
+                transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
               >
                 {iconFor(day.iconCode)}
-              </span>
+              </motion.span>
               <div
                 className="denboard-forecast-temp denboard-text-secondary flex flex-col items-center leading-tight"
                 style={largeForecast ? { fontSize: "calc(var(--denboard-scale-forecast-temp) * 1.18)" } : undefined}

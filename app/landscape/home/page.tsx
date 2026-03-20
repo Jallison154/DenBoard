@@ -73,14 +73,8 @@ export default function TvHomePage() {
             </section>
           )}
         </div>
-        <div
-          className={`grid ${guestMode ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"}`}
-          style={{ gap: "var(--denboard-scale-gap-lg)" }}
-        >
-          <div className="w-full">
-            <DadJokePanel fullWidth />
-          </div>
-          {!guestMode && <div aria-hidden />}
+        <div className="w-full">
+          <DadJokePanel fullWidth />
         </div>
       </div>
     </div>
