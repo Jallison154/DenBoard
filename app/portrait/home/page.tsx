@@ -314,21 +314,24 @@ export default function PortraitHomePage() {
                         <span className="denboard-text-secondary text-xs font-medium truncate w-full">
                           {day.dayName}
                         </span>
-                        <motion.span
-                          className="my-0.5"
-                          style={{ fontSize: "clamp(20px, 3vmin, 36px)" }}
-                          animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
-                          transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
-                          aria-hidden
-                        >
-                          {weatherIcon(day.iconCode)}
-                        </motion.span>
-                        <span className="denboard-text-primary text-sm font-semibold tabular-nums">
-                          {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
-                        </span>
-                        <span className="denboard-text-secondary text-xs tabular-nums">
-                          {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
-                        </span>
+                        <div className="flex items-center justify-center gap-1.5 mt-0.5">
+                          <motion.span
+                            style={{ fontSize: "clamp(20px, 3vmin, 36px)" }}
+                            animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
+                            transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
+                            aria-hidden
+                          >
+                            {weatherIcon(day.iconCode)}
+                          </motion.span>
+                          <div className="flex flex-col items-start leading-tight">
+                            <span className="denboard-text-primary text-sm font-semibold tabular-nums">
+                              {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
+                            </span>
+                            <span className="denboard-text-secondary text-xs tabular-nums">
+                              {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
