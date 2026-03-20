@@ -157,46 +157,22 @@ export default function AdminPage() {
                 </p>
                 <div className="flex flex-wrap gap-2 text-xs">
                   <a
+                    href="/tv/home"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    TV Home (Hotel)
+                  </a>
+                  <a
                     href="/landscape/home"
                     className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
                   >
                     Landscape Home
                   </a>
                   <a
-                    href="/landscape/guest"
-                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
-                  >
-                    Landscape Guest
-                  </a>
-                  <a
-                    href="/landscape/weather"
-                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
-                  >
-                    Landscape Weather
-                  </a>
-                  <a
-                    href="/landscape/status"
-                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
-                  >
-                    Landscape Status
-                  </a>
-                  <a
                     href="/portrait/home"
                     className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
                   >
                     Portrait Home
-                  </a>
-                  <a
-                    href="/portrait/calendar"
-                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
-                  >
-                    Portrait Calendar
-                  </a>
-                  <a
-                    href="/portrait/status"
-                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
-                  >
-                    Portrait Status
                   </a>
                 </div>
               </section>
