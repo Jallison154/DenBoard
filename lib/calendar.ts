@@ -186,15 +186,17 @@ export async function getCalendar(
       events.push(...byVisibleKey.values());
     }
 
-    const todayAllDay = events.filter(
-      (e) => e.allDay && DateTime.fromISO(e.start).hasSame(todayStart, "day")
-    );
+    const todayAllDay = events.filter((e) => {
+      if (!e.allDay) return false;
+      const start = DateTime.fromISO(e.start, { setZone: true }).setZone(timezone);
+      return start.isValid && start.hasSame(todayStart, "day");
+    });
     const todayTimed = events
-      .filter(
-        (e) =>
-          !e.allDay &&
-          DateTime.fromISO(e.start).toISODate() === todayStart.toISODate()
-      )
+      .filter((e) => {
+        if (e.allDay) return false;
+        const start = DateTime.fromISO(e.start, { setZone: true }).setZone(timezone);
+        return start.isValid && start.toISODate() === todayStart.toISODate();
+      })
       .sort((a, b) => Number(new Date(a.start)) - Number(new Date(b.start)));
 
     const dateStrToEvents = new Map<string, CalendarEvent[]>();
@@ -204,8 +206,8 @@ export async function getCalendar(
       dateStrToEvents.set(dateStr, []);
     }
     for (const evt of events) {
-      const evtStart = DateTime.fromISO(evt.start);
-      const evtEnd = DateTime.fromISO(evt.end);
+      const evtStart = DateTime.fromISO(evt.start, { setZone: true }).setZone(timezone);
+      const evtEnd = DateTime.fromISO(evt.end, { setZone: true }).setZone(timezone);
       if (!evtStart.isValid) continue;
       const startDate = evtStart.toISODate() ?? "";
       const endDate = evtEnd.isValid ? (evtEnd.toISODate() ?? startDate) : startDate;
