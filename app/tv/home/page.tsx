@@ -242,7 +242,13 @@ export default function TvHomePage() {
                     >
                       {day.dayName}
                     </span>
-                    <span style={{ fontSize: "clamp(38px, 3.5vmin, 60px)" }}>{iconFor(day.iconCode)}</span>
+                    <motion.span
+                      style={{ fontSize: "clamp(38px, 3.5vmin, 60px)" }}
+                      animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
+                      transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
+                    >
+                      {iconFor(day.iconCode)}
+                    </motion.span>
                     <span
                       className="denboard-text-primary font-semibold"
                       style={{ fontSize: "clamp(28px, 2.6vmin, 44px)" }}
