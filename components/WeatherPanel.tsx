@@ -21,7 +21,12 @@ const overlayLabel: Record<NonNullable<WeatherPayload["overlay"]>, string> = {
   clear: "Clear skies"
 };
 
-export function WeatherPanel() {
+type WeatherPanelProps = {
+  fullHeight?: boolean;
+  largeForecast?: boolean;
+};
+
+export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = {}) {
   const fetcher = useCallback(fetchWeather, []);
   const { data, loading } = usePolling<WeatherPayload>(fetcher, {
     intervalMs: 6 * 60 * 1000,
@@ -32,7 +37,7 @@ export function WeatherPanel() {
 
   return (
     <motion.div
-      className="rounded-3xl denboard-card flex flex-col min-w-[min(26rem,90vw)]"
+      className={`rounded-3xl denboard-card flex flex-col min-w-[min(26rem,90vw)] ${fullHeight ? "h-full" : ""}`}
       style={{
         padding: "var(--denboard-scale-card-padding)",
         gap: "var(--denboard-scale-gap-lg)"
@@ -107,13 +112,22 @@ export function WeatherPanel() {
               key={day.dateISO}
               className="flex flex-col items-center rounded-2xl denboard-card-nested denboard-forecast-tile"
             >
-              <span className="uppercase tracking-wide denboard-text-secondary denboard-scale-status">
+              <span
+                className="uppercase tracking-wide denboard-text-secondary denboard-scale-status"
+                style={largeForecast ? { fontSize: "calc(var(--denboard-scale-status) * 1.2)" } : undefined}
+              >
                 {day.dayName}
               </span>
-              <span className="denboard-forecast-icon leading-none">
+              <span
+                className="denboard-forecast-icon leading-none"
+                style={largeForecast ? { fontSize: "calc(var(--denboard-scale-forecast-icon) * 1.2)" } : undefined}
+              >
                 {iconFor(day.iconCode)}
               </span>
-              <div className="denboard-forecast-temp denboard-text-secondary flex flex-col items-center leading-tight">
+              <div
+                className="denboard-forecast-temp denboard-text-secondary flex flex-col items-center leading-tight"
+                style={largeForecast ? { fontSize: "calc(var(--denboard-scale-forecast-temp) * 1.18)" } : undefined}
+              >
                 <span className="whitespace-nowrap">
                   {formatForecastTemp(day.highTemp, data?.units)}
                 </span>

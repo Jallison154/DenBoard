@@ -8,12 +8,7 @@ const NAV_LINKS = [
   { href: "/admin", label: "Admin" },
   { href: "/tv/home", label: "TV Home (Hotel)" },
   { href: "/landscape/home", label: "Landscape Home" },
-  { href: "/landscape/guest", label: "Landscape Guest" },
-  { href: "/landscape/weather", label: "Landscape Weather" },
-  { href: "/landscape/status", label: "Landscape Status" },
   { href: "/portrait/home", label: "Portrait Home" },
-  { href: "/portrait/calendar", label: "Portrait Calendar" },
-  { href: "/portrait/status", label: "Portrait Status" },
 ];
 
 const IDLE_MS = 5000;

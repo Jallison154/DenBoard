@@ -59,24 +59,28 @@ export default function TvHomePage() {
           style={{ gap: "var(--denboard-scale-gap-lg)" }}
         >
           <section
-            className="flex flex-col"
+            className="flex flex-col h-full"
             style={{ gap: "var(--denboard-scale-space-md)" }}
           >
-            <WeatherPanel />
+            <WeatherPanel fullHeight largeForecast />
           </section>
           {!guestMode && (
             <section
-              className="flex flex-col"
+              className="flex flex-col h-full"
               style={{ gap: "var(--denboard-scale-space-md)" }}
             >
-              <TodayEventsPanel />
+              <TodayEventsPanel fullHeight />
             </section>
           )}
         </div>
-        <div className="flex justify-center">
-          <div className="max-w-2xl w-full">
-            <DadJokePanel />
+        <div
+          className={`grid ${guestMode ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"}`}
+          style={{ gap: "var(--denboard-scale-gap-lg)" }}
+        >
+          <div className="w-full">
+            <DadJokePanel fullWidth />
           </div>
+          {!guestMode && <div aria-hidden />}
         </div>
       </div>
     </div>
