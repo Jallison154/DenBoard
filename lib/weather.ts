@@ -105,7 +105,12 @@ async function fetchFromExternal(units?: WeatherUnits): Promise<WeatherDebugPayl
       url: url.toString()
     });
 
-    const res = await fetchWithRetry(url.toString());
+    // Fail fast: prevents long retry chains from stacking up when Open-Meteo is unreachable.
+    const res = await fetchWithRetry(
+      url.toString(),
+      undefined,
+      { timeoutMs: 5000, retries: 1, retryDelayMs: 1000 }
+    );
     const raw: any = await res.json();
 
     const now = DateTime.now().setZone(config.timezone);
@@ -218,7 +223,12 @@ async function fetchOpenMeteoDailyForecastOnly(
   url.searchParams.set("timezone", timezone);
   url.searchParams.set("forecast_days", "5");
   url.searchParams.set("temperature_unit", units === "imperial" ? "fahrenheit" : "celsius");
-  const res = await fetchWithRetry(url.toString());
+  // Fail fast: reduces CPU impact when Open-Meteo is down.
+  const res = await fetchWithRetry(
+    url.toString(),
+    undefined,
+    { timeoutMs: 5000, retries: 1, retryDelayMs: 1000 }
+  );
   const raw: any = await res.json();
   const dailyForecast: DailyForecastEntry[] = [];
   const days: string[] = raw.daily?.time ?? [];
