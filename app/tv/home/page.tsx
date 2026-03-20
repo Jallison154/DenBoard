@@ -80,32 +80,32 @@ function iconAnimationForCondition(kind: ReturnType<typeof currentConditionKey>)
     case "rain":
       return {
         animate: { y: [0, 4, 0], opacity: [0.95, 1, 0.95] },
-        transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 1.8, repeat: Infinity, ease: "easeInOut" as const }
       };
     case "snow":
       return {
         animate: { y: [0, 3, 0], rotate: [0, 2, -2, 0] },
-        transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" as const }
       };
     case "storm":
       return {
         animate: { scale: [1, 1.08, 1], opacity: [0.92, 1, 0.92] },
-        transition: { duration: 1.1, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 1.1, repeat: Infinity, ease: "easeInOut" as const }
       };
     case "cloudy":
       return {
         animate: { x: [0, 3, 0] },
-        transition: { duration: 3.6, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 3.6, repeat: Infinity, ease: "easeInOut" as const }
       };
     case "clear":
       return {
         animate: { rotate: [0, 6, 0], scale: [1, 1.04, 1] },
-        transition: { duration: 4.8, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 4.8, repeat: Infinity, ease: "easeInOut" as const }
       };
     default:
       return {
         animate: { opacity: [0.95, 1, 0.95] },
-        transition: { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 3.2, repeat: Infinity, ease: "easeInOut" as const }
       };
   }
 }
