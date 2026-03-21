@@ -50,32 +50,33 @@ function formatTemp(temp?: number | null, units?: "imperial" | "metric" | null) 
   return `${Math.round(temp)}${units === "metric" ? "℃" : "°"}`;
 }
 
-function formatStart(iso: string) {
+/** 24h, no am/pm */
+function formatEventTime(iso: string) {
   try {
-    return DateTime.fromISO(iso).toFormat("h:mm a");
+    return DateTime.fromISO(iso).toFormat("HH:mm");
   } catch {
     return "";
   }
 }
 
-function getNextEvent(data: CalendarPayload | null | undefined, now: DateTime): CalendarEvent | null {
-  if (!data?.grid.days?.length) return null;
-  const nowMs = now.toMillis();
-  let next: CalendarEvent | null = null;
-  let nextMs = Number.POSITIVE_INFINITY;
-
-  for (const day of data.grid.days) {
-    for (const evt of day.events ?? []) {
-      const dt = DateTime.fromISO(evt.start, { setZone: true });
-      const ms = dt.toMillis();
-      if (!Number.isFinite(ms) || ms < nowMs) continue;
-      if (ms < nextMs) {
-        nextMs = ms;
-        next = evt;
-      }
+function useTodayEvents(calendar: CalendarPayload | null | undefined, guestMode: boolean) {
+  return useMemo(() => {
+    if (guestMode || !calendar?.today) {
+      return [] as { evt: CalendarEvent; time: string | null }[];
     }
-  }
-  return next;
+    const { allDay, timed } = calendar.today;
+    const sortedTimed = [...timed].sort(
+      (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()
+    );
+    const rows: { evt: CalendarEvent; time: string | null }[] = [];
+    for (const evt of allDay) {
+      rows.push({ evt, time: null });
+    }
+    for (const evt of sortedTimed) {
+      rows.push({ evt, time: formatEventTime(evt.start) });
+    }
+    return rows;
+  }, [calendar, guestMode]);
 }
 
 export default function NestHomePage() {
@@ -85,6 +86,7 @@ export default function NestHomePage() {
   const { data: weather } = usePolling<WeatherPayload>(weatherFetcher, { intervalMs: 6 * 60 * 1000, immediate: true });
   const { data: calendar } = usePolling<CalendarPayload>(calendarFetcher, { intervalMs: 5 * 60 * 1000, immediate: true });
   const { guestMode } = useGuestMode();
+  const todayRows = useTodayEvents(calendar, guestMode);
 
   useEffect(() => {
     setNow(nowInDashboardTz());
@@ -92,107 +94,65 @@ export default function NestHomePage() {
     return () => clearInterval(id);
   }, []);
 
-  const nextEvent = useMemo(() => (now ? getNextEvent(calendar, now) : null), [calendar, now]);
-
-  const panelStyle = {
-    background: "rgba(0,0,0,0.35)",
-    backdropFilter: "blur(12px)" as const
-  };
-
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col gap-1 overflow-hidden px-0.5 pb-0.5">
-      {/* Clock — dominant top block */}
-      <section className="w-full shrink-0 text-center pt-0.5">
-        <div
-          className="denboard-text-secondary uppercase tracking-[0.2em] mb-0.5"
-          style={{ fontSize: "clamp(9px, 1.4vmin, 14px)" }}
-        >
-          {guestMode ? "Guest" : "Nest"}
-        </div>
-        <div
-          className="denboard-text-primary font-extrabold tabular-nums whitespace-nowrap leading-none"
-          style={{ fontSize: "clamp(88px, 22vmin, 220px)" }}
-          suppressHydrationWarning
-        >
-          {now ? `${now.toFormat("h:mm")} ${now.toFormat("a")}` : "–:–– ––"}
-        </div>
-        <div
-          className="denboard-text-secondary mt-0.5"
-          style={{ fontSize: "clamp(12px, 2.2vmin, 22px)" }}
-          suppressHydrationWarning
-        >
-          {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : "…"}
-        </div>
-      </section>
-
-      {/* Weather | Calendar */}
-      <section className="grid min-h-0 flex-1 grid-cols-2 gap-1.5" style={{ minHeight: 0 }}>
-        {/* Left: weather */}
-        <div
-          className="flex min-h-0 min-w-0 flex-col justify-center rounded-xl border border-white/10 px-2 py-2"
-          style={panelStyle}
-        >
+      {/* Time + weather (weather where am/pm was) */}
+      <section className="w-full shrink-0">
+        <div className="flex flex-wrap items-end justify-center gap-x-3 gap-y-1">
           <div
-            className="denboard-text-secondary uppercase tracking-[0.15em] text-center"
-            style={{ fontSize: "clamp(8px, 1.2vmin, 12px)" }}
+            className="denboard-text-primary font-extrabold tabular-nums leading-none tracking-tight"
+            style={{ fontSize: "clamp(72px, 20vmin, 200px)" }}
+            suppressHydrationWarning
           >
-            Weather
+            {now ? now.toFormat("HH:mm") : "––:––"}
           </div>
-          <div className="mt-1 flex flex-1 flex-col items-center justify-center gap-1">
-            <span className="leading-none" style={{ fontSize: "clamp(28px, 7vmin, 52px)" }}>
+          <div className="flex flex-col items-start justify-end pb-[clamp(4px,0.8vmin,12px)] min-w-0">
+            <span className="leading-none" style={{ fontSize: "clamp(22px, 5.5vmin, 44px)" }}>
               {weatherIcon(weather?.conditionCode)}
             </span>
             <span
-              className="denboard-text-primary font-bold tabular-nums"
-              style={{ fontSize: "clamp(26px, 6vmin, 44px)", lineHeight: 1 }}
+              className="denboard-text-primary font-bold tabular-nums leading-tight"
+              style={{ fontSize: "clamp(18px, 4.5vmin, 36px)" }}
             >
               {formatTemp(weather?.temperatureCurrent, weather?.units)}
             </span>
             <span
-              className="denboard-text-secondary line-clamp-2 text-center capitalize leading-tight"
-              style={{ fontSize: "clamp(10px, 1.6vmin, 16px)" }}
+              className="denboard-text-secondary line-clamp-2 capitalize leading-tight max-w-[12rem]"
+              style={{ fontSize: "clamp(9px, 1.5vmin, 14px)" }}
             >
-              {weather?.conditionText ?? "…"}
+              {weather?.conditionText ?? ""}
             </span>
           </div>
         </div>
-
-        {/* Right: next event / calendar */}
         <div
-          className="flex min-h-0 min-w-0 flex-col justify-center rounded-xl border border-white/10 px-2 py-2 text-left"
-          style={panelStyle}
+          className="denboard-text-secondary text-center mt-0.5"
+          style={{ fontSize: "clamp(11px, 2vmin, 20px)" }}
+          suppressHydrationWarning
         >
-          <div
-            className="denboard-text-secondary uppercase tracking-[0.15em] text-center"
-            style={{ fontSize: "clamp(8px, 1.2vmin, 12px)" }}
-          >
-            Next
-          </div>
-          <div className="mt-1 flex min-h-0 flex-1 flex-col justify-center overflow-hidden">
-            {guestMode ? (
-              <p className="denboard-text-secondary text-center leading-snug" style={{ fontSize: "clamp(11px, 1.8vmin, 18px)" }}>
-                Hidden in guest mode
-              </p>
-            ) : nextEvent ? (
-              <div className="flex min-h-0 flex-col gap-0.5 overflow-hidden">
-                <div
-                  className="denboard-text-primary font-semibold line-clamp-3 leading-tight"
-                  style={{ fontSize: "clamp(12px, 2.4vmin, 22px)" }}
-                  title={nextEvent.title}
-                >
-                  {nextEvent.title}
-                </div>
-                <div className="denboard-text-secondary truncate" style={{ fontSize: "clamp(10px, 1.5vmin, 15px)" }}>
-                  {nextEvent.allDay ? "All day" : formatStart(nextEvent.start)}
-                </div>
-              </div>
-            ) : (
-              <p className="denboard-text-secondary text-center leading-snug" style={{ fontSize: "clamp(11px, 1.8vmin, 18px)" }}>
-                No upcoming events
-              </p>
-            )}
-          </div>
+          {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : ""}
         </div>
+      </section>
+
+      {/* Today’s events — below time + weather, no boxes */}
+      <section className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+        <ul className="flex flex-col gap-1 px-0.5">
+          {todayRows.map(({ evt, time }) => (
+            <li
+              key={evt.id}
+              className="flex items-baseline gap-2 min-w-0 denboard-text-primary"
+              style={{ fontSize: "clamp(11px, 2vmin, 18px)" }}
+            >
+              {time != null ? (
+                <span className="denboard-text-secondary tabular-nums shrink-0" style={{ fontSize: "0.92em" }}>
+                  {time}
+                </span>
+              ) : (
+                <span className="shrink-0 w-[2.75ch]" aria-hidden />
+              )}
+              <span className="min-w-0 truncate font-medium">{evt.title}</span>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );
