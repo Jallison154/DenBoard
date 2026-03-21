@@ -8,6 +8,11 @@ html {
   overflow: hidden;
 }
 
+/* Embedded iframe / cast: optional lighter compositing on weak GPUs */
+html[data-denboard-embed] {
+  -webkit-font-smoothing: antialiased;
+}
+
 body {
   height: 100%;
   max-height: 100dvh;

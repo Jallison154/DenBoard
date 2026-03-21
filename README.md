@@ -56,6 +56,7 @@ Environment variables:
 - **HOME_ASSISTANT_URL**: Base URL of your Home Assistant instance (e.g. `https://ha.example.com`).
 - **HOME_ASSISTANT_TOKEN**: Long‑lived access token for the curated entity list.
 - **PORT**: Port for Next.js to listen on (default `3000`). The reverse proxy should point here.
+- **DENBOARD_FRAME_ANCESTORS** (optional): CSP `frame-ancestors` value(s) so Home Assistant can iframe DenBoard (see `docs/EMBEDDED-CAST.md`).
 
 **If Unsplash backgrounds don’t load:** Get an Access Key from [Unsplash Developers](https://unsplash.com/oauth/applications) (create an app, then use the “Access Key” from the Keys section). Set `UNSPLASH_ACCESS_KEY=` in `.env` and restart the app. Check server logs for `Unsplash API error` if it still fails (e.g. 401 = wrong or missing key).
 
@@ -75,6 +76,17 @@ PORT=3000 npm run start
 ```
 
 The app will listen on `0.0.0.0:PORT`. Place it behind your reverse proxy for TLS and public access.
+
+---
+
+### Embedded display (Home Assistant, Chromecast, iframe)
+
+See **[docs/EMBEDDED-CAST.md](./docs/EMBEDDED-CAST.md)** for:
+
+- iframe / cast compatibility audit (headers, mixed content, layout)
+- **`DENBOARD_FRAME_ANCESTORS`** — optional CSP so Home Assistant can embed DenBoard
+- **`?embed=1`** — reduced motion + `data-denboard-embed` for lighter animation on cast receivers
+- Troubleshooting **blank / white** embeds (iframe height, `X-Frame-Options` on proxies, `NEXT_PUBLIC_BASE_PATH`)
 
 ---
 
