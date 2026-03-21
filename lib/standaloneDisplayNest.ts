@@ -286,8 +286,8 @@ function boot(){
   setInterval(tickClock,1000);
   loadAll();
   setInterval(function(){
-    log("scheduled full reload (60s)");
-    window.location.reload();
+    log("scheduled data refresh (60s)");
+    loadAll();
   },60000);
 }
 if(document.readyState==="loading"){
