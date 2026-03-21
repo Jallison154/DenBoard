@@ -94,62 +94,106 @@ export default function NestHomePage() {
 
   const nextEvent = useMemo(() => (now ? getNextEvent(calendar, now) : null), [calendar, now]);
 
-  return (
-    <div className="flex min-h-0 w-full max-w-3xl flex-1 flex-col items-center justify-center text-center overflow-hidden">
-      <div className="rounded-3xl denboard-card w-full max-w-2xl px-8 py-7 flex flex-col gap-6">
-        <div className="denboard-text-secondary uppercase tracking-[0.22em]" style={{ fontSize: "clamp(14px, 1.8vmin, 22px)" }}>
-          {guestMode ? "Guest Mode" : "Nest Home"}
-        </div>
+  const panelStyle = {
+    background: "rgba(0,0,0,0.35)",
+    backdropFilter: "blur(12px)" as const
+  };
 
-        <div className="denboard-text-primary font-extrabold tabular-nums whitespace-nowrap" style={{ fontSize: "clamp(72px, 11vmin, 152px)", lineHeight: 0.95 }}>
+  return (
+    <div className="flex min-h-0 w-full flex-1 flex-col gap-1 overflow-hidden px-0.5 pb-0.5">
+      {/* Clock — dominant top block */}
+      <section className="w-full shrink-0 text-center pt-0.5">
+        <div
+          className="denboard-text-secondary uppercase tracking-[0.2em] mb-0.5"
+          style={{ fontSize: "clamp(9px, 1.4vmin, 14px)" }}
+        >
+          {guestMode ? "Guest" : "Nest"}
+        </div>
+        <div
+          className="denboard-text-primary font-extrabold tabular-nums whitespace-nowrap leading-none"
+          style={{ fontSize: "clamp(88px, 22vmin, 220px)" }}
+          suppressHydrationWarning
+        >
           {now ? `${now.toFormat("h:mm")} ${now.toFormat("a")}` : "–:–– ––"}
         </div>
-        <div className="denboard-text-secondary" style={{ fontSize: "clamp(22px, 3vmin, 38px)" }}>
-          {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : "Loading date..."}
-        </div>
-
         <div
-          className="rounded-2xl denboard-card-nested px-5 py-4 flex items-center justify-center gap-4 border border-white/10"
-          style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(14px)" }}
+          className="denboard-text-secondary mt-0.5"
+          style={{ fontSize: "clamp(12px, 2.2vmin, 22px)" }}
+          suppressHydrationWarning
         >
-          <span style={{ fontSize: "clamp(32px, 5vmin, 56px)" }}>{weatherIcon(weather?.conditionCode)}</span>
-          <div className="flex flex-col items-start text-left">
-            <span className="denboard-text-primary font-semibold" style={{ fontSize: "clamp(34px, 4.2vmin, 62px)", lineHeight: 1 }}>
+          {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : "…"}
+        </div>
+      </section>
+
+      {/* Weather | Calendar */}
+      <section className="grid min-h-0 flex-1 grid-cols-2 gap-1.5" style={{ minHeight: 0 }}>
+        {/* Left: weather */}
+        <div
+          className="flex min-h-0 min-w-0 flex-col justify-center rounded-xl border border-white/10 px-2 py-2"
+          style={panelStyle}
+        >
+          <div
+            className="denboard-text-secondary uppercase tracking-[0.15em] text-center"
+            style={{ fontSize: "clamp(8px, 1.2vmin, 12px)" }}
+          >
+            Weather
+          </div>
+          <div className="mt-1 flex flex-1 flex-col items-center justify-center gap-1">
+            <span className="leading-none" style={{ fontSize: "clamp(28px, 7vmin, 52px)" }}>
+              {weatherIcon(weather?.conditionCode)}
+            </span>
+            <span
+              className="denboard-text-primary font-bold tabular-nums"
+              style={{ fontSize: "clamp(26px, 6vmin, 44px)", lineHeight: 1 }}
+            >
               {formatTemp(weather?.temperatureCurrent, weather?.units)}
             </span>
-            <span className="denboard-text-secondary capitalize" style={{ fontSize: "clamp(14px, 1.8vmin, 24px)" }}>
-              {weather?.conditionText ?? "Loading weather..."}
+            <span
+              className="denboard-text-secondary line-clamp-2 text-center capitalize leading-tight"
+              style={{ fontSize: "clamp(10px, 1.6vmin, 16px)" }}
+            >
+              {weather?.conditionText ?? "…"}
             </span>
           </div>
         </div>
 
+        {/* Right: next event / calendar */}
         <div
-          className="rounded-2xl denboard-card-nested px-5 py-4 text-left border border-white/10"
-          style={{ background: "rgba(0,0,0,0.35)", backdropFilter: "blur(14px)" }}
+          className="flex min-h-0 min-w-0 flex-col justify-center rounded-xl border border-white/10 px-2 py-2 text-left"
+          style={panelStyle}
         >
-          <div className="denboard-text-secondary uppercase tracking-[0.18em]" style={{ fontSize: "clamp(12px, 1.5vmin, 18px)" }}>
-            Next Event
+          <div
+            className="denboard-text-secondary uppercase tracking-[0.15em] text-center"
+            style={{ fontSize: "clamp(8px, 1.2vmin, 12px)" }}
+          >
+            Next
           </div>
-          {guestMode ? (
-            <div className="denboard-text-primary font-medium mt-2" style={{ fontSize: "clamp(18px, 2.2vmin, 30px)" }}>
-              Hidden in guest mode
-            </div>
-          ) : nextEvent ? (
-            <div className="mt-2 flex flex-col gap-1">
-              <div className="denboard-text-primary font-semibold truncate" style={{ fontSize: "clamp(22px, 2.7vmin, 36px)" }} title={nextEvent.title}>
-                {nextEvent.title}
+          <div className="mt-1 flex min-h-0 flex-1 flex-col justify-center overflow-hidden">
+            {guestMode ? (
+              <p className="denboard-text-secondary text-center leading-snug" style={{ fontSize: "clamp(11px, 1.8vmin, 18px)" }}>
+                Hidden in guest mode
+              </p>
+            ) : nextEvent ? (
+              <div className="flex min-h-0 flex-col gap-0.5 overflow-hidden">
+                <div
+                  className="denboard-text-primary font-semibold line-clamp-3 leading-tight"
+                  style={{ fontSize: "clamp(12px, 2.4vmin, 22px)" }}
+                  title={nextEvent.title}
+                >
+                  {nextEvent.title}
+                </div>
+                <div className="denboard-text-secondary truncate" style={{ fontSize: "clamp(10px, 1.5vmin, 15px)" }}>
+                  {nextEvent.allDay ? "All day" : formatStart(nextEvent.start)}
+                </div>
               </div>
-              <div className="denboard-text-secondary" style={{ fontSize: "clamp(14px, 1.8vmin, 24px)" }}>
-                {nextEvent.allDay ? "All day" : formatStart(nextEvent.start)}
-              </div>
-            </div>
-          ) : (
-            <div className="denboard-text-primary mt-2" style={{ fontSize: "clamp(18px, 2.2vmin, 30px)" }}>
-              No upcoming events
-            </div>
-          )}
+            ) : (
+              <p className="denboard-text-secondary text-center leading-snug" style={{ fontSize: "clamp(11px, 1.8vmin, 18px)" }}>
+                No upcoming events
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
