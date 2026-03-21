@@ -44,7 +44,7 @@ export default function TvHomePage() {
 
   return (
     <div
-      className="flex-1 flex flex-col max-w-6xl mx-auto w-full"
+      className="flex min-h-0 w-full max-w-6xl flex-1 flex-col overflow-hidden mx-auto"
       style={{
         paddingTop: "var(--denboard-scale-space-lg)",
         paddingBottom: "var(--denboard-scale-space-xl)",
@@ -91,7 +91,7 @@ export default function TvHomePage() {
 
       {/* Content below in a clean grid */}
       <div
-        className="flex-1 flex flex-col"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
         style={{ gap: "calc(var(--denboard-scale-gap-lg) * 0.82)", paddingTop: "calc(var(--denboard-scale-gap-lg) * 0.8)" }}
       >
         <div

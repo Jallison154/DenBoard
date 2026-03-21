@@ -141,11 +141,11 @@ export default function TvHomePage() {
   const iconMotion = iconAnimationForCondition(conditionKey);
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen">
+    <div className="flex min-h-0 w-full max-h-full flex-1 flex-col overflow-hidden">
       <SevereAlertBanner alerts={weather?.alerts} />
 
       <div
-        className="flex-1 flex flex-col justify-center"
+        className="flex min-h-0 flex-1 flex-col justify-center overflow-hidden"
         style={{
           gap: "clamp(36px, 3.4vmin, 72px)",
           paddingTop: "clamp(18px, 1.8vmin, 36px)",

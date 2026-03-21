@@ -120,11 +120,11 @@ export default function PortraitHomePage() {
       : "Welcome";
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex min-h-0 w-full max-h-full flex-1 flex-col overflow-hidden">
       <SevereAlertBanner alerts={weather?.alerts} />
 
       <div
-        className="flex-1 flex flex-col min-h-0"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
         style={{
           gap: "var(--denboard-scale-gap-lg)",
           paddingTop: "var(--denboard-scale-space-md)",

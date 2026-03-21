@@ -104,7 +104,9 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   return (
-    <div className="min-h-screen px-6 py-10 md:px-12 lg:px-16 text-slate-100">
+    <div
+      className="min-h-0 px-6 py-10 pb-[calc(var(--denboard-scale-space-lg)+3rem)] md:px-12 lg:px-16 text-slate-100"
+    >
       <div className="max-w-3xl mx-auto space-y-6">
         <header className="space-y-2">
           <h1 className="text-3xl font-semibold">DenBoard Control Panel</h1>

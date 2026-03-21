@@ -74,7 +74,9 @@ export function BackgroundLayer({ children, variant = "default" }: Props) {
   const showWeatherEffects = data?.enableWeatherEffects ?? true;
 
   return (
-    <div className={`relative min-h-screen denboard-content-area ${!isHotel ? "denboard-gradient" : ""}`}>
+    <div
+      className={`relative flex min-h-0 w-full flex-1 flex-col denboard-content-area ${!isHotel ? "denboard-gradient" : ""}`}
+    >
       <AnimatePresence initial={false}>
         {imageUrl && (
           <motion.div
@@ -105,7 +107,9 @@ export function BackgroundLayer({ children, variant = "default" }: Props) {
 
       {showWeatherEffects && <WeatherOverlayLayer kind={overlay} />}
 
-      <div className="relative min-h-screen denboard-content z-20">{children}</div>
+      <div className="relative z-20 flex min-h-0 flex-1 flex-col overflow-hidden denboard-content">
+        {children}
+      </div>
     </div>
   );
 }
