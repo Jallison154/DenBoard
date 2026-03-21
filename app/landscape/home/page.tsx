@@ -59,7 +59,7 @@ export default function TvHomePage() {
         <div
           className="denboard-text-secondary font-semibold uppercase tracking-[0.28em]"
           style={{
-            fontSize: "clamp(20px, 1.8vmin, 34px)",
+            fontSize: "clamp(10px, 0.9vmin, 17px)",
             textShadow: "0 0 16px rgba(0,0,0,0.88), 0 2px 10px rgba(0,0,0,0.75)"
           }}
           suppressHydrationWarning
@@ -69,7 +69,7 @@ export default function TvHomePage() {
         <div
           className="denboard-text-primary font-extrabold tracking-tight whitespace-nowrap"
           style={{
-            fontSize: "clamp(170px, 18vmin, 300px)",
+            fontSize: "clamp(85px, 9vmin, 150px)",
             lineHeight: 0.95,
             textShadow: "0 0 28px rgba(0,0,0,0.62), 0 4px 14px rgba(0,0,0,0.45)"
           }}
@@ -80,7 +80,7 @@ export default function TvHomePage() {
         <div
           className="denboard-text-primary font-semibold whitespace-nowrap"
           style={{
-            fontSize: "clamp(34px, 3vmin, 56px)",
+            fontSize: "clamp(17px, 1.5vmin, 28px)",
             textShadow: "0 0 18px rgba(0,0,0,0.55)"
           }}
           suppressHydrationWarning

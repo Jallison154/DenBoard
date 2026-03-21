@@ -203,7 +203,7 @@ export function CurrentWeekGrid() {
   return (
     <motion.div
       className="rounded-3xl denboard-card"
-      style={{ padding: "calc(var(--denboard-scale-card-padding) * 0.82)" }}
+      style={{ padding: "calc(var(--denboard-scale-card-padding) * 1.02)" }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut", delay: 0.08 }}
@@ -211,9 +211,9 @@ export function CurrentWeekGrid() {
       <div
         className="grid grid-cols-7 denboard-text-secondary"
         style={{
-          gap: "calc(var(--denboard-scale-gap) * 0.8)",
-          marginBottom: "calc(var(--denboard-scale-gap) * 0.75)",
-          fontSize: "calc(var(--denboard-scale-date) * 0.68)"
+          gap: "calc(var(--denboard-scale-gap) * 0.95)",
+          marginBottom: "calc(var(--denboard-scale-gap) * 0.88)",
+          fontSize: "calc(var(--denboard-scale-date) * 0.82)"
         }}
       >
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
@@ -224,7 +224,7 @@ export function CurrentWeekGrid() {
       </div>
       <div
         className="grid grid-cols-7"
-        style={{ gap: "calc(var(--denboard-scale-gap) * 0.8)" }}
+        style={{ gap: "calc(var(--denboard-scale-gap) * 0.95)" }}
       >
         {weekDays.map((day) => (
           <CompactWeekDayCell key={day.date} day={day} />
@@ -256,7 +256,7 @@ function CompactWeekDayCell({
 
   return (
     <div
-      className={`rounded-xl flex flex-col overflow-hidden min-h-[clamp(78px,7.5vmin,126px)] ${
+      className={`rounded-xl flex flex-col overflow-hidden min-h-[clamp(92px,8.8vmin,148px)] ${
         isToday
           ? "bg-sandstone/25 border border-sandstone/60"
           : isPast
@@ -265,22 +265,22 @@ function CompactWeekDayCell({
       }`}
     >
       <div
-        className={`px-1.5 pt-1 text-left font-semibold denboard-text-secondary ${
+        className={`px-2 pt-1.5 text-left font-semibold denboard-text-secondary ${
           isToday ? "font-bold denboard-text-primary" : ""
         }`}
-        style={{ fontSize: "calc(var(--denboard-scale-date) * 0.62)" }}
+        style={{ fontSize: "calc(var(--denboard-scale-date) * 0.74)" }}
       >
         {dayOfMonth}
       </div>
-      <div className="flex flex-col gap-0.5 px-1.5 py-1">
+      <div className="flex flex-col gap-1 px-2 py-1.5">
         {visible.map((evt, idx) => {
           const color = getEventColor(evt, idx);
           return (
             <div
               key={evt.id}
-              className="truncate rounded px-1 py-0.5 denboard-text-primary"
+              className="truncate rounded px-1.5 py-0.5 denboard-text-primary"
               style={{
-                fontSize: "calc(var(--denboard-scale-calendar-event) * 0.52)",
+                fontSize: "calc(var(--denboard-scale-calendar-event) * 0.62)",
                 backgroundColor: `${color}26`,
                 borderLeft: `2px solid ${color}`
               }}
@@ -293,7 +293,7 @@ function CompactWeekDayCell({
         {overflow > 0 && (
           <div
             className="denboard-text-secondary"
-            style={{ fontSize: "calc(var(--denboard-scale-status) * 0.9)" }}
+            style={{ fontSize: "calc(var(--denboard-scale-status) * 1)" }}
           >
             +{overflow} more
           </div>

@@ -156,7 +156,7 @@ export default function TvHomePage() {
         <div className="w-full flex flex-col items-center justify-center text-center">
           <div
             className="denboard-text-secondary font-semibold uppercase tracking-[0.28em]"
-            style={{ fontSize: "clamp(20px, 1.8vmin, 34px)" }}
+            style={{ fontSize: "clamp(10px, 0.9vmin, 17px)" }}
             suppressHydrationWarning
           >
             {greeting}
@@ -164,7 +164,7 @@ export default function TvHomePage() {
           <div
             className="denboard-text-primary font-extrabold tracking-tight whitespace-nowrap"
             style={{
-              fontSize: "clamp(170px, 18vmin, 300px)",
+              fontSize: "clamp(85px, 9vmin, 150px)",
               lineHeight: 0.95,
               textShadow: "0 0 28px rgba(0,0,0,0.62), 0 4px 14px rgba(0,0,0,0.45)"
             }}
@@ -175,7 +175,7 @@ export default function TvHomePage() {
           <div
             className="denboard-text-primary font-semibold whitespace-nowrap"
             style={{
-              fontSize: "clamp(34px, 3vmin, 56px)",
+              fontSize: "clamp(17px, 1.5vmin, 28px)",
               textShadow: "0 0 18px rgba(0,0,0,0.55)"
             }}
             suppressHydrationWarning
@@ -184,23 +184,23 @@ export default function TvHomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-12 gap-6 items-stretch">
+        <div className="grid grid-cols-12 gap-8 items-stretch">
           <motion.div
             className="col-span-8 rounded-3xl flex flex-col border border-white/10"
             style={{
               background: "rgba(0,0,0,0.35)",
               backdropFilter: "blur(18px)",
-              padding: "clamp(24px, 2.2vmin, 44px)",
+              padding: "clamp(28px, 2.6vmin, 52px)",
               boxShadow: "0 16px 48px rgba(0,0,0,0.4)"
             }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: "easeOut" }}
           >
-            <div className="flex items-end gap-5">
+            <div className="flex items-end gap-6">
               <motion.span
                 className="leading-none mb-1"
-                style={{ fontSize: "clamp(56px, 5vmin, 90px)" }}
+                style={{ fontSize: "clamp(62px, 5.6vmin, 100px)" }}
                 animate={iconMotion.animate}
                 transition={iconMotion.transition}
               >
@@ -209,7 +209,7 @@ export default function TvHomePage() {
               <span
                 className="denboard-text-primary font-bold"
                 style={{
-                  fontSize: "clamp(84px, 8.5vmin, 140px)",
+                  fontSize: "clamp(94px, 9.5vmin, 156px)",
                   lineHeight: 1,
                   textShadow: "0 0 20px rgba(0,0,0,0.7)"
                 }}
@@ -220,30 +220,30 @@ export default function TvHomePage() {
               </span>
               <span
                 className="denboard-text-primary font-medium capitalize"
-                style={{ fontSize: "clamp(28px, 2.4vmin, 42px)" }}
+                style={{ fontSize: "clamp(31px, 2.7vmin, 47px)" }}
               >
                 {weather?.conditionText ?? "Loading…"}
               </span>
             </div>
             <div
               className="denboard-text-secondary flex items-center gap-6 mt-2"
-              style={{ fontSize: "clamp(18px, 1.6vmin, 26px)" }}
+              style={{ fontSize: "clamp(20px, 1.8vmin, 29px)" }}
             >
               {weather?.sunrise && <span>Sunrise {formatSunTime(weather.sunrise)}</span>}
               {weather?.sunset && <span>Sunset {formatSunTime(weather.sunset)}</span>}
             </div>
             {weather?.dailyForecast && weather.dailyForecast.length > 0 && (
-              <div className="grid grid-cols-5 gap-4 mt-5 pt-5 border-t border-white/10">
+              <div className="grid grid-cols-5 gap-5 mt-6 pt-6 border-t border-white/10">
                 {weather.dailyForecast.slice(0, 5).map((day) => (
                   <div key={day.dateISO} className="flex flex-col items-center text-center">
                     <span
                       className="denboard-text-secondary uppercase tracking-wide"
-                      style={{ fontSize: "clamp(16px, 1.3vmin, 22px)" }}
+                      style={{ fontSize: "clamp(18px, 1.45vmin, 25px)" }}
                     >
                       {day.dayName}
                     </span>
                     <motion.span
-                      style={{ fontSize: "clamp(38px, 3.5vmin, 60px)" }}
+                      style={{ fontSize: "clamp(42px, 3.9vmin, 68px)" }}
                       animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
                       transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
                     >
@@ -251,13 +251,13 @@ export default function TvHomePage() {
                     </motion.span>
                     <span
                       className="denboard-text-primary font-semibold"
-                      style={{ fontSize: "clamp(28px, 2.6vmin, 44px)" }}
+                      style={{ fontSize: "clamp(31px, 2.9vmin, 49px)" }}
                     >
                       {formatTemp(day.highTemp, weather.units)}
                     </span>
                     <span
                       className="denboard-text-secondary"
-                      style={{ fontSize: "clamp(20px, 1.8vmin, 32px)" }}
+                      style={{ fontSize: "clamp(22px, 2vmin, 36px)" }}
                     >
                       {formatTemp(day.lowTemp, weather.units)}
                     </span>
@@ -269,17 +269,17 @@ export default function TvHomePage() {
 
           <motion.div
             className="col-span-4 rounded-3xl denboard-card border border-sandstone/40 denboard-text-primary"
-            style={{ padding: "clamp(24px, 2vmin, 40px)" }}
+            style={{ padding: "clamp(28px, 2.3vmin, 46px)" }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut", delay: 0.12 }}
           >
-            <div className="uppercase tracking-[0.3em] text-sandstone/90" style={{ fontSize: "clamp(16px, 1.2vmin, 22px)" }}>
+            <div className="uppercase tracking-[0.3em] text-sandstone/90" style={{ fontSize: "clamp(18px, 1.35vmin, 25px)" }}>
               Dad Joke
             </div>
             <div
               className="leading-relaxed mt-3"
-              style={{ fontSize: "clamp(28px, 2.4vmin, 44px)" }}
+              style={{ fontSize: "clamp(31px, 2.7vmin, 49px)" }}
             >
               {dadJoke?.joke ?? "Loading a mountain-grade dad joke..."}
             </div>
