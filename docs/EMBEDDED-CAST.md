@@ -31,18 +31,20 @@ Usually **Framer Motion** or **View Transitions** when a transition is interrupt
 | Mechanism | Behavior |
 |-----------|----------|
 | **`?embed=1`** or **`?display=1`** | Kiosk: no floating nav, no footer, reduced motion, static background image (no enter/exit animation), `data-denboard-embed` on `<html>`. |
-| **`/display/nest`** | Same UI as **`/nest/home`**, but path-based kiosk without relying on query params (good for HA iframe `src`). |
+| **`/display/nest`** | **Standalone HTML document** served by `app/display/nest/route.ts` — no React, no App Router page, no `_next` client bundle for that URL. Use **`iframe src`** or `<a href>` (full document load). Do **not** use **`next/link`** from other DenBoard pages (soft navigation expects a React page). |
 | **`FloatingNav` links** | **`prefetch={false}`** to avoid speculative route loads in embedded contexts. |
 
 Files: `components/DisplayChrome.tsx`, `contexts/DisplayModeContext.tsx`, kiosk branches in `components/FooterBar.tsx`, `components/FloatingNav.tsx`, `components/BackgroundLayer.tsx`.
 
 ### Recommended URLs for cast / HA iframe
 
+**Preferred (static display):**
+
 ```text
 https://YOUR-DENBOARD/display/nest
 ```
 
-or
+**React Nest view (still available):**
 
 ```text
 https://YOUR-DENBOARD/nest/home?embed=1
