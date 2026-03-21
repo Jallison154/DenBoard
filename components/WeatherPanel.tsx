@@ -86,6 +86,10 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
     <motion.div
       className={`rounded-3xl denboard-card flex flex-col min-w-[min(26rem,90vw)] ${fullHeight ? "h-full" : ""}`}
       style={{
+        background: "rgba(0,0,0,0.35)",
+        backdropFilter: "blur(18px)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
         padding: "var(--denboard-scale-card-padding)",
         gap: "var(--denboard-scale-gap-lg)"
       }}
@@ -95,7 +99,7 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
     >
       <div className="flex items-baseline justify-between gap-4">
         <div className="flex flex-col">
-          <span className="uppercase tracking-[0.28em] denboard-text-secondary denboard-scale-status">
+          <span className="uppercase tracking-[0.3em] denboard-text-secondary denboard-scale-status">
             Weather
           </span>
           {currentTemp !== null ? (
@@ -108,7 +112,10 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
               </span>
               <span
                 className="font-semibold denboard-text-primary"
-                style={{ fontSize: "var(--denboard-scale-date)" }}
+                style={{
+                  fontSize: "calc(var(--denboard-scale-date) * 1.08)",
+                  textShadow: "0 0 12px rgba(0,0,0,0.62)"
+                }}
               >
                 {data?.conditionText}
               </span>
@@ -134,14 +141,20 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
 
       <div
         className="flex items-center denboard-text-secondary"
-        style={{ gap: "var(--denboard-scale-gap)", fontSize: "var(--denboard-scale-date)" }}
+        style={{
+          gap: "var(--denboard-scale-gap)",
+          fontSize: "var(--denboard-scale-date)",
+          paddingTop: "var(--denboard-scale-space-md)",
+          borderTop: "1px solid rgba(255,255,255,0.1)"
+        }}
       >
         <motion.span
           className="inline-flex items-center justify-center rounded-full denboard-card-nested"
           style={{
             width: "var(--denboard-scale-forecast-icon)",
             height: "var(--denboard-scale-forecast-icon)",
-            fontSize: "var(--denboard-scale-forecast-icon)"
+            fontSize: "var(--denboard-scale-forecast-icon)",
+            backgroundColor: "rgba(255,255,255,0.06)"
           }}
           animate={currentIconMotion.animate}
           transition={currentIconMotion.transition}
@@ -160,6 +173,7 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
             <div
               key={day.dateISO}
               className="flex flex-col items-center rounded-2xl denboard-card-nested denboard-forecast-tile"
+              style={{ backgroundColor: "rgba(255,255,255,0.04)" }}
             >
               <span
                 className="uppercase tracking-wide denboard-text-secondary denboard-scale-status"

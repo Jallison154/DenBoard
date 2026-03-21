@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/tv/home", label: "TV Home (Hotel)" },
   { href: "/landscape/home", label: "Landscape Home" },
   { href: "/portrait/home", label: "Portrait Home" },
+  { href: "/nest/home", label: "Nest Home" },
 ];
 
 const IDLE_MS = 5000;

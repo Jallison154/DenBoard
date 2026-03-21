@@ -165,6 +165,12 @@ export default function AdminPage() {
                     TV Home (Hotel)
                   </a>
                   <a
+                    href="/nest/home"
+                    className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
+                  >
+                    Nest Home
+                  </a>
+                  <a
                     href="/landscape/home"
                     className="rounded-full border border-white/15 px-4 py-1.5 hover:bg-white/10 transition-colors"
                   >
