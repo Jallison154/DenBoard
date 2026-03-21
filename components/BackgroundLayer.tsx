@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useDisplayMode } from "@/contexts/DisplayModeContext";
 import type { BackgroundPayload } from "@/lib/background";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "./hooks";
@@ -61,6 +62,7 @@ function isValidImageUrl(url: unknown): url is string {
 }
 
 export function BackgroundLayer({ children, variant = "default" }: Props) {
+  const { kiosk } = useDisplayMode();
   const fetcher = useCallback(fetchCombined, []);
   const { data } = usePolling<Combined>(fetcher, {
     intervalMs: 45 * 60 * 1000,
@@ -77,27 +79,43 @@ export function BackgroundLayer({ children, variant = "default" }: Props) {
     <div
       className={`relative flex min-h-0 w-full flex-1 flex-col denboard-content-area ${!isHotel ? "denboard-gradient" : ""}`}
     >
-      <AnimatePresence initial={false}>
-        {imageUrl && (
-          <motion.div
-            key={imageUrl}
-            className="pointer-events-none fixed inset-0 z-0"
-            initial={{ opacity: isHotel ? 0.5 : 0.12 }}
-            animate={{ opacity: isHotel ? 0.95 : 0.4 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-          >
-            <img
-              src={imageUrl}
-              alt=""
-              role="presentation"
-              className="h-full w-full object-cover"
-              style={{ filter: isHotel ? "brightness(0.92) contrast(1.02)" : "blur(10px) brightness(1.05) contrast(1.05)" }}
-              referrerPolicy="no-referrer"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {kiosk && imageUrl ? (
+        <div className="pointer-events-none fixed inset-0 z-0">
+          <img
+            src={imageUrl}
+            alt=""
+            role="presentation"
+            className="h-full w-full object-cover"
+            style={{
+              opacity: isHotel ? 0.95 : 0.4,
+              filter: isHotel ? "brightness(0.92) contrast(1.02)" : "blur(10px) brightness(1.05) contrast(1.05)"
+            }}
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      ) : (
+        <AnimatePresence initial={false}>
+          {imageUrl && (
+            <motion.div
+              key={imageUrl}
+              className="pointer-events-none fixed inset-0 z-0"
+              initial={{ opacity: isHotel ? 0.5 : 0.12 }}
+              animate={{ opacity: isHotel ? 0.95 : 0.4 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: "easeOut" }}
+            >
+              <img
+                src={imageUrl}
+                alt=""
+                role="presentation"
+                className="h-full w-full object-cover"
+                style={{ filter: isHotel ? "brightness(0.92) contrast(1.02)" : "blur(10px) brightness(1.05) contrast(1.05)" }}
+                referrerPolicy="no-referrer"
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
 
       {isHotel ? (
         <div className="pointer-events-none fixed inset-0 z-10 denboard-hotel-overlay" />

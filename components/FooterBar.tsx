@@ -1,14 +1,18 @@
 'use client';
 
 import { usePathname } from "next/navigation";
+import { useDisplayMode } from "@/contexts/DisplayModeContext";
 import { useGuestMode } from "@/components/HomeAssistantStatus";
 
 export function FooterBar() {
+  const { kiosk } = useDisplayMode();
   const pathname = usePathname();
   const forcedGuest = pathname.startsWith("/landscape/guest");
   const { guestMode } = useGuestMode();
 
   const isGuest = forcedGuest || guestMode;
+
+  if (kiosk) return null;
 
   return (
     <div

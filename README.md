@@ -85,7 +85,8 @@ See **[docs/EMBEDDED-CAST.md](./docs/EMBEDDED-CAST.md)** for:
 
 - iframe / cast compatibility audit (headers, mixed content, layout)
 - **`DENBOARD_FRAME_ANCESTORS`** — optional CSP so Home Assistant can embed DenBoard
-- **`?embed=1`** — reduced motion + `data-denboard-embed` for lighter animation on cast receivers
+- **`?embed=1` / `?display=1`** — kiosk mode (no nav/footer, reduced motion, static background; see `components/DisplayChrome.tsx`)
+- **`/display/nest`** — same as `/nest/home` with path-based kiosk (good for HA iframe `src` without query params)
 - Troubleshooting **blank / white** embeds (iframe height, `X-Frame-Options` on proxies, `NEXT_PUBLIC_BASE_PATH`)
 
 ---

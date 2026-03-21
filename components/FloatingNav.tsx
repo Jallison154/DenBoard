@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useDisplayMode } from "@/contexts/DisplayModeContext";
 
 const NAV_LINKS = [
   { href: "/admin", label: "Admin" },
@@ -33,6 +34,7 @@ function GearIcon({ className }: { className?: string }) {
 }
 
 export function FloatingNav() {
+  const { kiosk } = useDisplayMode();
   const [visible, setVisible] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isHoverDevice, setIsHoverDevice] = useState(false);
@@ -79,6 +81,7 @@ export function FloatingNav() {
     };
   }, [isHoverDevice, handleMouseMove]);
 
+  if (kiosk) return null;
   if (!isHoverDevice) return null;
 
   return (
@@ -114,6 +117,7 @@ export function FloatingNav() {
                 <Link
                   key={href}
                   href={href}
+                  prefetch={false}
                   onClick={() => setExpanded(false)}
                   className={`text-sm px-3 py-1.5 rounded-lg transition-colors block ${
                     isActive
