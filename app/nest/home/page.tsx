@@ -101,17 +101,24 @@ export default function NestHomePage() {
     return () => clearInterval(id);
   }, []);
 
-  const clockSize = "clamp(72px, 20vmin, 200px)";
+  /** Scales with viewport so the digit block fills most of the 75% header row */
+  const clockFont = "clamp(52px, min(20dvh, 26vw), 220px)";
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col gap-1 overflow-hidden px-0.5 pb-0.5">
-      {/* Time + weather — same row height (weather stretches to clock height) */}
-      <section className="w-full shrink-0">
-        <div className="flex flex-wrap items-stretch justify-center gap-x-3 gap-y-1">
-          <div className="flex shrink-0 items-center">
+    <div className="mx-auto flex h-full min-h-0 w-full max-h-full max-w-xl flex-col justify-center gap-2 overflow-hidden px-0.5">
+      {/*
+        Top “header” band: 75% = clock + weather row, 25% = date (flex 3 / flex 1).
+        Band height tracks viewport so the clock zone stays proportional.
+      */}
+      <section
+        className="flex w-full shrink-0 flex-col min-h-0"
+        style={{ height: "clamp(160px, 38dvh, 360px)" }}
+      >
+        <div className="flex min-h-0 flex-[3] flex-row items-stretch justify-center gap-2 sm:gap-3">
+          <div className="flex min-h-0 min-w-0 shrink-0 items-center justify-center">
             <div
-              className="denboard-text-primary font-extrabold tabular-nums leading-none tracking-tight"
-              style={{ fontSize: clockSize }}
+              className="denboard-text-primary flex items-center justify-center font-extrabold tabular-nums leading-none tracking-tight"
+              style={{ fontSize: clockFont }}
               suppressHydrationWarning
             >
               {now ? now.toFormat("h:mm") : "–:––"}
@@ -119,18 +126,18 @@ export default function NestHomePage() {
           </div>
           <div className="flex min-h-0 min-w-0 max-w-[11rem] flex-col self-stretch py-0.5">
             <div className="flex h-full min-h-0 flex-col items-start justify-center gap-0.5">
-              <span className="leading-none" style={{ fontSize: "clamp(22px, 5.5vmin, 44px)" }}>
+              <span className="leading-none" style={{ fontSize: "clamp(20px, min(5dvh, 8vw), 44px)" }}>
                 {weatherIcon(weather?.conditionCode)}
               </span>
               <span
                 className="denboard-text-primary font-bold tabular-nums leading-tight"
-                style={{ fontSize: "clamp(18px, 4.5vmin, 36px)" }}
+                style={{ fontSize: "clamp(16px, min(4.2dvh, 6.5vw), 36px)" }}
               >
                 {formatTemp(weather?.temperatureCurrent, weather?.units)}
               </span>
               <span
                 className="denboard-text-secondary line-clamp-2 capitalize leading-tight"
-                style={{ fontSize: "clamp(9px, 1.5vmin, 14px)" }}
+                style={{ fontSize: "clamp(8px, min(1.6dvh, 2.5vw), 14px)" }}
               >
                 {weather?.conditionText ?? ""}
               </span>
@@ -138,17 +145,20 @@ export default function NestHomePage() {
           </div>
         </div>
         <div
-          className="denboard-text-secondary mt-0.5 text-center"
-          style={{ fontSize: "clamp(11px, 2vmin, 20px)" }}
+          className="flex min-h-0 flex-[1] items-center justify-center px-1 denboard-text-secondary text-center"
+          style={{ fontSize: "clamp(10px, min(2dvh, 3.5vw), 20px)" }}
           suppressHydrationWarning
         >
           {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : ""}
         </div>
       </section>
 
-      {/* Today’s events — boxed, calendar colors */}
-      <section className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        <ul className="flex flex-col gap-1.5 px-0.5">
+      {/* Events: capped height so short days stay vertically centered; long lists scroll */}
+      <section
+        className="min-h-0 w-full overflow-y-auto overflow-x-hidden"
+        style={{ maxHeight: "min(52dvh, calc(100dvh - 12rem))" }}
+      >
+        <ul className="flex flex-col gap-1.5 px-0.5 pb-1">
           {todayRows.map(({ evt, time }, index) => {
             const color = getEventColor(evt, index);
             return (
