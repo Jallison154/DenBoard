@@ -101,8 +101,8 @@ export default function NestHomePage() {
     return () => clearInterval(id);
   }, []);
 
-  /** Scales with viewport so the digit block fills most of the 75% header row */
-  const clockFont = "clamp(52px, min(20dvh, 26vw), 220px)";
+  /** Width-based only — not tied to viewport height (no dvh/vmin on the clock) */
+  const clockFont = "clamp(52px, 24vw, 168px)";
 
   return (
     <div className="mx-auto flex h-full min-h-0 w-full max-h-full max-w-xl flex-col justify-center gap-2 overflow-hidden px-0.5">
@@ -126,18 +126,18 @@ export default function NestHomePage() {
           </div>
           <div className="flex min-h-0 min-w-0 max-w-[11rem] flex-col self-stretch py-0.5">
             <div className="flex h-full min-h-0 flex-col items-start justify-center gap-0.5">
-              <span className="leading-none" style={{ fontSize: "clamp(20px, min(5dvh, 8vw), 44px)" }}>
+              <span className="leading-none" style={{ fontSize: "clamp(20px, 7.5vw, 44px)" }}>
                 {weatherIcon(weather?.conditionCode)}
               </span>
               <span
                 className="denboard-text-primary font-bold tabular-nums leading-tight"
-                style={{ fontSize: "clamp(16px, min(4.2dvh, 6.5vw), 36px)" }}
+                style={{ fontSize: "clamp(16px, 6vw, 36px)" }}
               >
                 {formatTemp(weather?.temperatureCurrent, weather?.units)}
               </span>
               <span
                 className="denboard-text-secondary line-clamp-2 capitalize leading-tight"
-                style={{ fontSize: "clamp(8px, min(1.6dvh, 2.5vw), 14px)" }}
+                style={{ fontSize: "clamp(8px, 2.8vw, 14px)" }}
               >
                 {weather?.conditionText ?? ""}
               </span>
@@ -146,7 +146,7 @@ export default function NestHomePage() {
         </div>
         <div
           className="flex min-h-0 flex-[1] items-center justify-center px-1 denboard-text-secondary text-center"
-          style={{ fontSize: "clamp(10px, min(2dvh, 3.5vw), 20px)" }}
+          style={{ fontSize: "clamp(10px, 3.2vw, 20px)" }}
           suppressHydrationWarning
         >
           {now ? `${now.toFormat("cccc")} • ${now.toFormat("MMMM d")}` : ""}
