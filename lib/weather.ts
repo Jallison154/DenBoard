@@ -327,18 +327,20 @@ async function fetchFromHomeAssistant(
   }
 
   /** Fetch forecast via WebSocket (HA removed forecast from entity attributes) */
-  async function fetchForecastViaWebSocket(entityId: string): Promise<any[]> {
+  async function fetchForecastViaWebSocketOnce(
+    entityId: string,
+    forecastType: "twice_daily" | "daily"
+  ): Promise<any[]> {
     const wsProto = baseUrl.startsWith("https") ? "wss" : "ws";
     const wsHost = baseUrl.replace(/^https?:\/\//, "").replace(/\/+$/, "");
     const wsUrl = `${wsProto}://${wsHost}/api/websocket`;
     return new Promise((resolve, reject) => {
+      const ws = new WebSocket(wsUrl);
       const timeout = setTimeout(() => {
         ws.close();
         reject(new Error("WebSocket forecast timeout"));
       }, 15000);
-      const ws = new WebSocket(wsUrl);
       let msgId = 1;
-      ws.on("open", () => {});
       ws.on("message", (data: Buffer) => {
         try {
           const msg = JSON.parse(data.toString());
@@ -355,7 +357,7 @@ async function fetchFromHomeAssistant(
                 service: "get_forecasts",
                 service_data: {
                   entity_id: entityId,
-                  type: "twice_daily"
+                  type: forecastType
                 },
                 return_response: true
               })
@@ -391,6 +393,24 @@ async function fetchFromHomeAssistant(
         reject(err);
       });
     });
+  }
+
+  /** Try twice_daily (NWS-style), then daily — some integrations only populate one type. */
+  async function fetchForecastViaWebSocket(entityId: string): Promise<any[]> {
+    const types: Array<"twice_daily" | "daily"> = ["twice_daily", "daily"];
+    let lastErr: unknown;
+    let anySucceeded = false;
+    for (const forecastType of types) {
+      try {
+        const rows = await fetchForecastViaWebSocketOnce(entityId, forecastType);
+        anySucceeded = true;
+        if (rows.length > 0) return rows;
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+    if (!anySucceeded && lastErr) throw lastErr;
+    return [];
   }
 
   try {

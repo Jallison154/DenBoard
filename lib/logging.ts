@@ -20,9 +20,12 @@ function shouldLog(level: LogLevel): boolean {
 
 function baseLog(level: LogLevel, message: string, meta?: unknown) {
   if (!shouldLog(level)) return;
-  const payload = meta ? { message, meta } : { message };
   // eslint-disable-next-line no-console
-  console[level](`[DenBoard] ${message}`, meta ? payload : undefined);
+  if (meta !== undefined) {
+    console[level](`[DenBoard] ${message}`, { message, meta });
+  } else {
+    console[level](`[DenBoard] ${message}`);
+  }
 }
 
 export const logger = {
