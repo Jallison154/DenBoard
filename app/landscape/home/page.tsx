@@ -104,20 +104,18 @@ export default function TvHomePage() {
           >
             <WeatherPanel fullHeight largeForecast />
           </section>
-          {!guestMode && (
-            <section
-              className="flex flex-col h-full"
-              style={{ gap: "var(--denboard-scale-space-md)" }}
-            >
-              <TodayEventsPanel fullHeight />
-            </section>
-          )}
+          {/* Always mounted so calendar stays warm when toggling HA guest mode */}
+          <section
+            className={`flex flex-col h-full ${guestMode ? "hidden" : ""}`}
+            style={{ gap: "var(--denboard-scale-space-md)" }}
+            aria-hidden={guestMode}
+          >
+            <TodayEventsPanel fullHeight />
+          </section>
         </div>
-        {!guestMode && (
-          <div className="w-full">
-            <CurrentWeekGrid />
-          </div>
-        )}
+        <div className={`w-full ${guestMode ? "hidden" : ""}`} aria-hidden={guestMode}>
+          <CurrentWeekGrid />
+        </div>
         <div className="w-full">
           <DadJokePanel fullWidth />
         </div>

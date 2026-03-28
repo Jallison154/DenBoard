@@ -14,6 +14,7 @@ export function usePolling<T>(
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState<boolean>(immediate);
   const [error, setError] = useState<string | null>(null);
+  const [lastFetchedAt, setLastFetchedAt] = useState<Date | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const mountedRef = useRef(true);
   const isFirstRunRef = useRef(true);
@@ -31,6 +32,7 @@ export function usePolling<T>(
         const next = await fetcher();
         if (!mountedRef.current) return;
         setData(next);
+        setLastFetchedAt(new Date());
       } catch (err) {
         if (!mountedRef.current) return;
         setError(String(err));
@@ -56,6 +58,6 @@ export function usePolling<T>(
     };
   }, [fetcher, immediate, intervalMs]);
 
-  return { data, loading, error };
+  return { data, loading, error, lastFetchedAt };
 }
 

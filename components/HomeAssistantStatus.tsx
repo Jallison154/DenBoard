@@ -17,21 +17,28 @@ type Props = {
   hideWhenGuest?: boolean;
   /** When true, entities span full width and shrink as more are added */
   fullWidth?: boolean;
+  /** Hide Guest/Family/HA mode pill (e.g. portrait — mode is shown in the footer instead) */
+  hideModeBadge?: boolean;
 };
 
 export function useGuestMode() {
   const fetcher = useCallback(fetchHomeAssistant, []);
-  const { data } = usePolling<HomeAssistantPayload>(fetcher, {
+  const { data, lastFetchedAt } = usePolling<HomeAssistantPayload>(fetcher, {
     intervalMs: 10 * 1000,
     immediate: true
   });
   return {
     guestMode: data?.guestMode ?? false,
-    payload: data
+    payload: data,
+    lastFetchedAt
   };
 }
 
-export function HomeAssistantStatus({ hideWhenGuest, fullWidth }: Props) {
+export function HomeAssistantStatus({
+  hideWhenGuest,
+  fullWidth,
+  hideModeBadge
+}: Props) {
   const { guestMode, payload } = useGuestMode();
 
   const showTiles = !(hideWhenGuest && guestMode);
@@ -45,31 +52,35 @@ export function HomeAssistantStatus({ hideWhenGuest, fullWidth }: Props) {
         <span className="uppercase tracking-[0.25em] denboard-text-secondary">
           Home Status
         </span>
-        <span className="h-1 w-1 rounded-full bg-slate-600" />
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] denboard-scale-status ${
-            payload?.isFallback
-              ? "bg-amber-900/85 text-amber-100"
-              : guestMode
-              ? "bg-slate-800/90 text-slate-100"
-              : "bg-emerald-700/80 text-emerald-50"
-          }`}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              payload?.isFallback
-                ? "bg-amber-300"
+        {!hideModeBadge && (
+          <>
+            <span className="h-1 w-1 rounded-full bg-slate-600" />
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] denboard-scale-status ${
+                payload?.isFallback
+                  ? "bg-amber-900/85 text-amber-100"
+                  : guestMode
+                  ? "bg-slate-800/90 text-slate-100"
+                  : "bg-emerald-700/80 text-emerald-50"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  payload?.isFallback
+                    ? "bg-amber-300"
+                    : guestMode
+                    ? "bg-slate-300"
+                    : "bg-emerald-300"
+                }`}
+              />
+              {payload?.isFallback
+                ? "HA unreachable"
                 : guestMode
-                ? "bg-slate-300"
-                : "bg-emerald-300"
-            }`}
-          />
-          {payload?.isFallback
-            ? "HA unreachable"
-            : guestMode
-            ? "Guest Mode"
-            : "Family Mode"}
-        </span>
+                ? "Guest Mode"
+                : "Family Mode"}
+            </span>
+          </>
+        )}
       </div>
 
       {payload?.isFallback && (
