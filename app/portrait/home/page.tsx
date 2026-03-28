@@ -331,6 +331,25 @@ export default function PortraitHomePage() {
                   </span>
                 </div>
 
+                {(weather?.sunrise || weather?.sunset) && (
+                  <p
+                    className="denboard-text-secondary mt-3"
+                    style={{ fontSize: "clamp(14px, 1.6vmin, 22px)" }}
+                  >
+                    {weather?.sunrise &&
+                      `Sunrise ${new Date(weather.sunrise).toLocaleTimeString(undefined, {
+                        hour: "numeric",
+                        minute: "2-digit"
+                      })}`}
+                    {weather?.sunrise && weather?.sunset && " · "}
+                    {weather?.sunset &&
+                      `Sunset ${new Date(weather.sunset).toLocaleTimeString(undefined, {
+                        hour: "numeric",
+                        minute: "2-digit"
+                      })}`}
+                  </p>
+                )}
+
                 {weather?.dailyForecast && weather.dailyForecast.length > 0 && (
                   <div
                     className="grid grid-cols-5 gap-2 sm:gap-4 mt-4 pt-4 border-t border-white/10"
