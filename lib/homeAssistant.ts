@@ -61,10 +61,22 @@ async function fetchEntitySoft(
       return null;
     }
     if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
+      logger.warn("Home Assistant entity request failed", {
+        entityId,
+        status: res.status,
+        hint:
+          res.status === 401 || res.status === 403
+            ? "Check HOME_ASSISTANT_TOKEN in .env (long-lived access token)"
+            : "Check HA URL, TLS, and that the server is reachable from DenBoard"
+      });
+      return null;
     }
     return res.json();
   } catch (err) {
+    logger.warn("Home Assistant entity fetch error", {
+      entityId,
+      error: String(err)
+    });
     return null;
   }
 }
@@ -126,10 +138,21 @@ export async function getHomeAssistantState(): Promise<HomeAssistantPayload> {
       })
       .filter((e): e is HomeAssistantEntityState => e != null);
 
+    const anyHaData =
+      guestRaw != null || entityRaw.some((row) => row != null);
+    const isFallback = !anyHaData;
+
+    if (isFallback) {
+      logger.warn(
+        "Home Assistant returned no entity data; check token, URL, and entity IDs",
+        { guestModeEntityId, entityCount: entityList.length }
+      );
+    }
+
     return {
       guestMode,
       entities,
-      isFallback: false
+      isFallback
     };
   } catch (error) {
     logger.error("Failed to load Home Assistant state", { error: String(error) });

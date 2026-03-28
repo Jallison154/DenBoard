@@ -3,7 +3,7 @@ import { BackgroundLayer } from "@/components/BackgroundLayer";
 
 export default function PortraitLayout({ children }: { children: ReactNode }) {
   return (
-    <BackgroundLayer>
+    <BackgroundLayer variant="hotel">
       <main
         data-orientation="portrait"
         className="flex min-h-0 w-full flex-1 flex-col items-center justify-center overflow-hidden"

@@ -9,7 +9,7 @@ import { usePolling } from "./hooks";
 
 type Props = {
   children: React.ReactNode;
-  /** "hotel" = lighter overlay, scenic image prominent, for /tv/home */
+  /** "hotel" = lighter overlay, scenic image prominent (TV + landscape/portrait/nest) */
   variant?: "default" | "hotel";
 };
 

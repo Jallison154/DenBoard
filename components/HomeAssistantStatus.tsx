@@ -48,22 +48,40 @@ export function HomeAssistantStatus({ hideWhenGuest, fullWidth }: Props) {
         <span className="h-1 w-1 rounded-full bg-slate-600" />
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-[3px] denboard-scale-status ${
-            guestMode
+            payload?.isFallback
+              ? "bg-amber-900/85 text-amber-100"
+              : guestMode
               ? "bg-slate-800/90 text-slate-100"
               : "bg-emerald-700/80 text-emerald-50"
           }`}
         >
           <span
             className={`h-1.5 w-1.5 rounded-full ${
-              guestMode ? "bg-slate-300" : "bg-emerald-300"
+              payload?.isFallback
+                ? "bg-amber-300"
+                : guestMode
+                ? "bg-slate-300"
+                : "bg-emerald-300"
             }`}
           />
-          {guestMode ? "Guest Mode" : "Family Mode"}
+          {payload?.isFallback
+            ? "HA unreachable"
+            : guestMode
+            ? "Guest Mode"
+            : "Family Mode"}
         </span>
       </div>
 
+      {payload?.isFallback && (
+        <p className="denboard-text-secondary denboard-scale-status text-sm max-w-xl">
+          No data from Home Assistant. Confirm{" "}
+          <code className="text-sandstone/90">HOME_ASSISTANT_TOKEN</code> and URL in{" "}
+          <code className="text-sandstone/90">.env</code>, and check DenBoard logs.
+        </p>
+      )}
+
       <AnimatePresence mode="sync">
-        {showTiles && payload && (
+        {showTiles && payload && !payload.isFallback && (
           <motion.div
             key={guestMode ? "guest-off" : "guest-on"}
             className={
@@ -104,19 +122,23 @@ export function HomeAssistantStatus({ hideWhenGuest, fullWidth }: Props) {
 }
 
 export function HomeModeBadge() {
-  const { guestMode } = useGuestMode();
+  const { guestMode, payload } = useGuestMode();
 
   return (
     <div className="inline-flex items-center gap-2 rounded-full denboard-card-nested px-3 py-2 text-xs denboard-text-primary shadow-[0_12px_30px_rgba(0,0,0,0.7)]">
       <span
         className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${
-          guestMode ? "bg-slate-700 text-slate-100" : "bg-emerald-600 text-emerald-50"
+          payload?.isFallback
+            ? "bg-amber-700 text-amber-50"
+            : guestMode
+            ? "bg-slate-700 text-slate-100"
+            : "bg-emerald-600 text-emerald-50"
         }`}
       >
-        {guestMode ? "G" : "F"}
+        {payload?.isFallback ? "!" : guestMode ? "G" : "F"}
       </span>
       <span className="uppercase tracking-[0.2em]">
-        {guestMode ? "Guest Mode" : "Family Mode"}
+        {payload?.isFallback ? "HA offline" : guestMode ? "Guest Mode" : "Family Mode"}
       </span>
     </div>
   );
