@@ -131,9 +131,15 @@ export default function PortraitHomePage() {
           paddingBottom: "var(--denboard-scale-gap-lg)"
         }}
       >
-        {/* Family layout: always mounted (hidden in guest mode) so calendar/HA/dad joke stay warm */}
+        {/* Stacked crossfade: both views stay mounted; inactive layer fades out (no layout jump from `hidden`) */}
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+        {/* Family layout */}
         <div
-          className={`flex min-h-0 flex-1 flex-col overflow-hidden ${guestMode ? "hidden" : ""}`}
+          className={
+            guestMode
+              ? "absolute inset-0 z-0 flex min-h-0 flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-500 ease-in-out motion-reduce:transition-none motion-reduce:duration-0"
+              : "relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden opacity-100 transition-opacity duration-500 ease-in-out motion-reduce:transition-none motion-reduce:duration-0"
+          }
           aria-hidden={guestMode}
         >
           <TimePanel />
@@ -237,9 +243,13 @@ export default function PortraitHomePage() {
           </div>
         </div>
 
-        {/* Guest layout: always mounted (hidden in family mode) */}
+        {/* Guest layout */}
         <div
-          className={`flex min-h-0 flex-1 flex-col overflow-hidden ${!guestMode ? "hidden" : ""}`}
+          className={
+            !guestMode
+              ? "absolute inset-0 z-0 flex min-h-0 flex-col overflow-hidden opacity-0 pointer-events-none transition-opacity duration-500 ease-in-out motion-reduce:transition-none motion-reduce:duration-0"
+              : "relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden opacity-100 transition-opacity duration-500 ease-in-out motion-reduce:transition-none motion-reduce:duration-0"
+          }
           aria-hidden={!guestMode}
         >
           <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto overflow-x-hidden py-4">
@@ -378,6 +388,7 @@ export default function PortraitHomePage() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
