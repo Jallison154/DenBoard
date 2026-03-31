@@ -51,6 +51,30 @@ export type WeatherDebugPayload = {
 
 const WEATHER_CACHE_KEY = "weather:current";
 
+/** Single in-flight fetch so concurrent /api/weather calls don't each open HA WebSockets + Open-Meteo. */
+let weatherFetchInFlight: Promise<WeatherPayload> | null = null;
+
+/** Extract forecast array from weather.get_forecasts WebSocket result (handles minor HA response shape differences). */
+function extractForecastFromServiceResult(
+  msg: { success?: boolean; result?: unknown; error?: { message?: string } },
+  entityId: string
+): any[] {
+  if (!msg.success) return [];
+  const result = msg.result;
+  if (result == null || typeof result !== "object") return [];
+
+  const top = result as Record<string, unknown>;
+  let block = top[entityId] as { forecast?: unknown } | undefined;
+
+  if (!block && typeof top.response === "object" && top.response !== null) {
+    const resp = top.response as Record<string, unknown>;
+    block = resp[entityId] as { forecast?: unknown } | undefined;
+  }
+
+  const arr = block?.forecast;
+  return Array.isArray(arr) ? arr : [];
+}
+
 function mapWeatherCodeToCondition(
   code: number
 ): { label: string; icon: string; overlay: WeatherOverlay } {
@@ -97,7 +121,7 @@ async function fetchFromExternal(units?: WeatherUnits): Promise<WeatherDebugPayl
       u === "imperial" ? "fahrenheit" : "celsius"
     );
 
-    logger.info("Weather request", {
+    logger.debug("Weather request", {
       provider: "open-meteo",
       lat: config.lat,
       lon: config.lon,
@@ -329,7 +353,7 @@ async function fetchFromHomeAssistant(
   /** Fetch forecast via WebSocket (HA removed forecast from entity attributes) */
   async function fetchForecastViaWebSocketOnce(
     entityId: string,
-    forecastType: "twice_daily" | "daily"
+    forecastType: "twice_daily" | "daily" | "hourly"
   ): Promise<any[]> {
     const wsProto = baseUrl.startsWith("https") ? "wss" : "ws";
     const wsHost = baseUrl.replace(/^https?:\/\//, "").replace(/\/+$/, "");
@@ -371,10 +395,8 @@ async function fetchFromHomeAssistant(
               reject(new Error(msg.error?.message || "get_forecasts failed"));
               return;
             }
-            const result = msg.result as Record<string, { forecast?: any[] }>;
-            const entityResult = result?.[entityId];
-            const arr = entityResult?.forecast;
-            resolve(Array.isArray(arr) ? arr : []);
+            const arr = extractForecastFromServiceResult(msg, entityId);
+            resolve(arr);
             return;
           }
           if (msg.type === "auth_invalid") {
@@ -395,9 +417,13 @@ async function fetchFromHomeAssistant(
     });
   }
 
-  /** Try twice_daily (NWS-style), then daily — some integrations only populate one type. */
+  /** Try twice_daily (NWS), then daily, then hourly — some entities only expose one type. */
   async function fetchForecastViaWebSocket(entityId: string): Promise<any[]> {
-    const types: Array<"twice_daily" | "daily"> = ["twice_daily", "daily"];
+    const types: Array<"twice_daily" | "daily" | "hourly"> = [
+      "twice_daily",
+      "daily",
+      "hourly"
+    ];
     let lastErr: unknown;
     let anySucceeded = false;
     for (const forecastType of types) {
@@ -417,7 +443,7 @@ async function fetchFromHomeAssistant(
     const weatherId = settings.weather.haWeatherEntityId || "weather.home";
     const sunId = settings.weather.haSunEntityId || "sun.sun";
 
-    logger.info("Weather request", {
+    logger.debug("Weather request", {
       provider: "home-assistant",
       baseUrl,
       weatherEntity: weatherId,
@@ -463,7 +489,9 @@ async function fetchFromHomeAssistant(
       try {
         forecastRaw = await fetchForecastViaWebSocket(weatherId);
         if (forecastRaw.length > 0) {
-          logger.info("Weather forecast fetched via WebSocket get_forecasts", { count: forecastRaw.length });
+          logger.debug("Weather forecast fetched via WebSocket get_forecasts", {
+            count: forecastRaw.length
+          });
         }
       } catch (err) {
         logger.warn("WebSocket get_forecasts failed, no forecast available", { error: String(err) });
@@ -558,7 +586,9 @@ async function fetchFromHomeAssistant(
         const fallbackForecast = await fetchOpenMeteoDailyForecastOnly(lat, lon, tz, unitsFromHa || units);
         forecast.push(...fallbackForecast);
         if (fallbackForecast.length > 0) {
-          logger.info("Weather forecast: using Open-Meteo fallback (HA had no forecast)");
+          logger.debug(
+            "Weather forecast: using Open-Meteo fallback (HA had no usable forecast rows)"
+          );
         }
       } catch (err) {
         logger.warn("Open-Meteo forecast fallback failed", { error: String(err) });
@@ -645,10 +675,19 @@ export async function getWeather(): Promise<WeatherPayload> {
     return cached;
   }
 
-  const { mapped } = await fetchAndMapWeather();
-  const config = getConfig();
-  setInCache(WEATHER_CACHE_KEY, mapped, config.refresh.weatherMs);
-  return mapped;
+  if (!weatherFetchInFlight) {
+    weatherFetchInFlight = (async () => {
+      const { mapped } = await fetchAndMapWeather();
+      const config = getConfig();
+      setInCache(WEATHER_CACHE_KEY, mapped, config.refresh.weatherMs);
+      return mapped;
+    })();
+    weatherFetchInFlight.finally(() => {
+      weatherFetchInFlight = null;
+    });
+  }
+
+  return weatherFetchInFlight;
 }
 
 export async function getWeatherDebug(): Promise<WeatherDebugPayload> {
