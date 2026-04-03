@@ -102,20 +102,14 @@ export function WeatherPanel({ fullHeight, compact }: WeatherPanelProps = {}) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
     >
-      <div className="flex items-baseline justify-between gap-4">
-        <div className="flex flex-col">
-          <span
-            className="uppercase tracking-[0.3em] denboard-text-secondary denboard-scale-status"
-            style={compact ? { fontSize: "calc(var(--denboard-scale-status) * 0.92)" } : undefined}
-          >
-            Weather
-          </span>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col min-w-0">
           {currentTemp !== null ? (
             <div
               className="flex items-end"
               style={{
                 gap: compact ? "calc(var(--denboard-scale-space-md) * 0.85)" : "var(--denboard-scale-space-md)",
-                marginTop: compact ? "calc(var(--denboard-scale-space) * 0.75)" : "var(--denboard-scale-space)"
+                marginTop: 0
               }}
             >
               <span
@@ -139,7 +133,7 @@ export function WeatherPanel({ fullHeight, compact }: WeatherPanelProps = {}) {
               className="denboard-text-secondary"
               style={{
                 fontSize: `calc(var(--denboard-scale-date) * ${c})`,
-                marginTop: compact ? "calc(var(--denboard-scale-space) * 0.75)" : "var(--denboard-scale-space)"
+                marginTop: 0
               }}
             >
               {loading ? "Loading..." : "Weather unavailable"}

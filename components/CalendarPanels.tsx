@@ -107,10 +107,10 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight, compact }: Today
           {today.allDay.map((evt, idx) => (
             <div
               key={evt.id}
-              className="rounded-2xl denboard-card-nested denboard-text-primary font-medium line-clamp-2 break-words leading-snug"
+              className="rounded-2xl denboard-card-nested denboard-scale-calendar-event denboard-text-primary font-medium line-clamp-2 break-words leading-snug"
               style={{
                 padding: padEvt,
-                fontSize: fsEvent,
+                ...(fsEvent ? { fontSize: fsEvent } : {}),
                 backgroundColor: `${getEventColor(evt, idx)}30`,
                 borderLeft: `3px solid ${getEventColor(evt, idx)}`
               }}
@@ -134,10 +134,11 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight, compact }: Today
             {today.timed.map((evt, idx) => (
               <div
                 key={evt.id}
-                className="rounded-2xl denboard-card-nested flex items-start denboard-text-primary"
+                className="rounded-2xl denboard-card-nested denboard-scale-calendar-event flex items-start denboard-text-primary"
                 style={{
                   padding: padEvt,
                   gap: compact ? "calc(var(--denboard-scale-space-md) * 0.75)" : "var(--denboard-scale-space-md)",
+                  ...(fsEvent ? { fontSize: fsEvent } : {}),
                   backgroundColor: `${getEventColor(evt, idx)}25`,
                   borderLeft: `3px solid ${getEventColor(evt, idx)}`
                 }}
@@ -145,14 +146,14 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight, compact }: Today
               >
                 <span
                   className="denboard-text-secondary shrink-0 tabular-nums pt-0.5"
-                  style={{ minWidth: "6ch", ...(fsTime ? { fontSize: fsTime } : {}) }}
+                  style={{
+                    minWidth: "6ch",
+                    ...(fsTime ? { fontSize: fsTime } : {})
+                  }}
                 >
                   {formatTime(evt.start)}
                 </span>
-                <span
-                  className="denboard-text-primary min-w-0 flex-1 line-clamp-2 break-words leading-snug"
-                  style={fsEvent ? { fontSize: fsEvent } : undefined}
-                >
+                <span className="denboard-text-primary min-w-0 flex-1 line-clamp-2 break-words leading-snug">
                   {evt.title}
                 </span>
               </div>
