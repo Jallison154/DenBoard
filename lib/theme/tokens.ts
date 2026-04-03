@@ -54,7 +54,7 @@ const scalingVars = [
   /* Date – medium */
   "--denboard-scale-date: clamp(20px, 2.8vmin, 48px)",
   /* Greeting – between date and time */
-  "--denboard-scale-greeting: clamp(18px, 2.2vmin, 36px)",
+  "--denboard-scale-greeting: clamp(20px, 2.45vmin, 38px)",
   /* Calendar event – readable, min 18px */
   "--denboard-scale-calendar-event: clamp(18px, 2vmin, 32px)",
   /* Forecast temp – min 28px */

@@ -252,10 +252,7 @@ export default function PortraitHomePage() {
               <div className="w-full flex flex-col items-center justify-center text-center shrink-0">
                 <div
                   className="denboard-text-secondary font-semibold uppercase tracking-[0.28em]"
-                  style={{
-                    fontSize: "clamp(14px, 1.55vmin, 24px)",
-                    textShadow: "0 0 14px rgba(0,0,0,0.86), 0 2px 9px rgba(0,0,0,0.72)"
-                  }}
+                  style={{ fontSize: "clamp(16px, 1.75vmin, 28px)" }}
                   suppressHydrationWarning
                 >
                   {greeting}

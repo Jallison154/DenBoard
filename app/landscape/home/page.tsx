@@ -58,11 +58,7 @@ export default function TvHomePage() {
       <div className="w-full flex flex-col items-center justify-center text-center">
         <div
           className="font-semibold uppercase tracking-[0.28em] denboard-text-primary"
-          style={{
-            fontSize: "clamp(12px, 1.05vmin, 20px)",
-            textShadow:
-              "0 0 1px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.85), 0 3px 14px rgba(0,0,0,0.75)"
-          }}
+          style={{ fontSize: "clamp(14px, 1.18vmin, 23px)" }}
           suppressHydrationWarning
         >
           {greeting}
