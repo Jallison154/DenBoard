@@ -94,20 +94,14 @@ function LandscapeFamilyDashboard() {
           style={{ gap: "calc(var(--denboard-scale-gap-lg) * 0.82)" }}
         >
           <div
-            className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-2"
+            className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-2 lg:items-stretch"
             style={{ gap: "var(--denboard-scale-gap-lg)" }}
           >
-            <section
-              className="flex min-h-0 flex-col"
-              style={{ gap: "var(--denboard-scale-space-md)" }}
-            >
-              <WeatherPanel fullHeight />
+            <section className="flex min-h-0 h-full flex-col">
+              <WeatherPanel fullHeight compact />
             </section>
-            <section
-              className="flex min-h-0 flex-col"
-              style={{ gap: "var(--denboard-scale-space-md)" }}
-            >
-              <TodayEventsPanel fullHeight />
+            <section className="flex min-h-0 h-full flex-col">
+              <TodayEventsPanel fullHeight compact />
             </section>
           </div>
           <div className="min-h-0 w-full">

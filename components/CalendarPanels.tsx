@@ -24,9 +24,11 @@ type TodayEventsPanelProps = {
   stretchFromLeft?: boolean;
   /** When true, card fills available parent height */
   fullHeight?: boolean;
+  /** Smaller type + tighter gaps (e.g. landscape two-column row). */
+  compact?: boolean;
 };
 
-export function TodayEventsPanel({ stretchFromLeft, fullHeight }: TodayEventsPanelProps = {}) {
+export function TodayEventsPanel({ stretchFromLeft, fullHeight, compact }: TodayEventsPanelProps = {}) {
   const fetcher = useCallback(fetchCalendar, []);
   const { data } = usePolling<CalendarPayload>(fetcher, {
     intervalMs: 5 * 60 * 1000,
@@ -35,12 +37,24 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight }: TodayEventsPan
 
   const today = data?.today;
 
+  const pad = compact ? "calc(var(--denboard-scale-card-padding) * 0.82)" : "var(--denboard-scale-card-padding)";
+  const gapMain = compact ? "calc(var(--denboard-scale-gap) * 0.62)" : "var(--denboard-scale-gap)";
+  const gapSection = compact ? "calc(var(--denboard-scale-gap) * 0.55)" : "var(--denboard-scale-gap)";
+  const padEvt = compact
+    ? "calc(var(--denboard-scale-space-md) * 0.62) calc(var(--denboard-scale-card-padding) * 0.85)"
+    : "var(--denboard-scale-space-md) var(--denboard-scale-card-padding)";
+  const fsDate = compact ? "calc(var(--denboard-scale-date) * 0.78)" : undefined;
+  const fsCaption = compact ? "calc(var(--denboard-scale-calendar-event) * 0.88)" : undefined;
+  const fsEvent = compact ? "calc(var(--denboard-scale-calendar-event) * 0.88)" : undefined;
+  const fsSection = compact ? "calc(var(--denboard-scale-calendar-event) * 0.82)" : undefined;
+  const fsTime = compact ? "calc(var(--denboard-scale-calendar-event) * 0.82)" : undefined;
+
   return (
     <motion.div
-      className={`rounded-3xl denboard-card flex flex-col ${stretchFromLeft ? "w-full max-w-none" : "max-w-xl"} ${fullHeight ? "h-full" : ""}`}
+      className={`rounded-3xl denboard-card flex flex-col ${stretchFromLeft ? "w-full max-w-none" : "max-w-xl"} ${fullHeight ? "h-full min-h-0 overflow-y-auto" : ""}`}
       style={{
-        padding: "var(--denboard-scale-card-padding)",
-        gap: "var(--denboard-scale-gap)"
+        padding: pad,
+        gap: gapMain
       }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -48,35 +62,55 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight }: TodayEventsPan
     >
       <div
         className="flex items-baseline justify-between"
-        style={{ gap: "var(--denboard-scale-space-md)" }}
+        style={{ gap: compact ? "calc(var(--denboard-scale-space-md) * 0.75)" : "var(--denboard-scale-space-md)" }}
       >
-        <span className="denboard-scale-date uppercase tracking-[0.3em] denboard-text-secondary">
+        <span
+          className="uppercase tracking-[0.3em] denboard-text-secondary denboard-scale-date"
+          style={fsDate ? { fontSize: fsDate } : undefined}
+        >
           Today
         </span>
-        <span className="denboard-scale-calendar-event denboard-text-secondary">
+        <span
+          className="denboard-text-secondary denboard-scale-calendar-event"
+          style={fsCaption ? { fontSize: fsCaption } : undefined}
+        >
           All-day and timed events
         </span>
       </div>
 
       {!today && (
-        <div className="denboard-text-secondary denboard-scale-calendar-event">Loading calendar…</div>
+        <div
+          className="denboard-text-secondary denboard-scale-calendar-event"
+          style={fsCaption ? { fontSize: fsCaption } : undefined}
+        >
+          Loading calendar…
+        </div>
       )}
 
       {today && today.allDay.length === 0 && today.timed.length === 0 && (
-        <div className="denboard-text-secondary denboard-scale-calendar-event">Nothing scheduled today.</div>
+        <div
+          className="denboard-text-secondary denboard-scale-calendar-event"
+          style={fsCaption ? { fontSize: fsCaption } : undefined}
+        >
+          Nothing scheduled today.
+        </div>
       )}
 
       {today && today.allDay.length > 0 && (
-        <div className="flex flex-col" style={{ gap: "var(--denboard-scale-gap)" }}>
-          <div className="denboard-scale-calendar-event uppercase tracking-[0.2em] denboard-text-secondary">
+        <div className="flex flex-col" style={{ gap: gapSection }}>
+          <div
+            className="uppercase tracking-[0.2em] denboard-text-secondary denboard-scale-calendar-event"
+            style={fsSection ? { fontSize: fsSection } : undefined}
+          >
             All Day
           </div>
           {today.allDay.map((evt, idx) => (
             <div
               key={evt.id}
-              className="rounded-2xl denboard-card-nested denboard-scale-calendar-event denboard-text-primary font-medium line-clamp-2 break-words leading-snug"
+              className="rounded-2xl denboard-card-nested denboard-text-primary font-medium line-clamp-2 break-words leading-snug"
               style={{
-                padding: "var(--denboard-scale-space-md) var(--denboard-scale-card-padding)",
+                padding: padEvt,
+                fontSize: fsEvent,
                 backgroundColor: `${getEventColor(evt, idx)}30`,
                 borderLeft: `3px solid ${getEventColor(evt, idx)}`
               }}
@@ -89,27 +123,36 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight }: TodayEventsPan
       )}
 
       {today && today.timed.length > 0 && (
-        <div className="flex flex-col" style={{ gap: "var(--denboard-scale-gap)" }}>
-          <div className="denboard-scale-calendar-event uppercase tracking-[0.2em] denboard-text-secondary">
+        <div className="flex flex-col" style={{ gap: gapSection }}>
+          <div
+            className="uppercase tracking-[0.2em] denboard-text-secondary denboard-scale-calendar-event"
+            style={fsSection ? { fontSize: fsSection } : undefined}
+          >
             Scheduled
           </div>
-          <div className="flex flex-col" style={{ gap: "var(--denboard-scale-gap)" }}>
+          <div className="flex flex-col" style={{ gap: gapSection }}>
             {today.timed.map((evt, idx) => (
               <div
                 key={evt.id}
-                className="rounded-2xl denboard-card-nested denboard-scale-calendar-event flex items-start denboard-text-primary"
+                className="rounded-2xl denboard-card-nested flex items-start denboard-text-primary"
                 style={{
-                  padding: "var(--denboard-scale-space-md) var(--denboard-scale-card-padding)",
-                  gap: "var(--denboard-scale-space-md)",
+                  padding: padEvt,
+                  gap: compact ? "calc(var(--denboard-scale-space-md) * 0.75)" : "var(--denboard-scale-space-md)",
                   backgroundColor: `${getEventColor(evt, idx)}25`,
                   borderLeft: `3px solid ${getEventColor(evt, idx)}`
                 }}
                 title={evt.title}
               >
-                <span className="denboard-text-secondary shrink-0 tabular-nums pt-0.5" style={{ minWidth: "6ch" }}>
+                <span
+                  className="denboard-text-secondary shrink-0 tabular-nums pt-0.5"
+                  style={{ minWidth: "6ch", ...(fsTime ? { fontSize: fsTime } : {}) }}
+                >
                   {formatTime(evt.start)}
                 </span>
-                <span className="denboard-text-primary min-w-0 flex-1 line-clamp-2 break-words leading-snug">
+                <span
+                  className="denboard-text-primary min-w-0 flex-1 line-clamp-2 break-words leading-snug"
+                  style={fsEvent ? { fontSize: fsEvent } : undefined}
+                >
                   {evt.title}
                 </span>
               </div>
@@ -117,7 +160,7 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight }: TodayEventsPan
           </div>
         </div>
       )}
-    </motion.div>
+   </motion.div>
   );
 }
 
