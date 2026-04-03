@@ -4,7 +4,6 @@ import { WeatherPanel } from "@/components/WeatherPanel";
 import { DadJokePanel } from "@/components/DadJokePanel";
 import { TodayEventsPanel, CurrentWeekGrid } from "@/components/CalendarPanels";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
-import { useGuestMode } from "@/components/HomeAssistantStatus";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "@/components/hooks";
 import { nowInDashboardTz } from "@/lib/time";
@@ -22,7 +21,6 @@ async function fetchWeather(): Promise<WeatherPayload> {
 export default function TvHomePage() {
   const [now, setNow] = useState<DateTime | null>(null);
   const fetcher = useCallback(fetchWeather, []);
-  const { guestMode } = useGuestMode();
   const { data: weather } = usePolling<WeatherPayload>(fetcher, {
     intervalMs: 6 * 60 * 1000,
     immediate: true
@@ -96,7 +94,7 @@ export default function TvHomePage() {
           style={{ gap: "calc(var(--denboard-scale-gap-lg) * 0.82)" }}
         >
           <div
-            className={`grid min-h-0 flex-1 ${guestMode ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"}`}
+            className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-2"
             style={{ gap: "var(--denboard-scale-gap-lg)" }}
           >
             <section
@@ -106,14 +104,13 @@ export default function TvHomePage() {
               <WeatherPanel fullHeight />
             </section>
             <section
-              className={`flex min-h-0 flex-col ${guestMode ? "hidden" : ""}`}
+              className="flex min-h-0 flex-col"
               style={{ gap: "var(--denboard-scale-space-md)" }}
-              aria-hidden={guestMode}
             >
               <TodayEventsPanel fullHeight />
             </section>
           </div>
-          <div className={`min-h-0 w-full ${guestMode ? "hidden" : ""}`} aria-hidden={guestMode}>
+          <div className="min-h-0 w-full">
             <CurrentWeekGrid />
           </div>
         </div>

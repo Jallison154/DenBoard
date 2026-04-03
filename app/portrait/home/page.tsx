@@ -226,7 +226,12 @@ export default function PortraitHomePage() {
               )}
             </div>
           </div>
-          <FourWeekGrid />
+          <div
+            className="w-full shrink-0"
+            style={{ marginTop: "var(--denboard-scale-space-lg)" }}
+          >
+            <FourWeekGrid />
+          </div>
           <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap-lg)" }}>
             <HomeAssistantStatus hideWhenGuest fullWidth hideModeBadge />
           </div>
