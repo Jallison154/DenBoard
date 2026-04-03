@@ -122,7 +122,6 @@ body {
   background: var(--denboard-card-bg);
   border: 1px solid var(--denboard-card-border);
   backdrop-filter: blur(18px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
 }
 
 .denboard-card-nested {
@@ -151,6 +150,18 @@ body {
 
 .denboard-forecast-temp {
   font-size: var(--denboard-scale-forecast-temp);
+}
+
+/* 5-day strip: matches WeatherPanel “large” forecast (hotel-style readability) */
+.denboard-forecast-hotel-day {
+  font-size: calc(var(--denboard-scale-status) * 1.2);
+}
+.denboard-forecast-hotel-icon {
+  font-size: calc(var(--denboard-scale-forecast-icon) * 1.2);
+  line-height: 1;
+}
+.denboard-forecast-hotel-temp {
+  font-size: calc(var(--denboard-scale-forecast-temp) * 1.18);
 }
 
 /* Weather overlay: ultra-light breathing only (single opacity tween) */

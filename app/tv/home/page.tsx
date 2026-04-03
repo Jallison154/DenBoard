@@ -236,29 +236,20 @@ export default function TvHomePage() {
               <div className="grid grid-cols-5 gap-5 mt-6 pt-6 border-t border-white/10">
                 {weather.dailyForecast.slice(0, 5).map((day) => (
                   <div key={day.dateISO} className="flex flex-col items-center text-center">
-                    <span
-                      className="denboard-text-secondary uppercase tracking-wide"
-                      style={{ fontSize: "clamp(18px, 1.45vmin, 25px)" }}
-                    >
+                    <span className="denboard-text-secondary uppercase tracking-wide denboard-forecast-hotel-day">
                       {day.dayName}
                     </span>
                     <motion.span
-                      style={{ fontSize: "clamp(42px, 3.9vmin, 68px)" }}
+                      className="denboard-forecast-hotel-icon"
                       animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
                       transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
                     >
                       {iconFor(day.iconCode)}
                     </motion.span>
-                    <span
-                      className="denboard-text-primary font-semibold"
-                      style={{ fontSize: "clamp(31px, 2.9vmin, 49px)" }}
-                    >
+                    <span className="denboard-text-primary font-semibold denboard-forecast-hotel-temp">
                       {formatTemp(day.highTemp, weather.units)}
                     </span>
-                    <span
-                      className="denboard-text-secondary"
-                      style={{ fontSize: "clamp(22px, 2vmin, 36px)" }}
-                    >
+                    <span className="denboard-text-secondary denboard-forecast-hotel-temp">
                       {formatTemp(day.lowTemp, weather.units)}
                     </span>
                   </div>

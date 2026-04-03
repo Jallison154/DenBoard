@@ -21,7 +21,7 @@ export function SevereAlertBanner({ alerts }: Props) {
           exit={{ opacity: 0, y: -16 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="max-w-3xl w-full rounded-2xl border border-amber-400/40 bg-amber-900/55 backdrop-blur-xl shadow-[0_0_30px_rgba(251,191,36,0.35)]">
+          <div className="max-w-3xl w-full rounded-2xl border border-amber-400/40 bg-amber-900/55 backdrop-blur-xl">
             <div
               className="flex items-center"
               style={{

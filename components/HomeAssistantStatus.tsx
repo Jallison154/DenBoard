@@ -136,7 +136,7 @@ export function HomeModeBadge() {
   const { guestMode, payload } = useGuestMode();
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full denboard-card-nested px-3 py-2 text-xs denboard-text-primary shadow-[0_12px_30px_rgba(0,0,0,0.7)]">
+    <div className="inline-flex items-center gap-2 rounded-full denboard-card-nested px-3 py-2 text-xs denboard-text-primary">
       <span
         className={`inline-flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${
           payload?.isFallback

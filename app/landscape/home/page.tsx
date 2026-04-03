@@ -107,7 +107,7 @@ export default function TvHomePage() {
               className="flex min-h-0 flex-col"
               style={{ gap: "var(--denboard-scale-space-md)" }}
             >
-              <WeatherPanel fullHeight largeForecast />
+              <WeatherPanel fullHeight />
             </section>
             <section
               className={`flex min-h-0 flex-col ${guestMode ? "hidden" : ""}`}

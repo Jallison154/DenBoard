@@ -98,7 +98,7 @@ export function FloatingNav() {
       <button
         type="button"
         onClick={toggleExpanded}
-        className="flex h-10 w-10 items-center justify-center rounded-xl denboard-card shadow-xl denboard-text-secondary hover:denboard-text-primary transition-colors"
+        className="flex h-10 w-10 items-center justify-center rounded-xl denboard-card denboard-text-secondary hover:denboard-text-primary transition-colors"
         aria-label={expanded ? "Close menu" : "Open menu"}
         aria-expanded={expanded}
       >
@@ -107,7 +107,7 @@ export function FloatingNav() {
 
       {expanded && (
         <div
-          className="rounded-2xl denboard-card px-4 py-3 shadow-xl overflow-hidden"
+          className="rounded-2xl denboard-card px-4 py-3 overflow-hidden"
           onMouseMove={scheduleHide}
         >
           <div className="flex flex-col gap-1.5 min-w-[140px]">

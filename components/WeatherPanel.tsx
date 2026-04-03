@@ -69,10 +69,9 @@ function iconAnimationForCondition(kind: ReturnType<typeof currentConditionKey>)
 
 type WeatherPanelProps = {
   fullHeight?: boolean;
-  largeForecast?: boolean;
 };
 
-export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = {}) {
+export function WeatherPanel({ fullHeight }: WeatherPanelProps = {}) {
   const fetcher = useCallback(fetchWeather, []);
   const { data, loading } = usePolling<WeatherPayload>(fetcher, {
     intervalMs: 6 * 60 * 1000,
@@ -175,24 +174,17 @@ export function WeatherPanel({ fullHeight, largeForecast }: WeatherPanelProps = 
               className="flex flex-col items-center rounded-2xl denboard-card-nested denboard-forecast-tile"
               style={{ backgroundColor: "rgba(255,255,255,0.04)" }}
             >
-              <span
-                className="uppercase tracking-wide denboard-text-secondary denboard-scale-status"
-                style={largeForecast ? { fontSize: "calc(var(--denboard-scale-status) * 1.2)" } : undefined}
-              >
+              <span className="uppercase tracking-wide denboard-text-secondary denboard-forecast-hotel-day">
                 {day.dayName}
               </span>
               <motion.span
-                className="denboard-forecast-icon leading-none"
-                style={largeForecast ? { fontSize: "calc(var(--denboard-scale-forecast-icon) * 1.2)" } : undefined}
+                className="denboard-forecast-icon denboard-forecast-hotel-icon leading-none"
                 animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
                 transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
               >
                 {iconFor(day.iconCode)}
               </motion.span>
-              <div
-                className="denboard-forecast-temp denboard-text-secondary flex flex-col items-center leading-tight"
-                style={largeForecast ? { fontSize: "calc(var(--denboard-scale-forecast-temp) * 1.18)" } : undefined}
-              >
+              <div className="denboard-forecast-hotel-temp denboard-text-secondary flex flex-col items-center leading-tight">
                 <span className="whitespace-nowrap">
                   {formatForecastTemp(day.highTemp, data?.units)}
                 </span>

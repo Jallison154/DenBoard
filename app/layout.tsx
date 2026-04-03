@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { DisplayChrome } from "@/components/DisplayChrome";
+import { DisplayRefreshListener } from "@/components/DisplayRefreshListener";
 import { FooterBar } from "@/components/FooterBar";
 import { FloatingNav } from "@/components/FloatingNav";
 import { toCssVars } from "@/lib/theme/tokens";
@@ -23,6 +24,7 @@ export default function RootLayout({
       >
         <style dangerouslySetInnerHTML={{ __html: toCssVars() }} />
         <DisplayChrome>
+          <DisplayRefreshListener />
           <FloatingNav />
           <div className="denboard-viewport-shell flex min-h-0 flex-1 flex-col">{children}</div>
           <footer className="fixed bottom-0 inset-x-0 denboard-footer-scrim backdrop-blur-sm">

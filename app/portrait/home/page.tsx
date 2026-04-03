@@ -194,15 +194,11 @@ export default function PortraitHomePage() {
                       className="flex items-center justify-between gap-2 rounded-xl denboard-card-nested py-3 sm:py-4 px-3 sm:px-4"
                     >
                       <div className="flex flex-col items-start min-w-0 shrink">
-                        <span
-                          className="denboard-text-secondary font-semibold truncate w-full text-left"
-                          style={{ fontSize: "clamp(14px, 2vmin, 22px)" }}
-                        >
+                        <span className="denboard-text-secondary font-semibold truncate w-full text-left denboard-forecast-hotel-day">
                           {day.dayName}
                         </span>
                         <motion.span
-                          className="shrink-0 mt-0.5"
-                          style={{ fontSize: "clamp(24px, 4vmin, 44px)" }}
+                          className="denboard-forecast-hotel-icon shrink-0 mt-0.5"
                           animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
                           transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
                           aria-hidden
@@ -211,15 +207,11 @@ export default function PortraitHomePage() {
                         </motion.span>
                       </div>
                       <div className="flex flex-col items-end shrink-0">
-                        <span
-                          className="denboard-text-primary font-bold tabular-nums"
-                          style={{ fontSize: "clamp(28px, 5vmin, 56px)" }}
-                        >
+                        <span className="denboard-text-primary font-bold tabular-nums denboard-forecast-hotel-temp">
                           {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
                         </span>
                         <span
-                          className="denboard-text-secondary font-medium tabular-nums"
-                          style={{ fontSize: "clamp(18px, 3vmin, 32px)" }}
+                          className="denboard-text-secondary font-medium tabular-nums denboard-forecast-hotel-temp"
                         >
                           {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
                         </span>
@@ -363,18 +355,12 @@ export default function PortraitHomePage() {
                           padding: "clamp(10px, 1.8vmin, 20px) clamp(4px, 1vmin, 12px)"
                         }}
                       >
-                        <span
-                          className="denboard-text-secondary font-semibold truncate w-full"
-                          style={{ fontSize: "clamp(14px, 2.2vmin, 22px)" }}
-                        >
+                        <span className="denboard-text-secondary font-semibold truncate w-full denboard-forecast-hotel-day">
                           {day.dayName}
                         </span>
                         <div className="flex flex-col items-center justify-center gap-1 mt-1 w-full flex-1 justify-center">
                           <motion.span
-                            style={{
-                              fontSize: "clamp(32px, min(5.5vmin, 9vw), 64px)",
-                              lineHeight: 1
-                            }}
+                            className="denboard-forecast-hotel-icon"
                             animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
                             transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
                             aria-hidden
@@ -382,15 +368,11 @@ export default function PortraitHomePage() {
                             {weatherIcon(day.iconCode)}
                           </motion.span>
                           <div className="flex flex-col items-center leading-none w-full gap-0.5">
-                            <span
-                              className="denboard-text-primary font-bold tabular-nums"
-                              style={{ fontSize: "clamp(20px, 3.4vmin, 40px)" }}
-                            >
+                            <span className="denboard-text-primary font-bold tabular-nums denboard-forecast-hotel-temp">
                               {Number.isFinite(day.highTemp) ? formatTemp(day.highTemp, weather.units) : "–"}
                             </span>
                             <span
-                              className="denboard-text-secondary font-medium tabular-nums"
-                              style={{ fontSize: "clamp(15px, 2.4vmin, 28px)" }}
+                              className="denboard-text-secondary font-medium tabular-nums denboard-forecast-hotel-temp"
                             >
                               {Number.isFinite(day.lowTemp) ? formatTemp(day.lowTemp, weather.units) : "–"}
                             </span>

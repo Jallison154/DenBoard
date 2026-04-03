@@ -102,6 +102,7 @@ export default function AdminPage() {
     { id: "homeAssistant", label: "Home Assistant" },
   ];
   const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [refreshSending, setRefreshSending] = useState(false);
 
   return (
     <div
@@ -188,6 +189,57 @@ export default function AdminPage() {
                   >
                     Portrait Home
                   </a>
+                </div>
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-300 mb-2">
+                    Wall displays
+                  </h3>
+                  <p className="text-xs text-slate-400 mb-3">
+                    Tell TVs and tablets running DenBoard to reload (picks up new builds and
+                    settings within a few seconds).
+                  </p>
+                  <button
+                    type="button"
+                    disabled={refreshSending}
+                    className="rounded-lg border border-amber-400/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-100 hover:bg-amber-500/20 disabled:opacity-50 transition-colors"
+                    onClick={async () => {
+                      setRefreshSending(true);
+                      try {
+                        const res = await fetch("/api/display/refresh", {
+                          method: "POST",
+                          cache: "no-store"
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                          throw new Error(data.error || "Request failed");
+                        }
+                        showSaveFeedback(
+                          "overview",
+                          true,
+                          `Refresh signal sent (epoch ${data.epoch}).`
+                        );
+                      } catch (e) {
+                        showSaveFeedback(
+                          "overview",
+                          false,
+                          e instanceof Error ? e.message : "Could not send refresh signal."
+                        );
+                      } finally {
+                        setRefreshSending(false);
+                      }
+                    }}
+                  >
+                    {refreshSending ? "Sending…" : "Force displays to refresh"}
+                  </button>
+                  {saveStatus?.section === "overview" && (
+                    <p
+                      className={`text-xs mt-2 ${
+                        saveStatus.ok ? "text-emerald-300" : "text-rose-300"
+                      }`}
+                    >
+                      {saveStatus.message}
+                    </p>
+                  )}
                 </div>
               </section>
             )}

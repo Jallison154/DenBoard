@@ -68,6 +68,8 @@ export type DisplaySettings = {
   fontScale: number;
   cardOpacity: number;
   enableWeatherEffects: boolean;
+  /** Bumped from admin to signal wall displays to reload (see /api/display/refresh). */
+  clientRefreshEpoch: number;
 };
 
 export type DenBoardSettings = {
@@ -191,14 +193,22 @@ export function getDefaultSettings(): DenBoardSettings {
       enableDadJokes: true,
       fontScale: 1,
       cardOpacity: 0.7,
-      enableWeatherEffects: true
+      enableWeatherEffects: true,
+      clientRefreshEpoch: 0
     }
   };
 }
 
-export async function loadSettings(): Promise<DenBoardSettings> {
+export async function loadSettings(options?: {
+  /** Skip in-memory cache (e.g. refresh signal polling). */
+  force?: boolean;
+}): Promise<DenBoardSettings> {
   const now = Date.now();
-  if (cachedSettings && now - cachedSettingsLoadedAt < SETTINGS_CACHE_MS) {
+  if (
+    !options?.force &&
+    cachedSettings &&
+    now - cachedSettingsLoadedAt < SETTINGS_CACHE_MS
+  ) {
     return cachedSettings;
   }
 
@@ -229,7 +239,14 @@ export async function loadSettings(): Promise<DenBoardSettings> {
             ? parsed.homeAssistant.entities
             : defaults.homeAssistant.entities
       },
-      display: { ...defaults.display, ...(parsed.display || {}) }
+      display: {
+        ...defaults.display,
+        ...(parsed.display || {}),
+        clientRefreshEpoch:
+          typeof parsed.display?.clientRefreshEpoch === "number"
+            ? parsed.display.clientRefreshEpoch
+            : defaults.display.clientRefreshEpoch
+      }
     };
     cachedSettings = merged;
     cachedSettingsLoadedAt = now;
@@ -251,6 +268,20 @@ export async function saveSettings(settings: DenBoardSettings): Promise<void> {
     JSON.stringify(settings, null, 2),
     "utf8"
   );
+}
+
+/** Increment persisted epoch so wall displays can poll and reload (see /api/display/refresh). */
+export async function bumpClientRefreshEpoch(): Promise<number> {
+  const current = await loadSettings({ force: true });
+  const next = (Number.isFinite(current.display.clientRefreshEpoch)
+    ? current.display.clientRefreshEpoch
+    : 0) + 1;
+  const merged: DenBoardSettings = {
+    ...current,
+    display: { ...current.display, clientRefreshEpoch: next }
+  };
+  await saveSettings(merged);
+  return next;
 }
 
 export function validateSettings(settings: DenBoardSettings): SettingsValidationResult {
