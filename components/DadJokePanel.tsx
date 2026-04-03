@@ -13,9 +13,13 @@ async function fetchDadJoke(): Promise<DadJokePayload> {
   return res.json();
 }
 
-type Props = { fullWidth?: boolean };
+type Props = {
+  fullWidth?: boolean;
+  /** Landscape dashboard: show full joke (no calendar-cell height cap). */
+  variant?: "default" | "landscape";
+};
 
-export function DadJokePanel({ fullWidth }: Props) {
+export function DadJokePanel({ fullWidth, variant = "default" }: Props) {
   const fetcher = useCallback(fetchDadJoke, []);
   const { data } = usePolling<DadJokePayload>(fetcher, {
     intervalMs: 45 * 60 * 1000,
@@ -43,10 +47,16 @@ export function DadJokePanel({ fullWidth }: Props) {
         </div>
       </div>
       <div
-        className="leading-relaxed overflow-hidden"
+        className={
+          variant === "landscape"
+            ? "leading-relaxed"
+            : "leading-relaxed overflow-hidden"
+        }
         style={{
           fontSize: "var(--denboard-scale-calendar-event)",
-          maxHeight: "var(--denboard-scale-calendar-cell-height)"
+          ...(variant === "default"
+            ? { maxHeight: "var(--denboard-scale-calendar-cell-height)" }
+            : {})
         }}
       >
         {data?.joke ?? "Loading a mountain-grade dad joke..."}

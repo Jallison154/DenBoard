@@ -6,7 +6,7 @@ export default function TvLayout({ children }: { children: ReactNode }) {
     <BackgroundLayer variant="hotel">
       <main
         data-orientation="landscape"
-        className="flex min-h-0 w-full flex-1 flex-col items-center justify-center overflow-hidden"
+        className="flex min-h-0 w-full flex-1 flex-col items-center justify-start overflow-hidden"
         style={{
           padding: "var(--denboard-scale-space-xl) var(--denboard-scale-space-lg)"
         }}

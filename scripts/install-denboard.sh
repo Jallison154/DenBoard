@@ -187,8 +187,10 @@ echo "Creating systemd service at $SERVICE_FILE..."
 cat > "$SERVICE_FILE" <<EOF
 [Unit]
 Description=DenBoard family dashboard
-After=network-online.target
-Wants=network-online.target
+# Use network.target, not network-online.target. The latter waits for "full" internet
+# (systemd-networkd-wait-online / NM-wait-online) and can delay boot by minutes on
+# some LANs—DenBoard only needs the stack up; outbound HA/API retries handle cold start.
+After=network.target
 
 [Service]
 Type=simple

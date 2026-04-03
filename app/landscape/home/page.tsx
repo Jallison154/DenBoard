@@ -57,10 +57,11 @@ export default function TvHomePage() {
       {/* Hotel-style hero clock */}
       <div className="w-full flex flex-col items-center justify-center text-center">
         <div
-          className="denboard-text-secondary font-semibold uppercase tracking-[0.28em]"
+          className="font-semibold uppercase tracking-[0.28em] denboard-text-primary"
           style={{
-            fontSize: "clamp(10px, 0.9vmin, 17px)",
-            textShadow: "0 0 16px rgba(0,0,0,0.88), 0 2px 10px rgba(0,0,0,0.75)"
+            fontSize: "clamp(12px, 1.05vmin, 20px)",
+            textShadow:
+              "0 0 1px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.85), 0 3px 14px rgba(0,0,0,0.75)"
           }}
           suppressHydrationWarning
         >
@@ -95,29 +96,33 @@ export default function TvHomePage() {
         style={{ gap: "calc(var(--denboard-scale-gap-lg) * 0.82)", paddingTop: "calc(var(--denboard-scale-gap-lg) * 0.8)" }}
       >
         <div
-          className={`grid ${guestMode ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"}`}
-          style={{ gap: "var(--denboard-scale-gap-lg)" }}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+          style={{ gap: "calc(var(--denboard-scale-gap-lg) * 0.82)" }}
         >
-          <section
-            className="flex flex-col h-full"
-            style={{ gap: "var(--denboard-scale-space-md)" }}
+          <div
+            className={`grid min-h-0 flex-1 ${guestMode ? "grid-cols-1 max-w-2xl mx-auto" : "grid-cols-1 lg:grid-cols-2"}`}
+            style={{ gap: "var(--denboard-scale-gap-lg)" }}
           >
-            <WeatherPanel fullHeight largeForecast />
-          </section>
-          {/* Always mounted so calendar stays warm when toggling HA guest mode */}
-          <section
-            className={`flex flex-col h-full ${guestMode ? "hidden" : ""}`}
-            style={{ gap: "var(--denboard-scale-space-md)" }}
-            aria-hidden={guestMode}
-          >
-            <TodayEventsPanel fullHeight />
-          </section>
+            <section
+              className="flex min-h-0 flex-col"
+              style={{ gap: "var(--denboard-scale-space-md)" }}
+            >
+              <WeatherPanel fullHeight largeForecast />
+            </section>
+            <section
+              className={`flex min-h-0 flex-col ${guestMode ? "hidden" : ""}`}
+              style={{ gap: "var(--denboard-scale-space-md)" }}
+              aria-hidden={guestMode}
+            >
+              <TodayEventsPanel fullHeight />
+            </section>
+          </div>
+          <div className={`min-h-0 w-full ${guestMode ? "hidden" : ""}`} aria-hidden={guestMode}>
+            <CurrentWeekGrid />
+          </div>
         </div>
-        <div className={`w-full ${guestMode ? "hidden" : ""}`} aria-hidden={guestMode}>
-          <CurrentWeekGrid />
-        </div>
-        <div className="w-full">
-          <DadJokePanel fullWidth />
+        <div className="w-full shrink-0">
+          <DadJokePanel fullWidth variant="landscape" />
         </div>
       </div>
     </div>
