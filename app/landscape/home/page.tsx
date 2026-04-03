@@ -1,9 +1,11 @@
-'use client';
+"use client";
 
+import HotelTvDashboard from "@/components/HotelTvDashboard";
 import { WeatherPanel } from "@/components/WeatherPanel";
 import { DadJokePanel } from "@/components/DadJokePanel";
 import { TodayEventsPanel, CurrentWeekGrid } from "@/components/CalendarPanels";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
+import { useGuestMode } from "@/components/HomeAssistantStatus";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "@/components/hooks";
 import { nowInDashboardTz } from "@/lib/time";
@@ -18,7 +20,7 @@ async function fetchWeather(): Promise<WeatherPayload> {
   return res.json();
 }
 
-export default function TvHomePage() {
+function LandscapeFamilyDashboard() {
   const [now, setNow] = useState<DateTime | null>(null);
   const fetcher = useCallback(fetchWeather, []);
   const { data: weather } = usePolling<WeatherPayload>(fetcher, {
@@ -42,7 +44,7 @@ export default function TvHomePage() {
 
   return (
     <div
-      className="flex min-h-0 w-full max-w-6xl flex-1 flex-col overflow-hidden mx-auto"
+      className="flex min-h-0 w-full max-w-6xl flex-1 flex-col justify-start overflow-hidden mx-auto"
       style={{
         paddingTop: "var(--denboard-scale-space-lg)",
         paddingBottom: "var(--denboard-scale-space-xl)",
@@ -52,7 +54,6 @@ export default function TvHomePage() {
     >
       <SevereAlertBanner alerts={weather?.alerts} />
 
-      {/* Hotel-style hero clock */}
       <div className="w-full flex flex-col items-center justify-center text-center">
         <div
           className="font-semibold uppercase tracking-[0.28em] denboard-text-primary"
@@ -84,7 +85,6 @@ export default function TvHomePage() {
         </div>
       </div>
 
-      {/* Content below in a clean grid */}
       <div
         className="flex min-h-0 flex-1 flex-col overflow-hidden"
         style={{ gap: "calc(var(--denboard-scale-gap-lg) * 0.82)", paddingTop: "calc(var(--denboard-scale-gap-lg) * 0.8)" }}
@@ -122,3 +122,10 @@ export default function TvHomePage() {
   );
 }
 
+export default function LandscapeHomePage() {
+  const { guestMode } = useGuestMode();
+  if (guestMode) {
+    return <HotelTvDashboard />;
+  }
+  return <LandscapeFamilyDashboard />;
+}

@@ -74,7 +74,7 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight }: TodayEventsPan
           {today.allDay.map((evt, idx) => (
             <div
               key={evt.id}
-              className="rounded-2xl denboard-card-nested denboard-scale-calendar-event denboard-text-primary font-medium break-words leading-snug"
+              className="rounded-2xl denboard-card-nested denboard-scale-calendar-event denboard-text-primary font-medium line-clamp-2 break-words leading-snug"
               style={{
                 padding: "var(--denboard-scale-space-md) var(--denboard-scale-card-padding)",
                 backgroundColor: `${getEventColor(evt, idx)}30`,
@@ -109,7 +109,9 @@ export function TodayEventsPanel({ stretchFromLeft, fullHeight }: TodayEventsPan
                 <span className="denboard-text-secondary shrink-0 tabular-nums pt-0.5" style={{ minWidth: "6ch" }}>
                   {formatTime(evt.start)}
                 </span>
-                <span className="denboard-text-primary min-w-0 flex-1 break-words leading-snug">{evt.title}</span>
+                <span className="denboard-text-primary min-w-0 flex-1 line-clamp-2 break-words leading-snug">
+                  {evt.title}
+                </span>
               </div>
             ))}
           </div>
@@ -276,7 +278,7 @@ function CompactWeekDayCell({
           return (
             <div
               key={evt.id}
-              className="rounded px-1.5 py-0.5 denboard-text-primary break-words text-left leading-snug"
+              className="rounded px-1.5 py-0.5 denboard-text-primary line-clamp-2 break-words text-left leading-snug"
               style={{
                 fontSize: "calc(var(--denboard-scale-calendar-event) * 0.62)",
                 backgroundColor: `${color}26`,
@@ -357,7 +359,7 @@ function EventRow({
   if (evt.allDay) {
     return (
       <div
-        className="w-full rounded py-0.5 px-1 font-medium denboard-text-primary shrink-0 break-words leading-snug"
+        className="w-full rounded py-0.5 px-1 font-medium denboard-text-primary shrink-0 line-clamp-2 break-words leading-snug"
         style={{
           backgroundColor: `${color}30`,
           borderLeft: `2px solid ${color}`,
@@ -365,7 +367,7 @@ function EventRow({
         }}
         title={evt.title}
       >
-        <span className="block">{evt.title}</span>
+        {evt.title}
       </div>
     );
   }
@@ -381,7 +383,12 @@ function EventRow({
       title={evt.title}
     >
       <span className="text-sandstone/80 shrink-0 text-[0.65em] mt-0.5">•</span>
-      <span className="flex-1 min-w-0 break-words leading-snug" style={{ fontSize: "inherit" }}>{evt.title}</span>
+      <span
+        className="flex-1 min-w-0 line-clamp-2 break-words leading-snug"
+        style={{ fontSize: "inherit" }}
+      >
+        {evt.title}
+      </span>
       <span
         className="denboard-text-secondary/90 shrink-0 tabular-nums"
         style={{ fontSize: "calc(var(--denboard-scale-status) * 0.82)" }}
