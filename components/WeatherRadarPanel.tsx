@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { RadarPayload } from "@/lib/radar";
+import type { RadarFrameTile, RadarPayload } from "@/lib/radar";
 import { useDisplaySettings, usePolling, usePrefersReducedMotion } from "./hooks";
 
 async function fetchRadar(): Promise<RadarPayload> {
@@ -23,8 +23,8 @@ function formatRadarTime(epochSec: number) {
 }
 
 const HEIGHT_STYLES = {
-  compact: "clamp(88px, min(11vmin, 14vh), 200px)",
-  standard: "clamp(140px, min(17vmin, 22vh), 300px)"
+  compact: "clamp(176px, min(22vmin, 28vh), 400px)",
+  standard: "clamp(240px, min(30vmin, 40vh), 560px)"
 } as const;
 
 type Props = {
@@ -61,9 +61,9 @@ export function WeatherRadarPanel({ className }: Props) {
   const currentFrame = frames[displayIndex];
 
   const radarByKey = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, RadarFrameTile>();
     for (const t of currentFrame?.tiles ?? []) {
-      map.set(`${t.x},${t.y}`, t.url);
+      map.set(`${t.x},${t.y}`, t);
     }
     return map;
   }, [currentFrame]);
@@ -144,9 +144,13 @@ export function WeatherRadarPanel({ className }: Props) {
               }}
             >
               {(data?.baseTiles ?? []).map((tile) => {
-                const radarUrl = radarByKey.get(`${tile.x},${tile.y}`);
+                const radar = radarByKey.get(`${tile.x},${tile.y}`);
+                const span = radar?.span ?? 1;
                 return (
-                  <div key={`${tile.x}-${tile.y}`} className="relative min-h-0 min-w-0">
+                  <div
+                    key={`${tile.x}-${tile.y}`}
+                    className="relative min-h-0 min-w-0 overflow-hidden"
+                  >
                     <img
                       src={tile.baseMapUrl}
                       alt=""
@@ -156,15 +160,23 @@ export function WeatherRadarPanel({ className }: Props) {
                       onLoad={() => setBaseMapLoaded(true)}
                       onError={() => setBaseMapFailed(true)}
                     />
-                    {radarUrl && !showRadarFallback && (
+                    {radar && !showRadarFallback && (
                       <AnimatePresence mode="wait">
                         <motion.img
                           key={`${currentFrame?.time ?? 0}-${tile.x}-${tile.y}`}
-                          src={radarUrl}
+                          src={radar.url}
                           alt=""
                           role="presentation"
-                          className="absolute inset-0 h-full w-full object-cover pointer-events-none"
-                          style={{ opacity: 0.72, mixBlendMode: "multiply" }}
+                          className="absolute object-cover pointer-events-none"
+                          style={{
+                            width: `${span * 100}%`,
+                            height: `${span * 100}%`,
+                            left: `${-radar.offsetX * 100}%`,
+                            top: `${-radar.offsetY * 100}%`,
+                            opacity: 0.72,
+                            mixBlendMode: "multiply",
+                            imageRendering: span > 1 ? "auto" : undefined
+                          }}
                           initial={animate ? { opacity: 0 } : false}
                           animate={{ opacity: 0.72 }}
                           exit={animate ? { opacity: 0 } : undefined}
