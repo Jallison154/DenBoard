@@ -5,6 +5,7 @@
 export const MIN_ZOOM = 4;
 export const MAX_ZOOM = 10;
 export const RADAR_MAX_NATIVE_ZOOM = 7;
+/** Display zoom — slightly closer view; radar tiles upscale from z7 via maxNativeZoom. */
 export const DEFAULT_ZOOM = 8;
 export const RADAR_COLOR = 2;
 export const RADAR_TILE_SIZE = 256;

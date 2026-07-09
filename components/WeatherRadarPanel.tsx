@@ -13,6 +13,14 @@ import {
 } from "@/lib/radarConstants";
 import { useDisplaySettings, usePolling } from "./hooks";
 
+const RADAR_LAYER_OPTS = {
+  maxNativeZoom: RADAR_MAX_NATIVE_ZOOM,
+  maxZoom: MAX_ZOOM,
+  opacity: 0.58,
+  className: "denboard-radar-tile-layer",
+  zIndex: 450
+} as const;
+
 async function fetchRadar(): Promise<RadarPayload> {
   const res = await fetch("/api/weather/radar", { cache: "no-store" });
   if (!res.ok) throw new Error("Radar unavailable");
@@ -32,7 +40,7 @@ type Props = {
 
 export function WeatherRadarPanel({ className, embedded }: Props) {
   const display = useDisplaySettings();
-  const refreshSeconds = display.weatherRadarRefreshSeconds;
+  const refreshSeconds = display.weatherRadarRefreshSeconds || 60;
   const heightMode = display.weatherRadarHeight;
 
   const fetcher = useCallback(fetchRadar, []);
@@ -48,6 +56,11 @@ export function WeatherRadarPanel({ className, embedded }: Props) {
   const markerRef = useRef<Marker | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
   const radarTimeRef = useRef<number | null>(null);
+  const configLocationRef = useRef<{ lat: number; lon: number; zoom: number } | null>(
+    null
+  );
+  /** When manual pan/zoom is enabled later, preserve the user's view across refreshes. */
+  const userViewLockedRef = useRef(false);
 
   const [mapReady, setMapReady] = useState(false);
   const [baseMapFailed, setBaseMapFailed] = useState(false);
@@ -78,6 +91,11 @@ export function WeatherRadarPanel({ className, embedded }: Props) {
 
       leafletRef.current = L;
       radarTimeRef.current = frame.time;
+      configLocationRef.current = {
+        lat: payload.lat,
+        lon: payload.lon,
+        zoom: payload.zoom
+      };
 
       const map = L.map(el, {
         center: [payload.lat, payload.lon],
@@ -94,6 +112,10 @@ export function WeatherRadarPanel({ className, embedded }: Props) {
         touchZoom: false
       });
 
+      map.on("zoomend moveend", () => {
+        userViewLockedRef.current = true;
+      });
+
       const base = L.tileLayer(DARK_BASE_MAP_URL, {
         subdomains: "abcd",
         maxZoom: 19,
@@ -105,11 +127,7 @@ export function WeatherRadarPanel({ className, embedded }: Props) {
       baseLayerRef.current = base;
 
       const radar = L.tileLayer(radarTileUrlTemplate(payload.host, frame.path), {
-        maxNativeZoom: RADAR_MAX_NATIVE_ZOOM,
-        maxZoom: MAX_ZOOM,
-        opacity: 0.58,
-        className: "denboard-radar-tile-layer",
-        zIndex: 450
+        ...RADAR_LAYER_OPTS
       });
       radar.on("tileerror", () => setRadarFailed(true));
       radar.addTo(map);
@@ -157,18 +175,34 @@ export function WeatherRadarPanel({ className, embedded }: Props) {
         markerRef.current = null;
         leafletRef.current = null;
         radarTimeRef.current = null;
+        configLocationRef.current = null;
+        userViewLockedRef.current = false;
         setMapReady(false);
       }
     };
   }, [radarReady]);
 
+  // Recenter only when configured location/zoom changes — not on radar refresh polls.
   useEffect(() => {
     if (!mapRef.current || !data || data.isFallback) return;
-    mapRef.current.setView([data.lat, data.lon], data.zoom, { animate: false });
+
+    const prev = configLocationRef.current;
+    const locationChanged =
+      !prev ||
+      prev.lat !== data.lat ||
+      prev.lon !== data.lon ||
+      prev.zoom !== data.zoom;
+
+    configLocationRef.current = { lat: data.lat, lon: data.lon, zoom: data.zoom };
     markerRef.current?.setLatLng([data.lat, data.lon]);
-    mapRef.current.invalidateSize({ animate: false });
+
+    if (locationChanged) {
+      userViewLockedRef.current = false;
+      mapRef.current.setView([data.lat, data.lon], data.zoom, { animate: false });
+    }
   }, [data?.lat, data?.lon, data?.zoom]);
 
+  // Swap radar tiles in-place when RainViewer reports a newer frame time.
   useEffect(() => {
     const map = mapRef.current;
     const L = leafletRef.current;
@@ -176,21 +210,22 @@ export function WeatherRadarPanel({ className, embedded }: Props) {
 
     const nextTime = latestFrame.time;
     if (radarTimeRef.current === nextTime) return;
-    radarTimeRef.current = nextTime;
 
+    const nextUrl = radarTileUrlTemplate(data.host, latestFrame.path);
     const existing = radarLayerRef.current;
-    if (existing) map.removeLayer(existing);
 
-    const radar = L.tileLayer(radarTileUrlTemplate(data.host, latestFrame.path), {
-      maxNativeZoom: RADAR_MAX_NATIVE_ZOOM,
-      maxZoom: MAX_ZOOM,
-      opacity: 0.58,
-      className: "denboard-radar-tile-layer",
-      zIndex: 450
-    });
+    if (existing) {
+      existing.setUrl(nextUrl);
+      radarTimeRef.current = nextTime;
+      setRadarFailed(false);
+      return;
+    }
+
+    const radar = L.tileLayer(nextUrl, { ...RADAR_LAYER_OPTS });
     radar.on("tileerror", () => setRadarFailed(true));
     radar.addTo(map);
     radarLayerRef.current = radar;
+    radarTimeRef.current = nextTime;
     setRadarFailed(false);
   }, [latestFrame?.time, latestFrame?.path, data?.host, data?.isFallback]);
 
