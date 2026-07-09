@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import { motion } from "framer-motion";
 import type { WeatherPayload } from "@/lib/weather";
 import type { DadJokePayload } from "@/lib/dadJoke";
-import { usePolling } from "@/components/hooks";
+import { usePolling, useDisplaySettings, usePrefersReducedMotion } from "@/components/hooks";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import { nowInDashboardTz } from "@/lib/time";
 
@@ -82,8 +82,15 @@ function currentConditionKey(
 }
 
 function iconAnimationForCondition(
-  kind: ReturnType<typeof currentConditionKey>
+  kind: ReturnType<typeof currentConditionKey>,
+  enabled = true
 ) {
+  if (!enabled) {
+    return {
+      animate: { opacity: 1 },
+      transition: { duration: 0.01, repeat: 0, ease: "easeInOut" as const }
+    };
+  }
   switch (kind) {
     case "rain":
       return {
@@ -122,6 +129,9 @@ function iconAnimationForCondition(
  * Hotel-style 16:9 dashboard: hero clock + weather strip + dad joke (matches `/tv/home`).
  */
 export default function HotelTvDashboard() {
+  const display = useDisplaySettings();
+  const reducedMotion = usePrefersReducedMotion();
+  const animationsOn = display.enableWeatherAnimations && !reducedMotion;
   const [now, setNow] = useState<DateTime | null>(null);
   const weatherFetcher = useCallback(fetchWeather, []);
   const dadJokeFetcher = useCallback(fetchDadJoke, []);
@@ -149,7 +159,7 @@ export default function HotelTvDashboard() {
         : "Good evening"
       : "Welcome";
   const conditionKey = currentConditionKey(weather?.conditionCode);
-  const iconMotion = iconAnimationForCondition(conditionKey);
+  const iconMotion = iconAnimationForCondition(conditionKey, animationsOn);
 
   return (
     <div className="flex min-h-0 w-full max-h-full flex-1 flex-col overflow-hidden">
@@ -196,7 +206,7 @@ export default function HotelTvDashboard() {
 
         <div className="grid grid-cols-12 gap-8 items-stretch">
           <motion.div
-            className="col-span-8 rounded-3xl flex flex-col border border-white/10"
+            className={`${display.enableDadJokes ? "col-span-8" : "col-span-12"} rounded-3xl flex flex-col border border-white/10`}
             style={{
               background: "rgba(0,0,0,0.35)",
               backdropFilter: "blur(18px)",
@@ -251,8 +261,18 @@ export default function HotelTvDashboard() {
                     </span>
                     <motion.span
                       className="denboard-forecast-hotel-icon"
-                      animate={iconAnimationForCondition(currentConditionKey(day.iconCode)).animate}
-                      transition={iconAnimationForCondition(currentConditionKey(day.iconCode)).transition}
+                      animate={
+                        iconAnimationForCondition(
+                          currentConditionKey(day.iconCode),
+                          animationsOn
+                        ).animate
+                      }
+                      transition={
+                        iconAnimationForCondition(
+                          currentConditionKey(day.iconCode),
+                          animationsOn
+                        ).transition
+                      }
                     >
                       {iconFor(day.iconCode)}
                     </motion.span>
@@ -268,6 +288,7 @@ export default function HotelTvDashboard() {
             )}
           </motion.div>
 
+          {display.enableDadJokes && (
           <motion.div
             className="col-span-4 rounded-3xl denboard-card border border-sandstone/40 denboard-text-primary"
             style={{ padding: "clamp(28px, 2.3vmin, 46px)" }}
@@ -288,6 +309,7 @@ export default function HotelTvDashboard() {
               {dadJoke?.joke ?? "Loading a mountain-grade dad joke..."}
             </div>
           </motion.div>
+          )}
         </div>
       </div>
     </div>

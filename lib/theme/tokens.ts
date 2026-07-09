@@ -49,18 +49,18 @@ export const themeTokens = {
 const scalingVars = [
   /* Time – largest, min 80px */
   "--denboard-scale-time: clamp(80px, 11vmin, 200px)",
-  /* Temperature – second largest, min 28px */
-  "--denboard-scale-temp: clamp(28px, 6.5vmin, 120px)",
+  /* Temperature – balanced for panels and distance viewing */
+  "--denboard-scale-temp: clamp(32px, min(6.5vmin, 8vh), 112px)",
   /* Date – medium */
   "--denboard-scale-date: clamp(20px, 2.8vmin, 48px)",
   /* Greeting – between date and time */
   "--denboard-scale-greeting: clamp(20px, 2.45vmin, 38px)",
   /* Calendar event – readable, min 18px */
   "--denboard-scale-calendar-event: clamp(18px, 2vmin, 32px)",
-  /* Forecast temp – min 28px */
-  "--denboard-scale-forecast-temp: clamp(28px, 2.5vmin, 48px)",
+  /* Forecast temp – min 22px, caps on very wide screens */
+  "--denboard-scale-forecast-temp: clamp(22px, min(2.5vmin, 3.2vh), 44px)",
   /* Forecast icon */
-  "--denboard-scale-forecast-icon: clamp(24px, 2.8vmin, 56px)",
+  "--denboard-scale-forecast-icon: clamp(22px, min(2.8vmin, 3.6vh), 52px)",
   /* Status chips – smallest */
   "--denboard-scale-status: clamp(10px, 1.2vmin, 20px)",
   /* Spacing base – scales with viewport */

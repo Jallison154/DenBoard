@@ -67,7 +67,16 @@ export type DisplaySettings = {
   enableDadJokes: boolean;
   fontScale: number;
   cardOpacity: number;
+  /** Subtle full-screen gradient overlays tied to current conditions. */
   enableWeatherEffects: boolean;
+  /** Animated weather icons and motion accents in panels. */
+  enableWeatherAnimations: boolean;
+  /** Optional full-screen weather takeover overlay (toggle at runtime when enabled). */
+  enableFullscreenWeatherOverlay: boolean;
+  /** Show animated radar panel on supported dashboards. */
+  enableWeatherRadar: boolean;
+  /** Seconds between radar frame advances when animating. */
+  weatherRadarCycleSeconds: number;
   /** Bumped from admin to signal wall displays to reload (see /api/display/refresh). */
   clientRefreshEpoch: number;
 };
@@ -194,6 +203,10 @@ export function getDefaultSettings(): DenBoardSettings {
       fontScale: 1,
       cardOpacity: 0.7,
       enableWeatherEffects: true,
+      enableWeatherAnimations: true,
+      enableFullscreenWeatherOverlay: true,
+      enableWeatherRadar: true,
+      weatherRadarCycleSeconds: 30,
       clientRefreshEpoch: 0
     }
   };
@@ -348,6 +361,12 @@ export function validateSettings(settings: DenBoardSettings): SettingsValidation
     settings.display.cardOpacity > 1
   ) {
     errors.push("Card opacity should be between 0.4 and 1.");
+  }
+  if (
+    settings.display.weatherRadarCycleSeconds < 5 ||
+    settings.display.weatherRadarCycleSeconds > 300
+  ) {
+    errors.push("Radar cycle interval should be between 5 and 300 seconds.");
   }
 
   return { ok: errors.length === 0, errors };

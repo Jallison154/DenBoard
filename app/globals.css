@@ -172,6 +172,26 @@ body {
 .denboard-weather-subtle {
   animation: denboard-weather-subtle 16s ease-in-out infinite;
 }
+.denboard-weather-static {
+  opacity: 0.92;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .denboard-weather-subtle {
+    animation: none;
+    opacity: 0.92;
+  }
+}
+
+.denboard-weather-panel {
+  container-type: inline-size;
+}
+
+@container (max-width: 22rem) {
+  .denboard-weather-panel .denboard-forecast-grid {
+    gap: calc(var(--denboard-scale-gap) * 0.75);
+  }
+}
 
 /* Floating nav: only on hover-capable devices (desktop/laptop with mouse) */
 @media (hover: none) {

@@ -44,6 +44,16 @@ type Settings = {
     refreshSeconds: number;
     entities: HomeAssistantEntity[];
   };
+  display?: {
+    enableDadJokes: boolean;
+    enableWeatherEffects: boolean;
+    enableWeatherAnimations: boolean;
+    enableFullscreenWeatherOverlay: boolean;
+    enableWeatherRadar: boolean;
+    weatherRadarCycleSeconds: number;
+    fontScale: number;
+    cardOpacity: number;
+  };
 };
 
 const inputClass =
@@ -93,11 +103,12 @@ export default function AdminPage() {
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
-  type TabId = "overview" | "location" | "weather" | "calendar" | "homeAssistant";
+  type TabId = "overview" | "location" | "weather" | "calendar" | "homeAssistant" | "display";
   const tabs: { id: TabId; label: string }[] = [
     { id: "overview", label: "Overview" },
     { id: "location", label: "Location" },
     { id: "weather", label: "Weather" },
+    { id: "display", label: "Display" },
     { id: "calendar", label: "Calendar" },
     { id: "homeAssistant", label: "Home Assistant" },
   ];
@@ -377,6 +388,32 @@ export default function AdminPage() {
               </div>
             )}
 
+            {/* Display tab */}
+            {activeTab === "display" && (
+              <ConfigSection
+                title="Display"
+                description="Wall display behavior, weather visuals, and optional radar."
+              >
+                <DisplayForm
+                  settings={settings}
+                  onSave={async (patch) => {
+                    try {
+                      const updated = await saveSettings(patch);
+                      setSettings(updated);
+                      showSaveFeedback("display", true, "Display settings saved.");
+                    } catch (e) {
+                      showSaveFeedback(
+                        "display",
+                        false,
+                        e instanceof Error ? e.message : "Save failed"
+                      );
+                    }
+                  }}
+                  saveStatus={saveStatus?.section === "display" ? saveStatus : null}
+                />
+              </ConfigSection>
+            )}
+
             {/* Home Assistant tab */}
             {activeTab === "homeAssistant" && (
               <ConfigSection
@@ -412,6 +449,167 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function DisplayForm({
+  settings,
+  onSave,
+  saveStatus,
+}: {
+  settings: Settings;
+  onSave: (patch: Partial<Settings>) => Promise<void>;
+  saveStatus: { ok: boolean; message: string } | null;
+}) {
+  const d = settings.display;
+  const [enableDadJokes, setEnableDadJokes] = useState(d?.enableDadJokes !== false);
+  const [enableWeatherEffects, setEnableWeatherEffects] = useState(
+    d?.enableWeatherEffects !== false
+  );
+  const [enableWeatherAnimations, setEnableWeatherAnimations] = useState(
+    d?.enableWeatherAnimations !== false
+  );
+  const [enableFullscreenWeatherOverlay, setEnableFullscreenWeatherOverlay] =
+    useState(d?.enableFullscreenWeatherOverlay === true);
+  const [enableWeatherRadar, setEnableWeatherRadar] = useState(
+    d?.enableWeatherRadar !== false
+  );
+  const [weatherRadarCycleSeconds, setWeatherRadarCycleSeconds] = useState(
+    String(d?.weatherRadarCycleSeconds ?? 30)
+  );
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const next = settings.display;
+    setEnableDadJokes(next?.enableDadJokes !== false);
+    setEnableWeatherEffects(next?.enableWeatherEffects !== false);
+    setEnableWeatherAnimations(next?.enableWeatherAnimations !== false);
+    setEnableFullscreenWeatherOverlay(next?.enableFullscreenWeatherOverlay === true);
+    setEnableWeatherRadar(next?.enableWeatherRadar !== false);
+    setWeatherRadarCycleSeconds(String(next?.weatherRadarCycleSeconds ?? 30));
+  }, [settings]);
+
+  const toggleClass =
+    "flex items-center justify-between gap-4 rounded-lg border border-white/10 bg-slate-950/50 px-3 py-2.5";
+
+  return (
+    <form
+      className="space-y-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        const cycle = parseInt(weatherRadarCycleSeconds, 10);
+        await onSave({
+          display: {
+            enableDadJokes,
+            enableWeatherEffects,
+            enableWeatherAnimations,
+            enableFullscreenWeatherOverlay,
+            enableWeatherRadar,
+            weatherRadarCycleSeconds: Number.isFinite(cycle) ? cycle : 30,
+            fontScale: d?.fontScale ?? 1,
+            cardOpacity: d?.cardOpacity ?? 0.7
+          }
+        });
+        setSaving(false);
+      }}
+    >
+      <label className={toggleClass}>
+        <span>
+          <span className="block text-sm text-slate-200">Dad jokes</span>
+          <span className="block text-[11px] text-slate-500">Show joke panel on family dashboards</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={enableDadJokes}
+          onChange={(e) => setEnableDadJokes(e.target.checked)}
+          className="h-4 w-4 accent-sandstone"
+        />
+      </label>
+
+      <label className={toggleClass}>
+        <span>
+          <span className="block text-sm text-slate-200">Weather background effects</span>
+          <span className="block text-[11px] text-slate-500">Subtle full-screen gradients for rain, snow, etc.</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={enableWeatherEffects}
+          onChange={(e) => setEnableWeatherEffects(e.target.checked)}
+          className="h-4 w-4 accent-sandstone"
+        />
+      </label>
+
+      <label className={toggleClass}>
+        <span>
+          <span className="block text-sm text-slate-200">Weather animations</span>
+          <span className="block text-[11px] text-slate-500">Animated icons and motion accents (respects reduced motion)</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={enableWeatherAnimations}
+          onChange={(e) => setEnableWeatherAnimations(e.target.checked)}
+          className="h-4 w-4 accent-sandstone"
+        />
+      </label>
+
+      <label className={toggleClass}>
+        <span>
+          <span className="block text-sm text-slate-200">Outside weather overlay</span>
+          <span className="block text-[11px] text-slate-500">Current outdoor conditions on landscape &amp; TV views — press W or use the Outside button</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={enableFullscreenWeatherOverlay}
+          onChange={(e) => setEnableFullscreenWeatherOverlay(e.target.checked)}
+          className="h-4 w-4 accent-sandstone"
+        />
+      </label>
+
+      <label className={toggleClass}>
+        <span>
+          <span className="block text-sm text-slate-200">Weather radar</span>
+          <span className="block text-[11px] text-slate-500">Animated radar panel on portrait home only</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={enableWeatherRadar}
+          onChange={(e) => setEnableWeatherRadar(e.target.checked)}
+          className="h-4 w-4 accent-sandstone"
+        />
+      </label>
+
+      <div>
+        <label className={labelClass}>Radar frame interval (seconds)</label>
+        <input
+          type="number"
+          min={5}
+          max={300}
+          value={weatherRadarCycleSeconds}
+          onChange={(e) => setWeatherRadarCycleSeconds(e.target.value)}
+          className={inputClass}
+          disabled={!enableWeatherRadar}
+        />
+        <p className="text-[11px] text-slate-500 mt-1">How long each radar frame is shown (default 30).</p>
+      </div>
+
+      <button
+        type="submit"
+        disabled={saving}
+        className="rounded-lg bg-sandstone/90 text-slate-950 text-xs font-semibold px-4 py-2 hover:bg-sandstone disabled:opacity-50"
+      >
+        {saving ? "Saving…" : "Save Display"}
+      </button>
+      {saveStatus && (
+        <p
+          className={`text-xs ${
+            saveStatus.ok ? "text-emerald-300" : "text-rose-300"
+          }`}
+        >
+          {saveStatus.message}
+        </p>
+      )}
+    </form>
   );
 }
 

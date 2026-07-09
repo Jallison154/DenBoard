@@ -6,7 +6,8 @@ import { TodayEventsPanel, FourWeekGrid } from "@/components/CalendarPanels";
 import { HomeAssistantStatus, useGuestMode } from "@/components/HomeAssistantStatus";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import type { WeatherPayload } from "@/lib/weather";
-import { usePolling } from "@/components/hooks";
+import { usePolling, useDisplaySettings } from "@/components/hooks";
+import { WeatherRadarPanel } from "@/components/WeatherRadarPanel";
 import { motion } from "framer-motion";
 import { nowInDashboardTz } from "@/lib/time";
 import { DateTime } from "luxon";
@@ -96,6 +97,7 @@ function iconAnimationForCondition(kind: ReturnType<typeof currentConditionKey>)
 }
 
 export default function PortraitHomePage() {
+  const display = useDisplaySettings();
   const [now, setNow] = useState<DateTime | null>(null);
   const fetcher = useCallback(fetchWeather, []);
   const { data: weather } = usePolling<WeatherPayload>(fetcher, {
@@ -235,9 +237,11 @@ export default function PortraitHomePage() {
           <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap-lg)" }}>
             <HomeAssistantStatus hideWhenGuest fullWidth hideModeBadge />
           </div>
-          <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
-            <DadJokePanel fullWidth />
-          </div>
+          {display.enableDadJokes && (
+            <div className="w-full flex-shrink-0" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
+              <DadJokePanel fullWidth />
+            </div>
+          )}
         </div>
 
         {/* Guest layout */}
@@ -386,13 +390,21 @@ export default function PortraitHomePage() {
                 )}
               </div>
 
+              {display.enableDadJokes && (
               <div className="w-full shrink" style={{ paddingTop: "var(--denboard-scale-gap)" }}>
                 <DadJokePanel fullWidth />
               </div>
+              )}
             </div>
           </div>
         </div>
         </div>
+
+        {display.enableWeatherRadar && (
+          <div className="w-full shrink-0" style={{ marginTop: "var(--denboard-scale-gap-lg)" }}>
+            <WeatherRadarPanel cycleSeconds={display.weatherRadarCycleSeconds} />
+          </div>
+        )}
       </div>
     </div>
   );

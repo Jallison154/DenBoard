@@ -6,6 +6,7 @@ import { DadJokePanel } from "@/components/DadJokePanel";
 import { TodayEventsPanel, CurrentWeekGrid } from "@/components/CalendarPanels";
 import { SevereAlertBanner } from "@/components/SevereAlertBanner";
 import { useGuestMode } from "@/components/HomeAssistantStatus";
+import { useDisplaySettings } from "@/components/hooks";
 import type { WeatherPayload } from "@/lib/weather";
 import { usePolling } from "@/components/hooks";
 import { nowInDashboardTz } from "@/lib/time";
@@ -21,6 +22,7 @@ async function fetchWeather(): Promise<WeatherPayload> {
 }
 
 function LandscapeFamilyDashboard() {
+  const display = useDisplaySettings();
   const [now, setNow] = useState<DateTime | null>(null);
   const fetcher = useCallback(fetchWeather, []);
   const { data: weather } = usePolling<WeatherPayload>(fetcher, {
@@ -108,9 +110,11 @@ function LandscapeFamilyDashboard() {
             <CurrentWeekGrid />
           </div>
         </div>
-        <div className="w-full shrink-0">
-          <DadJokePanel fullWidth variant="landscape" />
-        </div>
+        {display.enableDadJokes && (
+          <div className="w-full shrink-0">
+            <DadJokePanel fullWidth variant="landscape" />
+          </div>
+        )}
       </div>
     </div>
   );
