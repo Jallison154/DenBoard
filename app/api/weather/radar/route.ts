@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getWeatherRadar } from "@/lib/radar";
 import { loadSettings } from "@/lib/settings";
+import { DEFAULT_ZOOM, RADAR_MAX_NATIVE_ZOOM } from "@/lib/radar";
 
 export async function GET() {
   try {
@@ -11,19 +12,15 @@ export async function GET() {
     });
   } catch (e) {
     const settings = await loadSettings();
-    const lat = settings.location.lat;
-    const lon = settings.location.lon;
     const message = e instanceof Error ? e.message : "Radar unavailable";
     return NextResponse.json(
       {
+        host: "https://tilecache.rainviewer.com",
         frames: [],
-        baseTiles: [],
-        gridCols: 3,
-        gridRows: 2,
-        lat,
-        lon,
-        zoom: 9,
-        marker: { x: 50, y: 50 },
+        lat: settings.location.lat,
+        lon: settings.location.lon,
+        zoom: DEFAULT_ZOOM,
+        radarZoom: RADAR_MAX_NATIVE_ZOOM,
         isFallback: true,
         fetchedAt: new Date().toISOString(),
         message
