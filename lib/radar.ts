@@ -79,10 +79,11 @@ export async function getWeatherRadar(): Promise<RadarPayload> {
     const data = (await res.json()) as RainViewerMaps;
     const host = data.host ?? "https://tilecache.rainviewer.com";
     const past = data.radar?.past ?? [];
-    const frames: RadarFrame[] = past
-      .slice(-12)
-      .filter((f) => f.path && Number.isFinite(f.time))
-      .map((f) => ({ time: f.time, path: f.path }));
+    const latest = past.length > 0 ? past[past.length - 1] : null;
+    const frames: RadarFrame[] =
+      latest && latest.path && Number.isFinite(latest.time)
+        ? [{ time: latest.time, path: latest.path }]
+        : [];
 
     if (frames.length === 0) {
       setInCache(RADAR_CACHE_KEY, fallback, Math.min(refreshMs, 60_000));

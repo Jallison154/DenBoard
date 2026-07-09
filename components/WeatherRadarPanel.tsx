@@ -11,7 +11,7 @@ import {
   RADAR_MAX_NATIVE_ZOOM,
   radarTileUrlTemplate
 } from "@/lib/radarConstants";
-import { useDisplaySettings, usePolling, usePrefersReducedMotion } from "./hooks";
+import { useDisplaySettings, usePolling } from "./hooks";
 
 async function fetchRadar(): Promise<RadarPayload> {
   const res = await fetch("/api/weather/radar", { cache: "no-store" });
@@ -19,33 +19,21 @@ async function fetchRadar(): Promise<RadarPayload> {
   return res.json();
 }
 
-function formatRadarTime(epochSec: number) {
-  try {
-    return new Date(epochSec * 1000).toLocaleTimeString(undefined, {
-      hour: "numeric",
-      minute: "2-digit"
-    });
-  } catch {
-    return "";
-  }
-}
-
 const HEIGHT_STYLES = {
-  compact: "clamp(176px, min(22vmin, 28vh), 400px)",
-  standard: "clamp(240px, min(30vmin, 40vh), 560px)"
+  compact: "clamp(140px, min(18vmin, 22vh), 320px)",
+  standard: "clamp(200px, min(26vmin, 32vh), 440px)"
 } as const;
 
 type Props = {
   className?: string;
+  /** Flush inside the weather card — no header, border, or footer. */
+  embedded?: boolean;
 };
 
-export function WeatherRadarPanel({ className }: Props) {
+export function WeatherRadarPanel({ className, embedded }: Props) {
   const display = useDisplaySettings();
-  const reducedMotion = usePrefersReducedMotion();
   const refreshSeconds = display.weatherRadarRefreshSeconds;
-  const frameSeconds = display.weatherRadarFrameSeconds;
   const heightMode = display.weatherRadarHeight;
-  const animate = display.weatherRadarAnimate && !reducedMotion;
 
   const fetcher = useCallback(fetchRadar, []);
   const { data, loading } = usePolling<RadarPayload>(fetcher, {
@@ -59,44 +47,19 @@ export function WeatherRadarPanel({ className }: Props) {
   const radarLayerRef = useRef<TileLayer | null>(null);
   const markerRef = useRef<Marker | null>(null);
   const leafletRef = useRef<typeof import("leaflet") | null>(null);
+  const radarTimeRef = useRef<number | null>(null);
 
-  const [frameIndex, setFrameIndex] = useState(0);
   const [mapReady, setMapReady] = useState(false);
   const [baseMapFailed, setBaseMapFailed] = useState(false);
   const [radarFailed, setRadarFailed] = useState(false);
 
-  const frames = data?.frames ?? [];
-  const latestIndex = Math.max(0, frames.length - 1);
-  const displayIndex = animate
-    ? frames.length > 0
-      ? frameIndex % frames.length
-      : 0
-    : latestIndex;
-  const currentFrame = frames[displayIndex];
+  const latestFrame = data?.frames?.[data.frames.length - 1] ?? null;
 
   const mapHeight = HEIGHT_STYLES[heightMode] ?? HEIGHT_STYLES.compact;
-  const showFallback =
-    !loading && (data?.isFallback || frames.length === 0);
+  const showFallback = !loading && (data?.isFallback || !latestFrame);
   const showRadarFallback = !showFallback && radarFailed && mapReady;
+  const radarReady = Boolean(data && !data.isFallback && latestFrame);
 
-  useEffect(() => {
-    setFrameIndex(latestIndex);
-    setBaseMapFailed(false);
-    setRadarFailed(false);
-  }, [data?.fetchedAt, latestIndex]);
-
-  useEffect(() => {
-    if (!animate || frames.length < 2) return;
-    const ms = Math.max(2, frameSeconds) * 1000;
-    const id = setInterval(() => {
-      setFrameIndex((i) => (i + 1) % frames.length);
-    }, ms);
-    return () => clearInterval(id);
-  }, [animate, frames.length, frameSeconds]);
-
-  const radarReady = Boolean(data && !data.isFallback && frames.length > 0);
-
-  // Initialise Leaflet map when radar data is available.
   useEffect(() => {
     if (!radarReady) return;
     const el = mapContainerRef.current;
@@ -110,9 +73,11 @@ export function WeatherRadarPanel({ className }: Props) {
       const L = await import("leaflet");
       if (cancelled || !mapContainerRef.current || mapRef.current) return;
       const payload = data;
-      if (!payload || payload.isFallback || payload.frames.length === 0) return;
+      const frame = payload?.frames?.[payload.frames.length - 1];
+      if (!payload || !frame || payload.isFallback) return;
+
       leafletRef.current = L;
-      const frame = payload.frames[payload.frames.length - 1];
+      radarTimeRef.current = frame.time;
 
       const map = L.map(el, {
         center: [payload.lat, payload.lon],
@@ -171,6 +136,7 @@ export function WeatherRadarPanel({ className }: Props) {
 
       requestAnimationFrame(invalidate);
       setTimeout(invalidate, 120);
+      setTimeout(invalidate, 400);
 
       resizeObserver = new ResizeObserver(() => invalidate());
       resizeObserver.observe(el);
@@ -190,35 +156,32 @@ export function WeatherRadarPanel({ className }: Props) {
         radarLayerRef.current = null;
         markerRef.current = null;
         leafletRef.current = null;
+        radarTimeRef.current = null;
         setMapReady(false);
       }
     };
   }, [radarReady]);
 
-  // Recentre when location/zoom changes after refresh.
   useEffect(() => {
     if (!mapRef.current || !data || data.isFallback) return;
     mapRef.current.setView([data.lat, data.lon], data.zoom, { animate: false });
     markerRef.current?.setLatLng([data.lat, data.lon]);
     mapRef.current.invalidateSize({ animate: false });
-  }, [data?.lat, data?.lon, data?.zoom, data?.fetchedAt]);
+  }, [data?.lat, data?.lon, data?.zoom]);
 
-  const radarPathRef = useRef<string | null>(null);
-
-  // Swap radar frame layer when animating or on new data.
   useEffect(() => {
     const map = mapRef.current;
     const L = leafletRef.current;
-    if (!map || !L || !data || !currentFrame || data.isFallback) return;
+    if (!map || !L || !data || !latestFrame || data.isFallback) return;
 
-    const nextPath = currentFrame.path;
-    if (radarPathRef.current === nextPath) return;
-    radarPathRef.current = nextPath;
+    const nextTime = latestFrame.time;
+    if (radarTimeRef.current === nextTime) return;
+    radarTimeRef.current = nextTime;
 
     const existing = radarLayerRef.current;
     if (existing) map.removeLayer(existing);
 
-    const radar = L.tileLayer(radarTileUrlTemplate(data.host, nextPath), {
+    const radar = L.tileLayer(radarTileUrlTemplate(data.host, latestFrame.path), {
       maxNativeZoom: RADAR_MAX_NATIVE_ZOOM,
       maxZoom: MAX_ZOOM,
       opacity: 0.58,
@@ -228,39 +191,27 @@ export function WeatherRadarPanel({ className }: Props) {
     radar.on("tileerror", () => setRadarFailed(true));
     radar.addTo(map);
     radarLayerRef.current = radar;
-  }, [currentFrame?.path, currentFrame?.time, data?.host, data?.isFallback]);
+    setRadarFailed(false);
+  }, [latestFrame?.time, latestFrame?.path, data?.host, data?.isFallback]);
 
   useEffect(() => {
     mapRef.current?.invalidateSize({ animate: false });
-  }, [heightMode, mapHeight]);
+  }, [heightMode, mapHeight, embedded]);
 
   return (
-    <section
-      className={`w-full min-w-0 flex flex-col denboard-radar-panel ${className ?? ""}`}
-      aria-label="Weather radar"
+    <div
+      className={`w-full min-w-0 denboard-radar-panel ${embedded ? "denboard-radar-embedded" : "flex flex-col"} ${className ?? ""}`}
+      aria-label="Weather radar map"
     >
-      <div className="flex items-center justify-between gap-3 shrink-0">
-        <h3
-          className="uppercase tracking-[0.22em] denboard-text-secondary font-semibold"
-          style={{ fontSize: "var(--denboard-scale-status)" }}
-        >
-          Radar
-        </h3>
-        {currentFrame && !showFallback && (
-          <span
-            className="denboard-text-secondary tabular-nums"
-            style={{ fontSize: "var(--denboard-scale-status)" }}
-          >
-            {formatRadarTime(currentFrame.time)}
-          </span>
-        )}
-      </div>
-
       <div
-        className="denboard-radar-map relative w-full overflow-hidden rounded-2xl border border-white/10 denboard-card"
+        className={`denboard-radar-map relative w-full overflow-hidden ${
+          embedded
+            ? "border-t border-white/10"
+            : "rounded-2xl border border-white/10 denboard-card"
+        }`}
         style={{
           height: mapHeight,
-          background: "rgba(15,23,42,0.92)"
+          background: embedded ? "rgba(8,12,22,0.88)" : "rgba(15,23,42,0.92)"
         }}
       >
         {loading && !data ? (
@@ -279,7 +230,6 @@ export function WeatherRadarPanel({ className }: Props) {
             <div
               ref={mapContainerRef}
               className="absolute inset-0 z-0 h-full w-full"
-              aria-hidden={showFallback}
             />
             <div
               className="pointer-events-none absolute inset-0 z-[5] denboard-radar-scrim"
@@ -298,21 +248,6 @@ export function WeatherRadarPanel({ className }: Props) {
           </>
         )}
       </div>
-
-      {!showFallback && (
-        <p
-          className="denboard-text-secondary text-center leading-snug opacity-50 shrink-0"
-          style={{ fontSize: "calc(var(--denboard-scale-status) * 0.82)" }}
-        >
-          © OSM · CARTO · RainViewer
-          {animate && frames.length > 1 && (
-            <span className="opacity-90">
-              {" "}
-              · {frames.length} frames · refresh {refreshSeconds}s
-            </span>
-          )}
-        </p>
-      )}
-    </section>
+    </div>
   );
 }

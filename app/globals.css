@@ -254,6 +254,10 @@ body {
   gap: calc(var(--denboard-scale-gap) * 0.55);
 }
 
+.denboard-radar-embedded {
+  margin: 0;
+}
+
 .denboard-weather-panel {
   container-type: inline-size;
 }
