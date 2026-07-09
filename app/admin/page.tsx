@@ -50,7 +50,12 @@ type Settings = {
     enableWeatherAnimations: boolean;
     enableFullscreenWeatherOverlay: boolean;
     enableWeatherRadar: boolean;
-    weatherRadarCycleSeconds: number;
+    weatherRadarRefreshSeconds: number;
+    weatherRadarAnimate: boolean;
+    weatherRadarFrameSeconds: number;
+    weatherRadarHeight: "compact" | "standard";
+    /** @deprecated migrated to weatherRadarFrameSeconds */
+    weatherRadarCycleSeconds?: number;
     fontScale: number;
     cardOpacity: number;
   };
@@ -474,9 +479,18 @@ function DisplayForm({
   const [enableWeatherRadar, setEnableWeatherRadar] = useState(
     d?.enableWeatherRadar !== false
   );
-  const [weatherRadarCycleSeconds, setWeatherRadarCycleSeconds] = useState(
-    String(d?.weatherRadarCycleSeconds ?? 30)
+  const [weatherRadarRefreshSeconds, setWeatherRadarRefreshSeconds] = useState(
+    String(d?.weatherRadarRefreshSeconds ?? 60)
   );
+  const [weatherRadarAnimate, setWeatherRadarAnimate] = useState(
+    d?.weatherRadarAnimate !== false
+  );
+  const [weatherRadarFrameSeconds, setWeatherRadarFrameSeconds] = useState(
+    String(d?.weatherRadarFrameSeconds ?? d?.weatherRadarCycleSeconds ?? 8)
+  );
+  const [weatherRadarHeight, setWeatherRadarHeight] = useState<
+    "compact" | "standard"
+  >(d?.weatherRadarHeight === "standard" ? "standard" : "compact");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -486,7 +500,14 @@ function DisplayForm({
     setEnableWeatherAnimations(next?.enableWeatherAnimations !== false);
     setEnableFullscreenWeatherOverlay(next?.enableFullscreenWeatherOverlay === true);
     setEnableWeatherRadar(next?.enableWeatherRadar !== false);
-    setWeatherRadarCycleSeconds(String(next?.weatherRadarCycleSeconds ?? 30));
+    setWeatherRadarRefreshSeconds(String(next?.weatherRadarRefreshSeconds ?? 60));
+    setWeatherRadarAnimate(next?.weatherRadarAnimate !== false);
+    setWeatherRadarFrameSeconds(
+      String(next?.weatherRadarFrameSeconds ?? next?.weatherRadarCycleSeconds ?? 8)
+    );
+    setWeatherRadarHeight(
+      next?.weatherRadarHeight === "standard" ? "standard" : "compact"
+    );
   }, [settings]);
 
   const toggleClass =
@@ -498,7 +519,8 @@ function DisplayForm({
       onSubmit={async (e) => {
         e.preventDefault();
         setSaving(true);
-        const cycle = parseInt(weatherRadarCycleSeconds, 10);
+        const refresh = parseInt(weatherRadarRefreshSeconds, 10);
+        const frame = parseInt(weatherRadarFrameSeconds, 10);
         await onSave({
           display: {
             enableDadJokes,
@@ -506,7 +528,10 @@ function DisplayForm({
             enableWeatherAnimations,
             enableFullscreenWeatherOverlay,
             enableWeatherRadar,
-            weatherRadarCycleSeconds: Number.isFinite(cycle) ? cycle : 30,
+            weatherRadarRefreshSeconds: Number.isFinite(refresh) ? refresh : 60,
+            weatherRadarAnimate,
+            weatherRadarFrameSeconds: Number.isFinite(frame) ? frame : 8,
+            weatherRadarHeight,
             fontScale: d?.fontScale ?? 1,
             cardOpacity: d?.cardOpacity ?? 0.7
           }
@@ -569,7 +594,7 @@ function DisplayForm({
       <label className={toggleClass}>
         <span>
           <span className="block text-sm text-slate-200">Weather radar</span>
-          <span className="block text-[11px] text-slate-500">Animated radar panel on portrait home only</span>
+          <span className="block text-[11px] text-slate-500">Compact map + radar strip above weather on portrait home</span>
         </span>
         <input
           type="checkbox"
@@ -579,18 +604,61 @@ function DisplayForm({
         />
       </label>
 
+      <label className={toggleClass}>
+        <span>
+          <span className="block text-sm text-slate-200">Radar frame animation</span>
+          <span className="block text-[11px] text-slate-500">Cycle through recent frames (data still refreshes on interval)</span>
+        </span>
+        <input
+          type="checkbox"
+          checked={weatherRadarAnimate}
+          onChange={(e) => setWeatherRadarAnimate(e.target.checked)}
+          className="h-4 w-4 accent-sandstone"
+          disabled={!enableWeatherRadar}
+        />
+      </label>
+
+      <div>
+        <label className={labelClass}>Radar data refresh (seconds)</label>
+        <input
+          type="number"
+          min={30}
+          max={600}
+          value={weatherRadarRefreshSeconds}
+          onChange={(e) => setWeatherRadarRefreshSeconds(e.target.value)}
+          className={inputClass}
+          disabled={!enableWeatherRadar}
+        />
+        <p className="text-[11px] text-slate-500 mt-1">Re-fetch radar frames from provider (default 60).</p>
+      </div>
+
       <div>
         <label className={labelClass}>Radar frame interval (seconds)</label>
         <input
           type="number"
-          min={5}
-          max={300}
-          value={weatherRadarCycleSeconds}
-          onChange={(e) => setWeatherRadarCycleSeconds(e.target.value)}
+          min={2}
+          max={120}
+          value={weatherRadarFrameSeconds}
+          onChange={(e) => setWeatherRadarFrameSeconds(e.target.value)}
+          className={inputClass}
+          disabled={!enableWeatherRadar || !weatherRadarAnimate}
+        />
+        <p className="text-[11px] text-slate-500 mt-1">How long each frame shows when animating (default 8).</p>
+      </div>
+
+      <div>
+        <label className={labelClass}>Radar height</label>
+        <select
+          value={weatherRadarHeight}
+          onChange={(e) =>
+            setWeatherRadarHeight(e.target.value as "compact" | "standard")
+          }
           className={inputClass}
           disabled={!enableWeatherRadar}
-        />
-        <p className="text-[11px] text-slate-500 mt-1">How long each radar frame is shown (default 30).</p>
+        >
+          <option value="compact">Compact (≈ half weather widget)</option>
+          <option value="standard">Standard (taller)</option>
+        </select>
       </div>
 
       <button

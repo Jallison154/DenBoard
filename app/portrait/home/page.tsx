@@ -149,6 +149,11 @@ export default function PortraitHomePage() {
             <TodayEventsPanel stretchFromLeft />
           </div>
           <div className="flex-1 min-h-0" />
+          {display.enableWeatherRadar && (
+            <div className="w-full shrink-0" style={{ marginBottom: "var(--denboard-scale-gap)" }}>
+              <WeatherRadarPanel />
+            </div>
+          )}
           <div className="w-full flex-shrink-0 rounded-2xl denboard-card border border-white/10 flex flex-col sm:flex-row gap-4 sm:gap-6 p-4 sm:p-5">
             <div className="flex flex-col justify-center min-w-0 w-full sm:w-auto sm:min-w-[30%] sm:max-w-[45%]">
               <span className="uppercase tracking-[0.2em] denboard-text-secondary text-xs sm:text-sm mb-1">
@@ -290,6 +295,12 @@ export default function PortraitHomePage() {
                 </div>
               </div>
 
+              {display.enableWeatherRadar && (
+                <div className="w-full shrink-0">
+                  <WeatherRadarPanel />
+                </div>
+              )}
+
               <div
                 className="w-full rounded-3xl denboard-card border border-white/15"
                 style={{
@@ -399,12 +410,6 @@ export default function PortraitHomePage() {
           </div>
         </div>
         </div>
-
-        {display.enableWeatherRadar && (
-          <div className="w-full shrink-0" style={{ marginTop: "var(--denboard-scale-gap-lg)" }}>
-            <WeatherRadarPanel cycleSeconds={display.weatherRadarCycleSeconds} />
-          </div>
-        )}
       </div>
     </div>
   );

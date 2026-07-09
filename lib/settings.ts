@@ -73,10 +73,16 @@ export type DisplaySettings = {
   enableWeatherAnimations: boolean;
   /** Optional full-screen weather takeover overlay (toggle at runtime when enabled). */
   enableFullscreenWeatherOverlay: boolean;
-  /** Show animated radar panel on supported dashboards. */
+  /** Show radar on portrait home (above weather). */
   enableWeatherRadar: boolean;
-  /** Seconds between radar frame advances when animating. */
-  weatherRadarCycleSeconds: number;
+  /** Seconds between radar data refresh from provider (default 60). */
+  weatherRadarRefreshSeconds: number;
+  /** Cycle through cached radar frames when true. */
+  weatherRadarAnimate: boolean;
+  /** Seconds per frame when animating. */
+  weatherRadarFrameSeconds: number;
+  /** Map strip height: compact ≈ half weather widget. */
+  weatherRadarHeight: "compact" | "standard";
   /** Bumped from admin to signal wall displays to reload (see /api/display/refresh). */
   clientRefreshEpoch: number;
 };
@@ -206,7 +212,10 @@ export function getDefaultSettings(): DenBoardSettings {
       enableWeatherAnimations: true,
       enableFullscreenWeatherOverlay: true,
       enableWeatherRadar: true,
-      weatherRadarCycleSeconds: 30,
+      weatherRadarRefreshSeconds: 60,
+      weatherRadarAnimate: true,
+      weatherRadarFrameSeconds: 8,
+      weatherRadarHeight: "compact",
       clientRefreshEpoch: 0
     }
   };
@@ -258,7 +267,28 @@ export async function loadSettings(options?: {
         clientRefreshEpoch:
           typeof parsed.display?.clientRefreshEpoch === "number"
             ? parsed.display.clientRefreshEpoch
-            : defaults.display.clientRefreshEpoch
+            : defaults.display.clientRefreshEpoch,
+        weatherRadarRefreshSeconds:
+          typeof parsed.display?.weatherRadarRefreshSeconds === "number"
+            ? parsed.display.weatherRadarRefreshSeconds
+            : defaults.display.weatherRadarRefreshSeconds,
+        weatherRadarFrameSeconds:
+          typeof parsed.display?.weatherRadarFrameSeconds === "number"
+            ? parsed.display.weatherRadarFrameSeconds
+            : typeof (parsed.display as Record<string, unknown> | undefined)
+                  ?.weatherRadarCycleSeconds === "number"
+              ? ((parsed.display as Record<string, unknown>)
+                  .weatherRadarCycleSeconds as number)
+              : defaults.display.weatherRadarFrameSeconds,
+        weatherRadarAnimate:
+          typeof parsed.display?.weatherRadarAnimate === "boolean"
+            ? parsed.display.weatherRadarAnimate
+            : defaults.display.weatherRadarAnimate,
+        weatherRadarHeight:
+          parsed.display?.weatherRadarHeight === "standard" ||
+          parsed.display?.weatherRadarHeight === "compact"
+            ? parsed.display.weatherRadarHeight
+            : defaults.display.weatherRadarHeight
       }
     };
     cachedSettings = merged;
@@ -363,10 +393,22 @@ export function validateSettings(settings: DenBoardSettings): SettingsValidation
     errors.push("Card opacity should be between 0.4 and 1.");
   }
   if (
-    settings.display.weatherRadarCycleSeconds < 5 ||
-    settings.display.weatherRadarCycleSeconds > 300
+    settings.display.weatherRadarRefreshSeconds < 30 ||
+    settings.display.weatherRadarRefreshSeconds > 600
   ) {
-    errors.push("Radar cycle interval should be between 5 and 300 seconds.");
+    errors.push("Radar refresh interval should be between 30 and 600 seconds.");
+  }
+  if (
+    settings.display.weatherRadarFrameSeconds < 2 ||
+    settings.display.weatherRadarFrameSeconds > 120
+  ) {
+    errors.push("Radar frame interval should be between 2 and 120 seconds.");
+  }
+  if (
+    settings.display.weatherRadarHeight !== "compact" &&
+    settings.display.weatherRadarHeight !== "standard"
+  ) {
+    errors.push("Radar height must be 'compact' or 'standard'.");
   }
 
   return { ok: errors.length === 0, errors };

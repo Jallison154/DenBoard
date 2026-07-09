@@ -67,7 +67,10 @@ export type DisplaySettingsSnapshot = {
   enableWeatherAnimations: boolean;
   enableFullscreenWeatherOverlay: boolean;
   enableWeatherRadar: boolean;
-  weatherRadarCycleSeconds: number;
+  weatherRadarRefreshSeconds: number;
+  weatherRadarAnimate: boolean;
+  weatherRadarFrameSeconds: number;
+  weatherRadarHeight: "compact" | "standard";
 };
 
 const DEFAULT_DISPLAY: DisplaySettingsSnapshot = {
@@ -76,7 +79,10 @@ const DEFAULT_DISPLAY: DisplaySettingsSnapshot = {
   enableWeatherAnimations: true,
   enableFullscreenWeatherOverlay: false,
   enableWeatherRadar: true,
-  weatherRadarCycleSeconds: 30
+  weatherRadarRefreshSeconds: 60,
+  weatherRadarAnimate: true,
+  weatherRadarFrameSeconds: 8,
+  weatherRadarHeight: "compact"
 };
 
 export function useDisplaySettings(pollMs = 60_000) {
@@ -98,11 +104,22 @@ export function useDisplaySettings(pollMs = 60_000) {
           enableWeatherAnimations: d.enableWeatherAnimations !== false,
           enableFullscreenWeatherOverlay: d.enableFullscreenWeatherOverlay === true,
           enableWeatherRadar: d.enableWeatherRadar !== false,
-          weatherRadarCycleSeconds:
-            typeof d.weatherRadarCycleSeconds === "number" &&
-            d.weatherRadarCycleSeconds >= 5
-              ? d.weatherRadarCycleSeconds
-              : 30
+          weatherRadarRefreshSeconds:
+            typeof d.weatherRadarRefreshSeconds === "number" &&
+            d.weatherRadarRefreshSeconds >= 30
+              ? d.weatherRadarRefreshSeconds
+              : 60,
+          weatherRadarAnimate: d.weatherRadarAnimate !== false,
+          weatherRadarFrameSeconds:
+            typeof d.weatherRadarFrameSeconds === "number" &&
+            d.weatherRadarFrameSeconds >= 2
+              ? d.weatherRadarFrameSeconds
+              : typeof d.weatherRadarCycleSeconds === "number" &&
+                  d.weatherRadarCycleSeconds >= 2
+                ? d.weatherRadarCycleSeconds
+                : 8,
+          weatherRadarHeight:
+            d.weatherRadarHeight === "standard" ? "standard" : "compact"
         });
       } catch {
         // keep defaults
