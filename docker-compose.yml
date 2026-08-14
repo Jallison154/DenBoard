@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  denboard:
+    build: .
+    container_name: denboard
+    ports:
+      - "${PORT:-3000}:3000"
+    volumes:
+      # Persist dashboard settings across restarts/redeploys.
+      - ./data:/app/data
+    restart: unless-stopped
+    # Optional: for local/CLI deploys with a real .env file. Skipped harmlessly
+    # when absent (e.g. Portainer Git-stack deploys) — the vars that matter are
+    # also listed explicitly below via ${...} substitution.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT:-3000}
+      - DENBOARD_SETTINGS_PATH=/app/data/settings.json
+      - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY:-}
+      - DASHBOARD_LAT=${DASHBOARD_LAT:-39.7392}
+      - DASHBOARD_LON=${DASHBOARD_LON:--104.9903}
+      - DASHBOARD_TZ=${DASHBOARD_TZ:-America/Denver}
+      - WEATHER_UNITS=${WEATHER_UNITS:-imperial}
+      - GCAL_ICS_URL=${GCAL_ICS_URL:-}
+      - HOME_ASSISTANT_URL=${HOME_ASSISTANT_URL:-}
+      - HOME_ASSISTANT_TOKEN=${HOME_ASSISTANT_TOKEN:-}
+      - DENBOARD_FRAME_ANCESTORS=${DENBOARD_FRAME_ANCESTORS:-}
+      - DENBOARD_LOG_LEVEL=${DENBOARD_LOG_LEVEL:-}
