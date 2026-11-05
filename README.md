@@ -1,8 +1,10 @@
 # DenBoard V2
 
-A live family dashboard for wall-mounted TVs. Big clock, today's events, a rolling
-month calendar, current + weekly weather, rain radar, Home Assistant status, and a
-rotating dad joke / fun fact / on-this-day item. Everything is readable from 6–10 ft.
+A calm, live family dashboard for wall-mounted TVs (designed first for a 43" portrait
+screen). Big clock, today's events, what's coming up, a month at a glance, current +
+weekly weather, rain radar, Home Assistant status, and a rotating dad joke / fun fact /
+on-this-day line. Minimal by design: big type, lots of space, no boxes, calendar colors
+as small dots. Everything is readable from 6–10 ft.
 
 ## What's new vs V1
 
@@ -14,8 +16,10 @@ rotating dad joke / fun fact / on-this-day item. Everything is readable from 6�
   Radar only shows when rain or snow is near. Severe NWS alerts pulse red.
 - **Correct recurring events.** It uses ical.js, so BYDAY, EXDATE, moved or cancelled
   instances, and DST all work. V1's parser only handled simple FREQ rules.
-- **Background follows sun and weather.** The sky changes with sunrise, sunset, clouds,
-  rain and snow, with a star field at night. No Unsplash key needed.
+- **Quiet background.** Near-black with one soft wash of color that follows the sun and
+  mutes when it's overcast. No Unsplash key needed.
+- **Calendar without clutter.** "Coming up" lists the next few days that have events, with
+  full titles, next to a month view that shows only dates and colored dots.
 - **Always-on care.** Night dimming, a slow pixel-shift against burn-in, auto-reconnect,
   and a nightly self-reload.
 - **Fixed canvas.** Layouts are designed on 1080×1920 / 1920×1080 / 1024×600 and scaled

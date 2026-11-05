@@ -6,7 +6,7 @@
     { "id": "lacey", "name": "Lacey", "color": "#F472B6", "url": "https://..." },
     { "id": "holidays", "name": "Holidays", "color": "#A78BFA", "url": "https://...", "guestVisible": true }
   ],
-  "calendar": { "gridMode": "rolling", "weeks": 4, "weekStartsOn": 0, "refreshMinutes": 5 },
+  "calendar": { "weekStartsOn": 0, "refreshMinutes": 5 },
   "homeAssistant": {
     "url": "https://hass.example.com",
     "guestModeEntity": "input_boolean.denboard_guest_mode",

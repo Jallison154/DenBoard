@@ -5,21 +5,23 @@ import { DateTime } from "luxon";
 import { useDashboard, useGuestMode, useNow } from "./useDashboard";
 import { Stage } from "./Stage";
 import { Sky } from "./Sky";
-import { CalendarGrid } from "./CalendarGrid";
 import {
+  Agenda,
   AttentionBar,
   Clock,
-  Forecast,
   FunCard,
+  HouseSummary,
+  MiniMonth,
   NowPlaying,
   People,
   Radar,
   StatusDot,
-  Tiles,
   TodayList,
   WeatherNow,
+  WeekForecast,
   attentionItems,
-  nowPlaying
+  nowPlaying,
+  todayShowsTomorrow
 } from "./panels";
 import { atClock } from "@/lib/time";
 import type { Snapshot } from "@/lib/types";
@@ -65,7 +67,7 @@ function DashboardInner({ layout }: { layout: Layout }) {
       <Sky now={minuteNow} weather={state?.weather ?? null} />
       {!state ? (
         <div className="boot">
-          <Clock now={now} h24={false} size={layout === "nest" ? 140 : 220} />
+          <Clock now={now} h24={false} size={layout === "nest" ? 128 : 210} />
         </div>
       ) : layout === "portrait" ? (
         <Portrait state={state} now={now} minuteNow={minuteNow} guest={guest} />
@@ -88,82 +90,72 @@ function visibleEvents(state: Snapshot, guest: boolean) {
   return guest ? events.filter((e) => state.config.guestCalendars.includes(e.calendar)) : events;
 }
 
-/* ───────────── Portrait 1080×1920 — the den's vertical 4K TV ───────────── */
+/* ───────────── Portrait 1080×1920 — the den's 43" vertical TV ───────────── */
+
+function radarVisible(state: Snapshot) {
+  return !!state.radar && !!state.weather?.precipSoon;
+}
+
+function HouseFooter({ state, guest, avatar, media = true }: { state: Snapshot; guest: boolean; avatar: number; media?: boolean }) {
+  if (!state.ha.configured) return null;
+  const playing = nowPlaying(state);
+  return (
+    <>
+      <div className="house">
+        {!guest && <People state={state} size={avatar} />}
+        <div className="house-right">
+          <HouseSummary state={state} guest={guest} />
+        </div>
+      </div>
+      {media && <NowPlaying players={playing} />}
+    </>
+  );
+}
 
 function Portrait({ state, now, minuteNow, guest }: ViewProps) {
   const c = state.config;
   const events = visibleEvents(state, guest);
   const attention = attentionItems(state, minuteNow, guest);
-  const playing = nowPlaying(state);
-  const raining = !!state.radar && !!state.weather?.precipSoon;
-  const radarOn = !!state.radar && (raining || c.demo);
 
   return (
     <div className="layout portrait">
-      <header className="p-hero">
-        <Clock now={now} h24={c.clock24h} size={232} />
-        <WeatherNow weather={state.weather} now={minuteNow} size={128} hours={5} />
+      <header className="hero">
+        <Clock now={now} h24={c.clock24h} size={210} />
+        <WeatherNow weather={state.weather} size={112} />
       </header>
 
       <AttentionBar items={attention} />
 
-      <section className="p-mid">
-        <div className="panel p-today">
-          <div className="panel-label">Today</div>
-          <TodayList
-            events={events}
-            now={minuteNow}
-            tz={c.timezone}
-            h24={c.clock24h}
-            maxRows={6}
-            guest={guest}
-            guestWelcome={c.guestWelcome}
-          />
+      <section className="sec">
+        <h2 className="label">Today</h2>
+        <TodayList events={events} now={minuteNow} tz={c.timezone} h24={c.clock24h} maxRows={5} guest={guest} guestWelcome={c.guestWelcome} />
+      </section>
+
+      <section className="sec split">
+        <div>
+          <h2 className="label">Coming up</h2>
+          {guest && !events.length ? <div className="agenda-empty">—</div> : <Agenda events={events} now={minuteNow} tz={c.timezone} h24={c.clock24h} days={4} maxRows={8} startOffset={todayShowsTomorrow(events, minuteNow, c.timezone, 5) ? 2 : 1} />}
         </div>
-        <div className="panel p-side">
-          {radarOn && state.radar ? (
+        <div>
+          {radarVisible(state) && state.radar ? (
             <>
-              <Radar radar={state.radar} lat={c.lat} lon={c.lon} width={372} height={226} />
-              <Forecast weather={state.weather} days={3} compact />
+              <h2 className="label">Rain nearby</h2>
+              <Radar radar={state.radar} lat={c.lat} lon={c.lon} width={380} height={330} />
             </>
           ) : (
-            <>
-              <div className="panel-label">This week</div>
-              <Forecast weather={state.weather} days={6} />
-            </>
+            <MiniMonth events={events} now={minuteNow} tz={c.timezone} weekStartsOn={c.calendar.weekStartsOn} />
           )}
         </div>
       </section>
 
-      <section className="panel p-cal">
-        <CalendarGrid
-          events={events}
-          now={minuteNow}
-          tz={c.timezone}
-          mode={c.calendar.gridMode}
-          weeks={c.calendar.weeks}
-          weekStartsOn={c.calendar.weekStartsOn}
-          h24={c.clock24h}
-          maxPerCell={6}
-          hideDetails={guest && !events.length}
-        />
+      <section className="sec">
+        <WeekForecast weather={state.weather} days={6} />
       </section>
 
-      {state.ha.configured && (
-        <section className="p-house">
-          {!guest && <People state={state} now={minuteNow} />}
-          <div className="p-house-row">
-            <NowPlaying players={playing} max={1} />
-            <Tiles state={state} guest={guest} now={minuteNow} max={playing.length ? 3 : 6} columns />
-          </div>
-        </section>
-      )}
-
-      {state.fun && (
-        <footer className="panel p-fun">
-          <FunCard items={state.fun.items} rotateSeconds={c.funRotateSeconds} />
-        </footer>
-      )}
+      <footer className="sec foot">
+        <HouseFooter state={state} guest={guest} avatar={54} />
+        {state.fun && <FunCard items={state.fun.items} rotateSeconds={c.funRotateSeconds} />}
+      </footer>
     </div>
   );
 }
@@ -174,61 +166,43 @@ function Landscape({ state, now, minuteNow, guest }: ViewProps) {
   const c = state.config;
   const events = visibleEvents(state, guest);
   const attention = attentionItems(state, minuteNow, guest);
-  const playing = nowPlaying(state);
-  const radarOn = !!state.radar && (!!state.weather?.precipSoon || c.demo);
 
   return (
     <div className="layout landscape">
-      <aside className="l-left">
+      <div className="l-left">
         <Clock now={now} h24={c.clock24h} size={176} />
-        <div className="panel l-weather">
-          <WeatherNow weather={state.weather} now={minuteNow} size={96} hours={5} />
-        </div>
-        <div className="panel l-today">
-          <div className="panel-label">Today</div>
-          <TodayList events={events} now={minuteNow} tz={c.timezone} h24={c.clock24h} maxRows={5} guest={guest} guestWelcome={c.guestWelcome} big={0.82} />
-        </div>
-        {state.fun && (
-          <div className="panel l-fun">
-            <FunCard items={state.fun.items} rotateSeconds={c.funRotateSeconds} size={0.78} />
-          </div>
-        )}
-      </aside>
-      <main className="l-right">
-        <AttentionBar items={attention} />
-        <section className="panel l-cal">
-          <CalendarGrid
-            events={events}
-            now={minuteNow}
-            tz={c.timezone}
-            mode={c.calendar.gridMode}
-            weeks={Math.min(c.calendar.weeks, 4)}
-            weekStartsOn={c.calendar.weekStartsOn}
-            h24={c.clock24h}
-            maxPerCell={6}
-            hideDetails={guest && !events.length}
-          />
+        <WeatherNow weather={state.weather} size={88} />
+        <section className="sec">
+          <h2 className="label">Today</h2>
+          <TodayList events={events} now={minuteNow} tz={c.timezone} h24={c.clock24h} maxRows={5} guest={guest} guestWelcome={c.guestWelcome} scale={0.9} />
         </section>
-        <section className="l-bottom">
-          {radarOn && state.radar ? (
-            <div className="panel l-radar">
-              <Radar radar={state.radar} lat={c.lat} lon={c.lon} width={360} height={196} />
-            </div>
-          ) : (
-            <div className="panel l-forecast">
-              <Forecast weather={state.weather} days={5} compact />
-            </div>
-          )}
-          <div className="l-house">
-            {state.ha.configured && (
+      </div>
+      <div className="l-right">
+        <AttentionBar items={attention} />
+        <section className="split">
+          <div>
+            <h2 className="label">Coming up</h2>
+            {guest && !events.length ? <div className="agenda-empty">—</div> : <Agenda events={events} now={minuteNow} tz={c.timezone} h24={c.clock24h} days={3} maxRows={7} startOffset={todayShowsTomorrow(events, minuteNow, c.timezone, 5) ? 2 : 1} />}
+          </div>
+          <div>
+            {radarVisible(state) && state.radar ? (
               <>
-                {!guest && <People state={state} now={minuteNow} size={0.85} />}
-                {playing.length ? <NowPlaying players={playing} max={1} /> : <Tiles state={state} guest={guest} now={minuteNow} />}
+                <h2 className="label">Rain nearby</h2>
+                <Radar radar={state.radar} lat={c.lat} lon={c.lon} width={420} height={330} />
               </>
+            ) : (
+              <MiniMonth events={events} now={minuteNow} tz={c.timezone} weekStartsOn={c.calendar.weekStartsOn} />
             )}
           </div>
         </section>
-      </main>
+        <section className="sec">
+          <WeekForecast weather={state.weather} days={6} />
+        </section>
+        <footer className="sec foot">
+          <HouseFooter state={state} guest={guest} avatar={48} media={false} />
+          {state.fun && <FunCard items={state.fun.items} rotateSeconds={c.funRotateSeconds} scale={0.85} />}
+        </footer>
+      </div>
     </div>
   );
 }
@@ -242,12 +216,12 @@ function Nest({ state, now, minuteNow, guest }: ViewProps) {
   return (
     <div className="layout nest">
       <div className="n-left">
-        <Clock now={now} h24={c.clock24h} size={132} />
-        <WeatherNow weather={state.weather} now={minuteNow} size={72} hours={0} />
+        <Clock now={now} h24={c.clock24h} size={128} />
+        <WeatherNow weather={state.weather} size={64} />
       </div>
-      <div className="panel n-right">
-        <div className="panel-label">Today</div>
-        <TodayList events={events} now={minuteNow} tz={c.timezone} h24={c.clock24h} maxRows={5} guest={guest} guestWelcome={c.guestWelcome} big={0.62} />
+      <div className="n-right">
+        <h2 className="label">Today</h2>
+        <TodayList events={events} now={minuteNow} tz={c.timezone} h24={c.clock24h} maxRows={4} guest={guest} guestWelcome={c.guestWelcome} scale={0.62} />
       </div>
       {attention.length > 0 && (
         <div className="n-attn">
