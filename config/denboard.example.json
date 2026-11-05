@@ -1,0 +1,35 @@
+{
+  "location": { "name": "Home", "lat": 39.7392, "lon": -104.9903, "timezone": "America/Denver", "units": "imperial" },
+  "calendars": [
+    { "id": "family", "name": "Family", "color": "#5B8CFF", "url": "https://calendar.google.com/calendar/ical/.../basic.ics" },
+    { "id": "jonathan", "name": "Jonathan", "color": "#2DD4BF", "url": "https://..." },
+    { "id": "lacey", "name": "Lacey", "color": "#F472B6", "url": "https://..." },
+    { "id": "holidays", "name": "Holidays", "color": "#A78BFA", "url": "https://...", "guestVisible": true }
+  ],
+  "calendar": { "gridMode": "rolling", "weeks": 4, "weekStartsOn": 0, "refreshMinutes": 5 },
+  "homeAssistant": {
+    "url": "https://hass.example.com",
+    "guestModeEntity": "input_boolean.denboard_guest_mode",
+    "people": [
+      { "entity": "person.jonathan", "name": "Jonathan" },
+      { "entity": "person.lacey", "name": "Lacey" },
+      { "entity": "device_tracker.onyx", "name": "Onyx" },
+      { "entity": "device_tracker.falcon", "name": "Falcon" }
+    ],
+    "tiles": [
+      { "entity": "lock.front_door", "name": "Front Door", "kind": "lock", "alertAfterMinutes": 10 },
+      { "entity": "lock.side_door", "name": "Side Door", "kind": "lock" },
+      { "entity": "cover.garage_door", "name": "Garage", "kind": "garage", "alertAfterMinutes": 15 },
+      { "entity": "climate.thermostat", "name": "Inside", "kind": "climate", "guestVisible": true }
+    ],
+    "mediaPlayers": "auto",
+    "hideMediaPlayers": ["media_player.bedroom_tv"]
+  },
+  "display": {
+    "clock24h": false,
+    "guestWelcome": "Welcome! Make yourself at home.",
+    "nightDim": { "start": "22:30", "end": "06:00", "level": 0.45 },
+    "funRotateSeconds": 75,
+    "fun": { "jokes": true, "facts": true, "history": true }
+  }
+}

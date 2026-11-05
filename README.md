@@ -1,341 +1,62 @@
-### DenBoard
+# DenBoard V2
 
-DenBoard is a clean, modern, always-on family dashboard designed for wall-mounted 10‑foot displays. It runs as a Next.js app with a calm, mountain-inspired aesthetic and is intended to sit behind a reverse proxy (Caddy, Nginx, etc.).
+A live family dashboard for wall-mounted TVs. Big clock, today's events, a rolling
+month calendar, current + weekly weather, rain radar, Home Assistant status, and a
+rotating dad joke / fun fact / on-this-day item. Everything is readable from 6–10 ft.
 
----
+## What's new vs V1
 
-### Tech stack
+- **Live, not polled.** The server holds one WebSocket to Home Assistant and pushes every
+  change to all screens over Server-Sent Events. Doors, people, and media update instantly.
+- **Responds to what's happening.** The Today list counts down to the next event and
+  highlights the one happening now with a progress bar. Unlocked doors or an open garage
+  rise to an alert bar after a delay you set. Now Playing appears when media is playing.
+  Radar only shows when rain or snow is near. Severe NWS alerts pulse red.
+- **Correct recurring events.** It uses ical.js, so BYDAY, EXDATE, moved or cancelled
+  instances, and DST all work. V1's parser only handled simple FREQ rules.
+- **Background follows sun and weather.** The sky changes with sunrise, sunset, clouds,
+  rain and snow, with a star field at night. No Unsplash key needed.
+- **Always-on care.** Night dimming, a slow pixel-shift against burn-in, auto-reconnect,
+  and a nightly self-reload.
+- **Fixed canvas.** Layouts are designed on 1080×1920 / 1920×1080 / 1024×600 and scaled
+  to fit, so a 4K TV looks exactly like the preview.
 
-- **Framework**: Next.js (App Router, Node 20+)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Animation**: Framer Motion (subtle only)
-- **Time/Calendar**: Luxon, node-ical
+## Screens
 
----
+| URL | Canvas | For |
+| --- | --- | --- |
+| `/` | 1080×1920 portrait | Den's vertical 4K Samsung |
+| `/landscape` | 1920×1080 | Other TVs |
+| `/nest` | 1024×600 | Nest Hub / small displays |
 
-### Prerequisites
+Add `?guest=1` to any screen to force guest mode, or toggle the HA entity
+`input_boolean.denboard_guest_mode`. Guest mode hides people, lock alerts, and every
+calendar not marked `"guestVisible": true`. V1 URLs (`/portrait/home`, `/tv/home`,
+`/nest/home`) redirect to the new ones.
 
-- **Node.js**: 20.9 or newer (required by Next 16)
-- **npm**: 10+
-- A reverse proxy (Caddy, Nginx, etc.) terminating TLS in front of the app
-
-On Debian 12:
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-
----
-
-### Getting started
-
-#### 1. Clone the repo
-
-```bash
-git clone <your-denboard-repo-url>.git
-cd DenBoard
-```
-
-#### 2. Environment configuration
-
-Copy the example env file and fill in values:
+## Setup
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env        # set HOME_ASSISTANT_URL + HOME_ASSISTANT_TOKEN
+docker compose up -d --build
 ```
 
-Environment variables:
+On first run DenBoard writes `data/denboard.json`. If a V1 `data/settings.json` is in the
+same volume, it imports your calendars, location, and HA entities from it. Edit the file
+any time (see `config/denboard.example.json`): every screen reloads itself within ~10s.
 
-- **UNSPLASH_ACCESS_KEY**: Unsplash API access key for rotating mountain backgrounds.
-- **DASHBOARD_LAT / DASHBOARD_LON**: Latitude/longitude for your location.
-- **DASHBOARD_TZ**: Time zone (e.g. `America/Denver`).
-- **WEATHER_UNITS**: `imperial` or `metric` (defaults to `imperial`; use `imperial` for °F in Montana).
-- **GCAL_ICS_URL**: Private Google Calendar ICS URL for family calendar.
-- **HOME_ASSISTANT_URL**: Base URL of your Home Assistant instance (e.g. `https://ha.example.com`).
-- **HOME_ASSISTANT_TOKEN**: Long‑lived access token for the curated entity list.
-- **PORT**: Port for Next.js to listen on (default `3000`). The reverse proxy should point here.
-- **DENBOARD_FRAME_ANCESTORS** (optional): CSP `frame-ancestors` value(s) so Home Assistant can iframe DenBoard (see `docs/EMBEDDED-CAST.md`).
+- **calendars**: any ICS URL (Google "Secret address in iCal format", iCloud, Outlook).
+- **homeAssistant.people**: `person.*` or `device_tracker.*`.
+- **homeAssistant.tiles**: `kind` is `lock | door | garage | window | climate | sensor | light | switch`.
+  `alertAfterMinutes` sets how long a lock/door/garage can stay open before it reaches the alert bar.
+- **mediaPlayers**: `"auto"` shows any playing `media_player.*`; hide some with `hideMediaPlayers`.
 
-**If Unsplash backgrounds don’t load:** Get an Access Key from [Unsplash Developers](https://unsplash.com/oauth/applications) (create an app, then use the “Access Key” from the Keys section). Set `UNSPLASH_ACCESS_KEY=` in `.env` and restart the app. Check server logs for `Unsplash API error` if it still fails (e.g. 401 = wrong or missing key).
+Health check: `GET /api/health`.
 
-#### 3. Install dependencies
-
-For production‑like reproducibility:
+## Develop
 
 ```bash
-npm ci
+npm install
+npm run demo     # sample calendar + house data, live weather/radar
+npm run dev      # real config
 ```
-
-#### 4. Build and run
-
-```bash
-npm run build
-PORT=3000 npm run start
-```
-
-The app will listen on `0.0.0.0:PORT`. Place it behind your reverse proxy for TLS and public access.
-
----
-
-### Embedded display (Home Assistant, Chromecast, iframe)
-
-See **[docs/EMBEDDED-CAST.md](./docs/EMBEDDED-CAST.md)** for:
-
-- iframe / cast compatibility audit (headers, mixed content, layout)
-- **`DENBOARD_FRAME_ANCESTORS`** — optional CSP so Home Assistant can embed DenBoard
-- **`?embed=1` / `?display=1`** — kiosk mode (no nav/footer, reduced motion, static background; see `components/DisplayChrome.tsx`)
-- **`/display/nest`** — **standalone HTML** (no React shell): clock, weather, today’s events; safe for Nest/Cast iframes. Use **full navigation** (`iframe src` or `<a href>`), not `next/link` from other pages.
-- Troubleshooting **blank / white** embeds (iframe height, `X-Frame-Options` on proxies, `NEXT_PUBLIC_BASE_PATH`)
-
----
-
-### Automated install on Debian 12 CT (Proxmox LXC)
-
-For a Proxmox Debian 12 container, there is an installer that handles:
-
-- Installing Node.js 20, git, and build tools
-- Cloning the repo into `/opt/denboard`
-- Creating a dedicated `denboard` user
-- Creating `/opt/denboard/.env` from `.env.example` (if it does not exist)
-- Running `npm ci && npm run build`
-- Creating and enabling a `denboard.service` systemd unit
-- Optionally installing and configuring a Caddy reverse proxy
-
-From inside the CT:
-
-```bash
-cd /opt
-git clone <your-denboard-repo-url>.git denboard
-cd denboard
-
-sudo bash scripts/install-denboard.sh https://github.com/USER/denboard.git \
-  --branch main \
-  --host denboard.local \
-  --with-caddy
-```
-
-Arguments:
-
-- **git_repo_url**: GitHub URL of your DenBoard repo (required).
-- **--branch**: Git branch to deploy (default: `main`).
-- **--host**: Hostname to use when configuring Caddy (default: `denboard.local`).
-- **--with-caddy**: Install and configure Caddy reverse proxy.
-
-The installer is **idempotent** and safe to run multiple times. It does not modify your `.env` once created.
-
-After installation, the app runs as the `denboard` user with:
-
-- Code at `/opt/denboard`
-- Service `denboard.service`
-- Health check at `http://127.0.0.1:PORT/api/health`
-
-If you enable Caddy, it will proxy `HOSTNAME` (e.g. `denboard.local`) to `http://127.0.0.1:PORT`.
-
----
-
-### Routes
-
-Landscape (e.g. 55" bedroom TV):
-
-- `/landscape/home` – primary always‑on view (time + date focus, weather secondary, dad joke, home status tiles).
-- `/landscape/weather` – expanded weather view with 5‑day outlook and descriptive copy.
-- `/landscape/status` – home status and entities, with time and compact weather.
-- `/landscape/guest` – guest view (hides calendar and home tiles).
-
-Portrait (e.g. 43" family display):
-
-- `/portrait/home` – stacked time, weather, status, and dad joke.
-- `/portrait/calendar` – 4‑week grid with today’s events; hides in Guest Mode.
-- `/portrait/status` – portrait status view with time, weather, tiles, and dad joke.
-
----
-
-### Guest Mode & Home Assistant
-
-DenBoard reads a **Guest Mode** flag from Home Assistant:
-
-- **Entity**: `input_boolean.denboard_guest_mode`
-
-When Guest Mode is **ON**:
-
-- **Hidden**:
-  - Calendar details (today’s events and 4‑week grid)
-  - Home Assistant status tiles
-- **Still visible**:
-  - Time and date
-  - Current weather and 5‑day forecast
-  - Dad joke
-  - Severe weather alerts
-
-Guest Mode transitions use smooth fades so the display never “jumps”.
-
-The Home Assistant integration polls a curated entity list every 10 seconds via:
-
-- `HOME_ASSISTANT_URL`
-- `HOME_ASSISTANT_TOKEN`
-
----
-
-### Auto‑refresh & caching
-
-- **Weather**:
-  - Server: cached 5–10 minutes.
-  - Client: polls `/api/weather` roughly every 6 minutes.
-- **Backgrounds**:
-  - Uses Unsplash with search terms based on time of day and conditions.
-  - Server‑side caching and rotation every ~45 minutes.
-- **Calendar**:
-  - Server: ICS parsed and cached for 5 minutes.
-  - Client: polls `/api/calendar` every 5 minutes.
-- **Home Assistant**:
-  - Client: polls `/api/home-assistant` every 10 seconds.
-- **Dad joke**:
-  - Server: cached for ~45 minutes.
-  - Client: polls `/api/dadjoke` on that interval.
-
-All remote calls use a small retry wrapper and log clearly on failure. UI panels fail gracefully with soft “unavailable” copy rather than crashing.
-
----
-
-### Systemd service (Debian 12 / Proxmox LXC)
-
-Assuming the project lives at `/opt/denboard` and you want to run as user `denboard`:
-
-```ini
-[Unit]
-Description=DenBoard family dashboard
-After=network.target
-Wants=network-online.target
-
-[Service]
-Type=simple
-User=denboard
-Group=denboard
-WorkingDirectory=/opt/denboard
-Environment=NODE_ENV=production
-EnvironmentFile=/opt/denboard/.env.local
-ExecStart=/usr/bin/npm run start
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable and start:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable denboard.service
-sudo systemctl start denboard.service
-```
-
-Place your reverse proxy (Caddy, Nginx, etc.) in front of the service and proxy to `http://127.0.0.1:PORT`.
-
----
-
-### Environment configuration (.env)
-
-In production the installer expects `/opt/denboard/.env` to exist. It will copy from `.env.example` the first time if missing and then leave it untouched.
-
-Required variables:
-
-```bash
-UNSPLASH_ACCESS_KEY=
-DASHBOARD_LAT=
-DASHBOARD_LON=
-DASHBOARD_TZ=America/Denver
-WEATHER_UNITS=imperial
-GCAL_ICS_URL=
-HOME_ASSISTANT_URL=
-HOME_ASSISTANT_TOKEN=
-PORT=3000
-```
-
-Update `/opt/denboard/.env` as needed, then restart:
-
-```bash
-sudo systemctl restart denboard.service
-```
-
----
-
-### Updating DenBoard
-
-To pull the latest code, reinstall dependencies, rebuild, and restart the service:
-
-```bash
-cd /opt/denboard
-sudo bash scripts/update-denboard.sh
-```
-
-The script:
-
-- Runs `git fetch` + `git pull --ff-only`
-- Runs `npm ci` and `npm run build` as the `denboard` user
-- Restarts `denboard.service`
-- On failure, prints:
-  - `systemctl status denboard --no-pager`
-  - `journalctl -u denboard -n 50 --no-pager`
-
-It is safe to run repeatedly.
-
----
-
-### Checking logs and health
-
-- **Systemd status**:
-
-  ```bash
-  sudo systemctl status denboard.service --no-pager
-  ```
-
-- **Streaming logs**:
-
-  ```bash
-  sudo journalctl -u denboard.service -f --no-pager
-  ```
-
-- **Health endpoint** (inside the CT):
-
-  ```bash
-  curl http://127.0.0.1:3000/api/health
-  ```
-
-If you changed `PORT` in `.env`, substitute that value in the URL.
-
----
-
-### Uninstalling
-
-To remove DenBoard and its systemd service:
-
-```bash
-sudo systemctl stop denboard.service
-sudo systemctl disable denboard.service
-sudo rm -f /etc/systemd/system/denboard.service
-sudo systemctl daemon-reload
-
-sudo rm -rf /opt/denboard
-sudo userdel denboard || true
-```
-
-If you installed Caddy specifically for DenBoard and no longer need it:
-
-```bash
-sudo systemctl stop caddy
-sudo systemctl disable caddy
-sudo apt-get remove -y caddy
-sudo rm -f /etc/caddy/Caddyfile
-```
-
----
-
-### Production notes
-
-- **Logging**: Server‑side utilities log with a small `logger` wrapper and avoid noisy console spam in production.
-- **Failure handling**: Weather, backgrounds, calendar, Home Assistant, and dad jokes all have timeouts, retries, and present safe fallback UI.
-- **PORT**: The Next.js server respects the `PORT` environment variable, so it can be managed cleanly by systemd and a reverse proxy.
-

@@ -1,40 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import { DisplayChrome } from "@/components/DisplayChrome";
-import { DisplayRefreshListener } from "@/components/DisplayRefreshListener";
-import { WeatherExperienceLayer } from "@/components/WeatherExperienceLayer";
-import { FooterBar } from "@/components/FooterBar";
-import { FloatingNav } from "@/components/FloatingNav";
-import { toCssVars } from "@/lib/theme/tokens";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-display", display: "swap" });
 
 export const metadata: Metadata = {
   title: "DenBoard",
-  description: "Always-on family dashboard for wall-mounted displays."
+  description: "Live family dashboard for wall-mounted TVs."
 };
 
-export default function RootLayout({
-  children
-}: {
-  children: React.ReactNode;
-}) {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#05080F"
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-charcoal font-body antialiased"
-        style={{ color: "var(--denboard-text-primary)" }}
-      >
-        <style dangerouslySetInnerHTML={{ __html: toCssVars() }} />
-        <DisplayChrome>
-          <DisplayRefreshListener />
-          <WeatherExperienceLayer />
-          <FloatingNav />
-          <div className="denboard-viewport-shell flex min-h-0 flex-1 flex-col">{children}</div>
-          <footer className="fixed bottom-0 inset-x-0 denboard-footer-scrim backdrop-blur-sm">
-            <FooterBar />
-          </footer>
-        </DisplayChrome>
-      </body>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }
-
